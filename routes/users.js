@@ -1,5 +1,16 @@
 var express = require('express');
 var router = express.Router();
+const mysql = require("mysql2/promise")
+const crypto = require("crypto")
+
+const makeConnection = async () =>
+  mysql.createConnection({
+          host: "localhost",
+          port: 3306,
+          user: "root",
+          password: "1997",
+          database: "ecommerce"
+      })
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -12,7 +23,7 @@ router.get('/user_page', function(req, res, next){
 
 /* get reccomendation (for homepage) */
 const loggedIn = true
-const userID = 11
+const userID = "0"
 const reccomendation_possibilities = [
   "featured",
   "recently viewed",
@@ -142,24 +153,104 @@ router.post('/reviews', function(req, res){
 })
 
 const users = [
-  {id: 0, email: "user@user.com", password: "user", isAdmin: false},
-  {id: 1, email: "admin@admin.com", password: "admin", isAdmin: true}
+  {id: "0", email: "user@user.com", first_name:"Béla", last_name:"Nagy", password: "user", address:"Bp, Hungary", phone:"+36 1 788 8888", isAdmin: false},
+  {id: "1", email: "admin@admin.com", first_name:"Elemér", last_name:"Horváth", password: "admin", address:"Malmö, Sweden", phone:"+36 1 788 7777",  isAdmin: true}
 ]
 
 //registering
-router.post('/new_user', function(req, res){
-  const new_user = req.body
-  const user = users.find(
-    (old_user) => old_user.email === new_user.email
+router.post('/new_user', async function(req, res){
+  const {last_name, first_name, email, password, address, phone_number} = req.body
+
+  const connection = await makeConnection()
+
+  const [results, fields] = await connection.execute(
+    `SELECT id, is_admin FROM users WHERE email = "${email}";`
   )
-  if(user){
+
+  if(results.length){
     res.end("There is a user with this email already")
+  }else if(
+    !last_name ||
+    !first_name ||
+    !email ||
+    !password ||
+    !address
+  ){
+    res.end("missing data")
   }else{
-    users.push({...new_user, id: users.length, isAdmin: false})
-    res.end(JSON.stringify(users))
+    await connection.execute(
+      `
+        insert into users (last_name, first_name, email, passw, address
+          ${
+          phone_number ? `, phone_number` : ""
+        }) 
+        values (
+          "${last_name}",
+          "${first_name}",
+          "${email}",
+          "${password}",
+          "${address}"
+          ${
+            phone_number ? `, "${phone_number}"` : ""
+          }
+        );
+      `
+    )
   }
 })
 
+//get invoice data
+router.get('/invoice_data', function(req, res){
+  if(loggedIn){
+    //get invoice_data of user with userID
+    const user = users.find((user)=>{
+      return user.id === userID
+    })
+    const {first_name, last_name, address, email, phone} = user
+
+    const invoice_data = {first_name, last_name, address, email, phone}
+
+    res.end(JSON.stringify(invoice_data))
+
+  }else{
+    res.end('No data. User is not logged in')
+  }
+})
+
+//post invoice data
+const invoices = [
+  { id: "0", 
+    first_name:"Elemér", 
+    last_name:"Horváth", 
+    address:"Malmö, Sweden", 
+    phone:"+36 1 788 7777",
+    order_id: "124"
+  },
+  { id: "1", 
+    first_name:"Dezső", 
+    last_name:"Lakatos-Weißburger", 
+    address:"Oslo, Norway", 
+    phone:"+33 7 420 7777",
+    order_id: "678765"
+  },
+]
+
+router.post('/invoice_data', function(req, res){
+  if(loggedIn){
+    // {first_name, last_name, address, email, phone, order_id}
+    const new_invoice_data = req.body
+
+    invoices.push({
+      id: invoices.length,
+      ...new_invoice_data
+    })
+
+    res.end(JSON.stringify(invoices))
+
+  }else{
+    res.end('No data. User is not logged in')
+  }
+})
 
 
 
