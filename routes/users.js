@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const mysql = require("mysql2/promise")
 const crypto = require("crypto")
 
@@ -24,24 +24,45 @@ router.get('/user_page', function(req, res, next){
 /* get reccomendation (for homepage) */
 const loggedIn = true
 const userID = "0"
-const reccomendation_possibilities = [
-  "featured",
-  "recently viewed",
-  "wishlisted",
-  "newest"
-]
 
-router.get('/', function(req, res){
-  const reccomendation = req.query.rec
-  if(reccomendation_possibilities.includes(reccomendation)){
-    if(loggedIn){
-      res.end(`Data recommended of 2 ${reccomendation} items`)
-    }else{
-      res.end('No data. User is not logged in')
-    }
+router.get('/recommendation/featured/', async function(req, res){  
+  const connection = await makeConnection()  
+  
+  const [artwork_ids] = await connection.execute(`SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC LIMIT 2`)
+
+  const [artworks] = await connection.execute(`SELECT id, title, price FROM artworks WHERE id IN (${
+    artwork_ids.map(
+      obj => {
+        return (
+          Array.from(
+            Object.values(obj)
+          )[0]
+        )
+      }
+    )
+    .join(", ")
+  })`)
+
+
+  if(artworks.length){
+    const results = await Promise.all(artworks.map(
+      async(artwork)=>{
+        const [thumbnail] = await connection.execute(
+          `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ${artwork.id} AND is_thumbnail = true`
+          )
+        if(thumbnail.length){
+          return { ...artwork, thumbnail: thumbnail[0].picture_path } 
+        }else{
+          return artwork
+        }
+      }
+    ))
+    res.json(results)
+
   }else{
-    res.end("No such category")
+    req.end("No featured artworks")
   }
+  connection.end()
 })
 
 //get shopping cart items
