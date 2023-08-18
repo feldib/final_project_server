@@ -21,7 +21,6 @@ router.get('/', function(req, res, next) {
 /* 
   req.body => username: "", password: ""} 
 */
-
 router.post('/login', async function(req, res){
   const {email, password} = req.body
 
@@ -44,8 +43,7 @@ router.post('/login', async function(req, res){
     res.end("Wrong username or password!")
   }
 })
-
-//LOG OUT!!
+//LOG OUT?!!
 
 router.get('/categories', async function(req, res){
   const connection = await makeConnection()
@@ -58,7 +56,7 @@ router.get('/categories', async function(req, res){
   }
 })
 
-/* search and order artwork */
+/* search (and order asc or desc) artwork */
 
 router.get('/search_artworks', async function(req, res){
   const {min, max, title, artist_name, category_id, order, n} = req.query
@@ -143,6 +141,7 @@ const artworks = [
   {id:"0", thumnail: "as", title: "Spring", artist: "Boticelli", price:"3", quantity:"3", tags:["Italian"], categories: ["painting", "oil paining"]},
   {id:"1", thumnail: "sdf", title: "David", artist: "Michelangelo", price:"2", quantity:"6", tags:["French"], categories: ["painting", "oil paining"]}
 ]
+
 //artwork page
 router.get('/artwork', function(req, res){
   const {id} = req.query
