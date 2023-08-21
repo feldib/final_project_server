@@ -1,7 +1,11 @@
 const express = require('express')
 const router = express.Router()
 const mysql = require("mysql2/promise")
-const crypto = require("crypto")
+const cookieParser = require('cookie-parser')
+const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt")
+
+router.use(cookieParser())
 
 const makeConnection = async () =>
   mysql.createConnection({
@@ -29,52 +33,46 @@ router.post('/login', async function(req, res){
   const user = results[0]
 
   if(user){
-    await connection.execute(
-      `UPDATE users SET logged_in = true WHERE id = ${user.id};`
+    const token = jwt.sign(
+      {id: user.id}, 
+      "secret-key",
+      {expiresIn: '1d'}
     )
+    res.cookie('token', token)
     res.json(user)
-    console.log(JSON.stringify(user))
   }else{
-    res.end("Wrong username or password!")
+    res.end("false")
   }
 })
 
-router.post('/logged_in', async function(req, res){
-  const {id} = req.body
-  const connection = await makeConnection()
-
-  const [results, fields] = await connection.execute(
-        `SELECT logged_in FROM users WHERE id = "${id}";`
-      )
-
-  const user = results[0]
-
-  if(user){
-    res.json(user.logged_in)
+const verifyUser = (req, res, next) => {
+  const token = req.cookies.token
+  if(!token){
+    res.end("You are not authenticated")
   }else{
-    res.end("Not logged in!")
+    jwt.verify(token, "secret-key", (err, decoded) => {
+      if(err){
+        res.end("Tokens do not match")
+      }else{
+        req.id = decoded.id
+        next()
+      }
+    })
   }
+}
+
+router.get('/logged_in', verifyUser, async function(req, res){
+    res.json({
+      Status: "Success",
+      id: req.id
+    })
 })
 
-router.post('/log_out', async function(req, res){
-  const {id} = req.body
-
-  const connection = await makeConnection()
-
-  const [results, fields] = await connection.execute(
-        `SELECT id, last_name, first_name, email, address, is_admin FROM users WHERE id = "${id}";`
-      )
-
-  const user = results[0]
-
-  if(user){
-    await connection.execute(
-      `UPDATE users SET logged_in = false WHERE id = ${user.id};`
-    )
-    res.end("success")
-  }else{
-    res.end("Wrong id!")
-  }
+router.get('/log_out', async function(req, res){
+  res.clearCookie('token')
+  res.json({
+    Status: "Logged out successfully"
+  })
 })
 
 router.get('/categories', async function(req, res){

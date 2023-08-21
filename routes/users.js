@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const mysql = require("mysql2/promise")
 const crypto = require("crypto")
+const cookieParser = require('cookie-parser')
+router.use(cookieParser())
 
 const makeConnection = async () =>
   mysql.createConnection({
