@@ -21,9 +21,6 @@ router.get('/user_page', function(req, res, next){
   res.end('User Page Data')
 })
 
-/* get reccomendation (for homepage) */
-const loggedIn = true
-const userID = "0"
 
 router.get('/recommendation/featured/', async function(req, res){  
   const connection = await makeConnection()  
@@ -183,6 +180,8 @@ router.post('/new_user', async function(req, res){
   const {last_name, first_name, email, password, address, phone_number} = req.body
 
   const connection = await makeConnection()
+
+  console.log(JSON.stringify(req.body))
 
   const [results, fields] = await connection.execute(
     `SELECT id, is_admin FROM users WHERE email = "${email}";`
