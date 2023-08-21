@@ -214,10 +214,16 @@ router.post('/new_user', async function(req, res){
           ${
             phone_number ? `, "${phone_number}"` : ""
           }
-        );
-      `
+        );`
     )
+
+    const [user_data] = await connection.execute(
+      `select id, last_name, first_name, email, address from users where email="${email}" and passw="${password}";`
+    )
+
+    res.json(user_data)
   }
+  connection.end()
 })
 
 //get invoice data

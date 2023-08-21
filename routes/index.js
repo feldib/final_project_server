@@ -27,7 +27,7 @@ router.post('/login', async function(req, res){
   const connection = await makeConnection()
 
   const [results, fields] = await connection.execute(
-        `SELECT id, is_admin FROM users WHERE email = "${email}" AND passw = "${password}";`
+        `SELECT id, last_name, first_name, email, address, is_admin FROM users WHERE email = "${email}" AND passw = "${password}";`
       )
 
   const user = results[0]
