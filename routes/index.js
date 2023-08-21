@@ -17,10 +17,6 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-/* logging in */
-/* 
-  req.body => username: "", password: ""} 
-*/
 router.post('/login', async function(req, res){
   const {email, password} = req.body
 
@@ -36,14 +32,50 @@ router.post('/login', async function(req, res){
     await connection.execute(
       `UPDATE users SET logged_in = true WHERE id = ${user.id};`
     )
-    //should redirect?
-    res.end(JSON.stringify(user))
-
+    res.json(user)
+    console.log(JSON.stringify(user))
   }else{
     res.end("Wrong username or password!")
   }
 })
-//LOG OUT?!!
+
+router.post('/logged_in', async function(req, res){
+  const {id} = req.body
+  const connection = await makeConnection()
+
+  const [results, fields] = await connection.execute(
+        `SELECT logged_in FROM users WHERE id = "${id}";`
+      )
+
+  const user = results[0]
+
+  if(user){
+    res.json(user.logged_in)
+  }else{
+    res.end("Not logged in!")
+  }
+})
+
+router.post('/log_out', async function(req, res){
+  const {id} = req.body
+
+  const connection = await makeConnection()
+
+  const [results, fields] = await connection.execute(
+        `SELECT id, last_name, first_name, email, address, is_admin FROM users WHERE id = "${id}";`
+      )
+
+  const user = results[0]
+
+  if(user){
+    await connection.execute(
+      `UPDATE users SET logged_in = false WHERE id = ${user.id};`
+    )
+    res.end("success")
+  }else{
+    res.end("Wrong id!")
+  }
+})
 
 router.get('/categories', async function(req, res){
   const connection = await makeConnection()
@@ -56,18 +88,22 @@ router.get('/categories', async function(req, res){
   }
 })
 
-/* search (and order asc or desc) artwork */
-
 router.get('/search_artworks', async function(req, res){
   const {min, max, title, artist_name, category_id, order, n} = req.query
-
+  console.log(req.query)
   const connection = await makeConnection()
 
   let sql_query = "SELECT id, title, artist_name, price, quantity, date_added FROM artworks"
 
   let needs_and = false
   console.log(req.query)
-  if(Object.keys(req.query).length){
+  if(
+    min ||
+    max || 
+    title || 
+    artist_name ||
+    category_id  
+  ){
     sql_query += " WHERE "
 
     if(min && max){
@@ -112,7 +148,7 @@ router.get('/search_artworks', async function(req, res){
     }
 
     if(order){
-      sql_query += " ORDER BY date_added "
+      sql_query += " ORDER BY date_added"
       if(order==="asc"){
         sql_query += " ASC "
       }else if(order==="desc"){
@@ -127,7 +163,9 @@ router.get('/search_artworks', async function(req, res){
 
   const [results, fields] = await connection.execute(sql_query + ";")
   connection.end()
+
   console.log(sql_query)
+
   if(results.length){
     res.json(results)
   }
