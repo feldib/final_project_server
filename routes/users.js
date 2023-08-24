@@ -1,18 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const mysql = require("mysql2/promise")
-const crypto = require("crypto")
-const cookieParser = require('cookie-parser')
+import { Router } from 'express';
+const router = Router();
+import crypto from "crypto";
+import cookieParser from 'cookie-parser';
 router.use(cookieParser())
+import { getFeatured, getThumbnail, checkIfRegistered, registerUser } from '../dbAPI.js'
 
-const makeConnection = async () =>
-  mysql.createConnection({
-          host: "localhost",
-          port: 3306,
-          user: "root",
-          password: "1997",
-          database: "ecommerce"
-      })
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -25,32 +17,13 @@ router.get('/user_page', function(req, res, next){
 
 
 router.get('/recommendation/featured/', async function(req, res){  
-  const connection = await makeConnection()  
-  
-  const [artwork_ids] = await connection.execute(`SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC LIMIT 2`)
-
-  const [artworks] = await connection.execute(`SELECT id, title, price FROM artworks WHERE id IN (${
-    artwork_ids.map(
-      obj => {
-        return (
-          Array.from(
-            Object.values(obj)
-          )[0]
-        )
-      }
-    )
-    .join(", ")
-  })`)
-
-
+  const artworks = await getFeatured()
   if(artworks.length){
     const results = await Promise.all(artworks.map(
       async(artwork)=>{
-        const [thumbnail] = await connection.execute(
-          `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ${artwork.id} AND is_thumbnail = true`
-          )
-        if(thumbnail.length){
-          return { ...artwork, thumbnail: thumbnail[0].picture_path } 
+        const thumbnail = await getThumbnail(artwork.id)
+        if(thumbnail){
+          return { ...artwork, thumbnail: thumbnail } 
         }else{
           return artwork
         }
@@ -61,15 +34,7 @@ router.get('/recommendation/featured/', async function(req, res){
   }else{
     req.end("No featured artworks")
   }
-  connection.end()
 })
-
-//get shopping cart items
-const id = 420
-const items_added_to_shopping_cart = [
-  {thumnail: "as", title: "Spring", artist: "Boticelli", price:3, quantity:3, tags:["Italian"], categories: ["painting", "oil paining"]},
-  {thumnail: "sdf", title: "David", artist: "Michelangelo", price:2, quantity:6, tags:["French"], categories: ["painting", "oil paining"]}
-]
 
 router.get('/shopping_cart', function(req, res){
   if(loggedIn){
@@ -177,19 +142,13 @@ const users = [
   {id: "1", email: "admin@admin.com", first_name:"Elemér", last_name:"Horváth", password: "admin", address:"Malmö, Sweden", phone:"+36 1 788 7777",  isAdmin: true}
 ]
 
-//registering
+//registering needs to be changed!
 router.post('/new_user', async function(req, res){
   const {last_name, first_name, email, password, address, phone_number} = req.body
 
-  const connection = await makeConnection()
-
-  console.log(JSON.stringify(req.body))
-
-  const [results, fields] = await connection.execute(
-    `SELECT id, is_admin FROM users WHERE email = "${email}";`
-  )
-
-  if(results.length){
+  const registered = await checkIfRegistered(email)
+  console.log(registered)
+  if(registered){
     res.end("There is a user with this email already")
   }else if(
     !last_name ||
@@ -200,31 +159,11 @@ router.post('/new_user', async function(req, res){
   ){
     res.end("missing data")
   }else{
-    await connection.execute(
-      `
-        insert into users (last_name, first_name, email, passw, address
-          ${
-          phone_number ? `, phone_number` : ""
-        }) 
-        values (
-          "${last_name}",
-          "${first_name}",
-          "${email}",
-          "${password}",
-          "${address}"
-          ${
-            phone_number ? `, "${phone_number}"` : ""
-          }
-        );`
-    )
-
-    const [user_data] = await connection.execute(
-      `select id, last_name, first_name, email, address from users where email="${email}" and passw="${password}";`
-    )
-
-    res.json(user_data)
+    await registerUser(last_name, first_name, email, password, address, phone_number)
+    res.json({
+      Status: "Success"
+    })
   }
-  connection.end()
 })
 
 //get invoice data
@@ -282,4 +221,4 @@ router.post('/invoice_data', function(req, res){
 
 
 
-module.exports = router;
+export default router;
