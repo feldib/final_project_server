@@ -18,8 +18,6 @@ import {
 
 router.use(cookieParser())
 
-
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
@@ -30,6 +28,7 @@ router.post('/login', async function(req, res){
   const user = await getUser(email, password)
   if(user !== undefined){
     req.session.userid = user.id
+
     res.json(user)
   }else{
     res.end("false")
@@ -67,6 +66,7 @@ router.post('/reset_password', verifyPaswordToken, async function(req, res){
   resetPassword(new_password, email)
   res.json({
     Status: "Success"
+
   })
 })
 
