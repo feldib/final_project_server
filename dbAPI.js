@@ -18,21 +18,23 @@ const makeConnection = async () =>
 
 const getUser = async (email, password) => {
   const connection = await makeConnection()
-  const [results, fields] = await connection.execute(
-        `SELECT id, last_name, first_name, email, address, is_admin FROM users WHERE email = "${email}" AND passw = "${password}";`
+  const [results] = await connection.query(
+        `SELECT id, last_name, first_name, email, address, is_admin FROM users WHERE email = ? AND passw = ?;`,
+        [email, password]
       )
 
   connection.end()
 
   const user = results[0]
-  
+
   return user
 }
 
 const getUserWithId = async (id) => {
     const connection = await makeConnection()
-    const [results, fields] = await connection.execute(
-          `SELECT last_name, first_name, email, address, is_admin FROM users WHERE id = "${id}";`
+    const [results] = await connection.query(
+          `SELECT last_name, first_name, email, address, is_admin FROM users WHERE id = ?;`,
+          [id]
         )
   
     connection.end()
@@ -51,7 +53,7 @@ const getCategories = async () => {
 
 const getSpecificCategory = async (category_id) => {
   const connection = await makeConnection()
-  const [result] = await connection.execute(`SELECT cname FROM categories WHERE id="${category_id}" AND removed = false;`)
+  const [result] = await connection.query(`SELECT cname FROM categories WHERE id=? AND removed = false;`, [category_id])
   connection.end()
   const cname = result[0].cname
   return cname
@@ -59,11 +61,15 @@ const getSpecificCategory = async (category_id) => {
 
 const getSpecificTags = async (artwork_id) => {
   const connection = await makeConnection()
-  const [tag_ids] = await connection.execute(`SELECT tag_id FROM artwork_tags WHERE artwork_id="${artwork_id}" AND removed = false;`)
+  const [tag_ids] = await connection.query(
+    `SELECT tag_id FROM artwork_tags WHERE artwork_id=? AND removed = false;`, [artwork_id]
+  )
   const tags = await Promise.all(
     tag_ids.map(async (obj) =>{
         const tag_id = obj.tag_id
-        const [result] = await connection.execute(`SELECT id, tname FROM tags WHERE id="${tag_id}" AND removed = false;`)
+        const [result] = await connection.query(
+          `SELECT id, tname FROM tags WHERE id=? AND removed = false;`, [tag_id]
+        )
         const tag = result[0]
         return tag
     })
@@ -178,8 +184,8 @@ const getFeatured = async () => {
 
 const getThumbnail = async (id) => {
     const connection = await makeConnection() 
-    const [thumbnail] = await connection.execute(
-        `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ${id} AND is_thumbnail = true`
+    const [thumbnail] = await connection.query(
+        `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = true`, [id]
         )
     connection.end()
     return thumbnail[0].picture_path
@@ -187,8 +193,8 @@ const getThumbnail = async (id) => {
 
 const checkIfRegistered = async (email) => {
     const connection = await makeConnection()
-    const [results, fields] = await connection.execute(
-        `SELECT id, is_admin FROM users WHERE email = "${email}";`
+    const [results, fields] = await connection.query(
+        `SELECT id, is_admin FROM users WHERE email = ?;`, [email]
       )
     connection.end()
     return results.length !== 0
@@ -218,8 +224,8 @@ const registerUser = async (last_name, first_name, email, password, address, pho
 
 const checkEmail = async (email) => {
     const connection = await makeConnection()
-    const [results, fields] = await connection.execute(
-        `SELECT id FROM users WHERE email = "${email}";`
+    const [results, fields] = await connection.query(
+        `SELECT id FROM users WHERE email = ?;`, [email]
       )
     connection.end()
     if(results.length !== 0){
@@ -278,8 +284,8 @@ const sendLinkToResetPassword = async ({email, id}) => {
 
 const resetPassword = async (new_password, email) => {
   const connection = await makeConnection()
-  await connection.execute(
-        `UPDATE users SET passw = "${new_password}" WHERE email = "${email}";`
+  await connection.query(
+        `UPDATE users SET passw = ? WHERE email = ?;`, [new_password, email]
   )
 }
 
