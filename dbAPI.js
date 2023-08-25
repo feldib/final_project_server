@@ -83,6 +83,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
 
   let sql_query = "SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks"
 
+  //mindig hozzáadni a mostani szöveget ?-lel, és pusholni az arraybe magát a változót!
   let needs_and = false
   if(
     min ||

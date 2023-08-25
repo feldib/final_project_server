@@ -18,8 +18,11 @@ router.get('/user_page', function(req, res, next){
 
 router.get('/recommendation/featured/', async function(req, res){  
   const artworks = await getFeatured()
-  if(artworks.length){
-    const results = await Promise.all(artworks.map(
+  let results = artworks
+  if(!artworks.length){
+    console.log("No featured artworks")
+  }else{
+    results = await Promise.all(artworks.map(
       async(artwork)=>{
         const thumbnail = await getThumbnail(artwork.id)
         if(thumbnail){
@@ -29,11 +32,8 @@ router.get('/recommendation/featured/', async function(req, res){
         }
       }
     ))
-    res.json(results)
-
-  }else{
-    req.end("No featured artworks")
   }
+  res.json(results)
 })
 
 router.get('/shopping_cart', function(req, res){

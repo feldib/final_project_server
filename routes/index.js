@@ -28,7 +28,6 @@ router.post('/login', async function(req, res){
   const user = await getUser(email, password)
   if(user !== undefined){
     req.session.userid = user.id
-
     res.json(user)
   }else{
     res.end("false")
@@ -72,23 +71,20 @@ router.post('/reset_password', verifyPaswordToken, async function(req, res){
 
 router.get('/categories', async function(req, res){
   const categories = await getCategories()
-  if(categories.length){
-    res.json(categories)
-  }else{
-    res.end("No categories found.")
+  console.log(JSON.stringify(categories))
+  if(!categories.length){
+    console.log("No categories found.")
   }
+  res.json(categories)
 })
 
 router.get('/search_artworks', async function(req, res){
   const {min, max, title, artist_name, category_id, order, n} = req.query
   const results = await searchArtworks(min, max, title, artist_name, category_id, order, n)
-  if(results.length){
-    res.json(results)
+  if(!results.length){
+    console.log("No results for the search.")
   }
-  else{
-    res.end("No results.")
-  }
-
+  res.json(results)
 })
 
 //artwork page
@@ -98,11 +94,10 @@ router.get('/artwork', function(req, res){
   const item = artworks.find((artwork)=>{
     return artwork.id === id
   })
-  if(item){
-    res.end(JSON.stringify(item))
-  }else{
-    res.end("Artwork not found")
+  if(!item){
+    console.log("Artwork was not found.")
   }
+  res.json(item)
 })
 
 
