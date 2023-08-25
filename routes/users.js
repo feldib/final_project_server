@@ -160,9 +160,7 @@ router.post('/new_user', async function(req, res){
     res.end("missing data")
   }else{
     await registerUser(last_name, first_name, email, password, address, phone_number)
-    res.json({
-      Status: "Success"
-    })
+    res.end("true")
   }
 })
 
