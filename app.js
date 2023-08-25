@@ -15,6 +15,7 @@ import sessions from 'express-session'
 import indexRouter from './routes/index.js';
 import usersRouter from './routes/users.js';
 import adminRouter from './routes/admin.js';
+import apiRouter from './routes/api.js';
 
 
 var app = express();
@@ -27,10 +28,6 @@ app.use(
     resave: false 
   })
 )
-
-// view engine setup
-app.set('views', join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
 app.use(cors({
   origin: ['http://localhost:3001'],
