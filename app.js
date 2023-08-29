@@ -3,7 +3,6 @@ import express, { json, urlencoded } from 'express';
 import { join, dirname } from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import dotenv from "dotenv"
@@ -15,7 +14,6 @@ import sessions from 'express-session'
 import indexRouter from './routes/index.js';
 import usersRouter from './routes/users.js';
 import adminRouter from './routes/admin.js';
-import apiRouter from './routes/api.js';
 
 
 var app = express();

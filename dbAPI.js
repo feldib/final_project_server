@@ -2,6 +2,7 @@ import { createConnection } from "mysql2/promise"
 import nodemailer from 'nodemailer'
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
+import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons"
 dotenv.config()
 
 const client_host = "http://localhost:3001"
@@ -328,6 +329,29 @@ if(!req.session.userid){
 }
 }
 
+const getDataOfArtwork = async (id) => {
+  const connection = await makeConnection()
+
+  const [artworks] = await connection.query(
+    "SELECT title, artist_name, price, quantity, category_id, date_added, descript FROM artworks WHERE id=?",
+    [id]
+  )
+
+  const artwork = artworks[0]
+  if(artwork){
+    const thumbnail = await getThumbnail(id)
+    const cname = await getSpecificCategory(artwork.category_id)
+    const tags = await getSpecificTags(id)
+  
+    artwork.thumbnail = thumbnail
+    artwork.cname = cname
+    artwork.tags = tags
+  }
+  connection.end()
+
+  return artwork
+}
+
 export {
     getUser, 
     getCategories, 
@@ -341,5 +365,6 @@ export {
     resetPassword,
     getUserWithId,
     verifyPaswordToken,
-    verifyUser
+    verifyUser,
+    getDataOfArtwork
 }

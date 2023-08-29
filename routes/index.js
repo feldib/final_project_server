@@ -1,8 +1,7 @@
 import { Router } from 'express'
 const router = Router()
 import cookieParser from 'cookie-parser'
-import jwt from "jsonwebtoken"
-import sessions from 'express-session'
+import { getDataOfArtwork } from '../dbAPI.js'
 
 import { 
   getUser, 
@@ -88,16 +87,13 @@ router.get('/search_artworks', async function(req, res){
 })
 
 //artwork page
-router.get('/artwork', function(req, res){
+router.get('/artwork', async function(req, res){
   const {id} = req.query
-  //id should not be returned!!!
-  const item = artworks.find((artwork)=>{
-    return artwork.id === id
-  })
-  if(!item){
+  const artwork = await getDataOfArtwork(id)
+  if(!artwork){
     console.log("Artwork was not found.")
   }
-  res.json(item)
+  res.json(artwork)
 })
 
 
