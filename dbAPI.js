@@ -212,22 +212,26 @@ const checkIfRegistered = async (email) => {
 
 const registerUser = async (last_name, first_name, email, password, address, phone_number) =>{
     const connection = await makeConnection()
-    await connection.execute(
+    const data = [last_name, first_name, email, password, address]
+    if(phone_number){
+      data.push(phone_number)
+    }
+    await connection.query(
         `
           insert into users (last_name, first_name, email, passw, address
             ${
             phone_number ? `, phone_number` : ""
           }) 
           values (
-            "${last_name}",
-            "${first_name}",
-            "${email}",
-            "${password}",
-            "${address}"
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
             ${
-              phone_number ? `, "${phone_number}"` : ""
+              phone_number ? `, ? ` : ""
             }
-          );`
+          );`, data
       )
     connection.end()
 }
