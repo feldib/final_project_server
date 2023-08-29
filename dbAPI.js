@@ -83,6 +83,8 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
 
   let sql_query = "SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks"
 
+  const data = []
+
   //mindig hozzáadni a mostani szöveget ?-lel, és pusholni az arraybe magát a változót!
   let needs_and = false
   if(
@@ -95,15 +97,18 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     sql_query += " WHERE "
 
     if(min && max){
-      sql_query += ` price BETWEEN ${min} AND ${max} `
+      sql_query += ` price BETWEEN ? AND ? `
+      data.push(parseInt(min), parseInt(max))
       needs_and=true
     }
     else if(min){
-      sql_query += ` price > ${min} `
+      sql_query += ` price > ? `
+      data.push(parseInt(min))
       needs_and=true
     }
     else if(max){
-      sql_query += ` price < ${max} `
+      sql_query += ` price < ? `
+      data.push(parseInt(max))
       needs_and=true
     }
 
@@ -113,7 +118,8 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
       }else{
         needs_and=true
       }
-      sql_query += ` LOWER(title) LIKE '%${title.toLowerCase()}%' `
+      sql_query += ` LOWER(title) LIKE ? `
+      data.push(`%${title.toLowerCase()}%`)
       needs_and=true
     }
 
@@ -123,7 +129,8 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
       }else{
         needs_and=true
       }
-      sql_query += ` LOWER(artist_name) LIKE '%${artist_name.toLowerCase()}%' `
+      sql_query += ` LOWER(artist_name) LIKE ? `
+      data.push(`%${artist_name.toLowerCase()}%`)
     }
 
     if(category_id){
@@ -132,7 +139,8 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
       }else{
         needs_and=true
       }
-      sql_query += ` category_id = ${category_id} `
+      sql_query += ` category_id = ? `
+      data.push(parseInt(category_id))
     }
 
     if(order){
@@ -145,11 +153,12 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     }
 
     if(n){
-      sql_query += ` LIMIT ${n} `
+      sql_query += ` LIMIT ? `
+      data.push(parseInt(n))
     }
   }
 
-  const [artworks] = await connection.execute(sql_query + ";")
+  const [artworks] = await connection.query(sql_query + ";", data)
   connection.end()
  
   await Promise.all(artworks.map(async (artwork) => {
