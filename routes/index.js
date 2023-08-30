@@ -12,7 +12,8 @@ import {
   sendLinkToResetPassword, 
   resetPassword,
   verifyPaswordToken,
-  verifyUser 
+  verifyUser,
+  getReviews
 } from '../dbAPI.js'
 
 router.use(cookieParser())
@@ -96,5 +97,13 @@ router.get('/artwork', async function(req, res){
   res.json(artwork)
 })
 
+router.get('/reviews', async function(req, res){
+  const {id} = req.query
+  const reviews = await getReviews(id)
+  if(!reviews.length){
+    console.log("No categories found.")
+  }
+  res.json(reviews)
+})
 
 export default router;
