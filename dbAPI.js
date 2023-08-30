@@ -329,6 +329,22 @@ if(!req.session.userid){
 }
 }
 
+const getReviews = async(artwork_id) => {
+  const connection = await makeConnection() 
+  const [reviews] = await connection.query(
+      `SELECT id, user_id, time_review_posted, title, review_text FROM reviews WHERE artwork_id = ? AND approved = true AND removed = false`, [artwork_id]
+      )
+
+  Promise.all(reviews.map(async (review) => {
+      const user = await getUserWithId(review.user_id)
+      review.name = `${user.first_name} ${user.last_name}`
+  }))
+
+  connection.end()
+  console.log(JSON.stringify(reviews))
+  return reviews
+}
+
 const getDataOfArtwork = async (id) => {
   const connection = await makeConnection()
 
@@ -366,5 +382,6 @@ export {
     getUserWithId,
     verifyPaswordToken,
     verifyUser,
-    getDataOfArtwork
+    getDataOfArtwork,
+    getReviews
 }
