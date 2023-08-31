@@ -59,21 +59,20 @@ const getSpecificCategory = async (category_id) => {
   return cname
 }
 
+
+
 const getSpecificTags = async (artwork_id) => {
   const connection = await makeConnection()
-  const [tag_ids] = await connection.query(
-    `SELECT tag_id FROM artwork_tags WHERE artwork_id=? AND removed = false;`, [artwork_id]
+  const [tags] = await connection.query(
+    `SELECT tags.id, tags.tname 
+    FROM tags 
+    LEFT JOIN artwork_tags ON artwork_tags.tag_id = tags.id
+    WHERE artwork_id=? 
+    AND artwork_tags.removed = false 
+    AND tags.removed = false;`, 
+    [artwork_id]
   )
-  const tags = await Promise.all(
-    tag_ids.map(async (obj) =>{
-        const tag_id = obj.tag_id
-        const [result] = await connection.query(
-          `SELECT id, tname FROM tags WHERE id=? AND removed = false;`, [tag_id]
-        )
-        const tag = result[0]
-        return tag
-    })
-  )
+
   connection.end()
   return tags
 }
@@ -175,18 +174,23 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
 const getFeatured = async () => { 
   const connection = await makeConnection()  
   const [artwork_ids] = await connection.execute(`SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC LIMIT 2`)
-  const [artworks] = await connection.execute(`SELECT id, title, price FROM artworks WHERE id IN (${
+
+  const question_marks = artwork_ids
+                          .slice(1)
+                          .map(
+                            (id)=>{return "?"}
+                          ).join(', ')
+  const [artworks] = await connection.query("SELECT id, title, price FROM artworks WHERE id IN (" + question_marks + ")",
+  [
     artwork_ids.map(
       obj => {
         return (
-          Array.from(
-            Object.values(obj)
-          )[0]
-        )
+            obj.artwork_id
+          )
       }
     )
-    .join(", ")
-  })`)
+    ]
+  )
 
   connection.end()
   return artworks
@@ -321,7 +325,8 @@ const verifyPaswordToken = (req, res, next) => {
 
 const verifyUser = (req, res, next) => {
 if(!req.session.userid){
-    res.status(401).end("You are not authenticated")
+    // res.status(401).end("You are not authenticated")
+    res.end("You are not authenticated")
 }else{
     req.id = req.session.userid
     next()
@@ -331,14 +336,12 @@ if(!req.session.userid){
 const getReviews = async(artwork_id) => {
   const connection = await makeConnection() 
   const [reviews] = await connection.query(
-      `SELECT id, user_id, time_review_posted, title, review_text FROM reviews WHERE artwork_id = ? AND approved = true AND removed = false`, [artwork_id]
+      `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
+      reviews.user_id, reviews.time_review_posted, reviews.title, reviews.review_text
+      FROM reviews LEFT JOIN users ON reviews.user_id = users.id
+      WHERE reviews.artwork_id = ? AND reviews.approved = true AND reviews.removed = false`, 
+      [artwork_id]
       )
-
-  Promise.all(reviews.map(async (review) => {
-      const user = await getUserWithId(review.user_id)
-      review.name = `${user.first_name} ${user.last_name}`
-  }))
-
   connection.end()
   console.log(JSON.stringify(reviews))
   return reviews
@@ -348,18 +351,23 @@ const getDataOfArtwork = async (id) => {
   const connection = await makeConnection()
 
   const [artworks] = await connection.query(
-    "SELECT title, artist_name, price, quantity, category_id, date_added, descript FROM artworks WHERE id=?",
+    `SELECT artwork_pictures.picture_path 'thumbnail', categories.cname, 
+    artworks.title, artworks.artist_name, artworks.price, 
+    artworks.quantity, artworks.category_id, artworks.date_added, 
+    artworks.descript 
+    FROM artworks 
+    LEFT JOIN categories ON artworks.category_id = categories.id
+    LEFT JOIN artwork_pictures ON artworks.id = artwork_pictures.artwork_id
+    WHERE artworks.id=? 
+    AND categories.removed = false 
+    AND artwork_pictures.is_thumbnail = true`,
     [id]
   )
 
+
   const artwork = artworks[0]
   if(artwork){
-    const thumbnail = await getThumbnail(id)
-    const cname = await getSpecificCategory(artwork.category_id)
     const tags = await getSpecificTags(id)
-  
-    artwork.thumbnail = thumbnail
-    artwork.cname = cname
     artwork.tags = tags
   }
   connection.end()
