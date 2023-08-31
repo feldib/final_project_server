@@ -1,8 +1,5 @@
 import { Router } from 'express';
 const router = Router();
-import crypto from "crypto";
-import cookieParser from 'cookie-parser';
-router.use(cookieParser())
 import { getFeatured, getThumbnail, checkIfRegistered, registerUser } from '../dbAPI.js'
 
 
