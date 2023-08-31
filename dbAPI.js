@@ -2,7 +2,6 @@ import { createConnection } from "mysql2/promise"
 import nodemailer from 'nodemailer'
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
-import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons"
 dotenv.config()
 
 const client_host = "http://localhost:3001"
@@ -322,7 +321,7 @@ const verifyPaswordToken = (req, res, next) => {
 
 const verifyUser = (req, res, next) => {
 if(!req.session.userid){
-    res.end("You are not authenticated")
+    res.status(401).end("You are not authenticated")
 }else{
     req.id = req.session.userid
     next()

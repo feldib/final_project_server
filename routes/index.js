@@ -1,6 +1,5 @@
 import { Router } from 'express'
 const router = Router()
-import cookieParser from 'cookie-parser'
 import { getDataOfArtwork } from '../dbAPI.js'
 
 import { 
@@ -15,8 +14,6 @@ import {
   verifyUser,
   getReviews
 } from '../dbAPI.js'
-
-router.use(cookieParser())
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
