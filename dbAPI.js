@@ -263,7 +263,7 @@ const sendLinkToResetPassword = async ({email, id}) => {
         const transporter = nodemailer.createTransport({
             service : "hotmail",
             auth : {
-                user : "practiceforfinalprojectserver@outlook.hu",
+                user : "apitlibamarmindennevfoglalt@outlook.hu",
                 pass : "hHsD633!"
             },
             tls: {
@@ -278,7 +278,7 @@ const sendLinkToResetPassword = async ({email, id}) => {
         )
 
         const mailOptions = {
-        from: '"practiceforfinalprojectserver@outlook.hu',
+        from: 'apitlibamarmindennevfoglalt@outlook.hu',
         to: `${email}`,
         subject: 'Reset password',
         html: `

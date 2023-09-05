@@ -27,7 +27,7 @@ router.post('/login', async function(req, res){
     req.session.userid = user.id
     res.json(user)
   }else{
-    res.end("false")
+    res.status(401).end()
   }
 })
 
@@ -55,15 +55,14 @@ router.post('/forgot_password', async function(req, res){
     await sendLinkToResetPassword({id, email})
   }
 
+  res.end()
+
 })
 
 router.post('/reset_password', verifyPaswordToken, async function(req, res){
   const {new_password, email} = req.body
   resetPassword(new_password, email)
-  res.json({
-    Status: "Success"
-
-  })
+  res.end()
 })
 
 router.get('/categories', async function(req, res){
