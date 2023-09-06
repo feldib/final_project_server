@@ -375,6 +375,17 @@ const getDataOfArtwork = async (id) => {
   return artwork
 }
 
+const saveMessgeToAdministrator = async (email, title, message) =>{
+  const connection = await makeConnection()
+
+  await connection.query(`
+      INSERT INTO messages_to_administrator(email, message_title, message_txt)
+      VALUES(?, ?, ?)
+  `, [email, title, message])
+
+  connection.end()
+}
+
 export {
     getUser, 
     getCategories, 
@@ -390,5 +401,6 @@ export {
     verifyPaswordToken,
     verifyUser,
     getDataOfArtwork,
-    getReviews
+    getReviews,
+    saveMessgeToAdministrator
 }
