@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import { getFeatured, getThumbnail, checkIfRegistered, registerUser } from '../dbAPI.js'
+import { getFeatured, getThumbnail, checkIfRegistered, registerUser, saveMessgeToAdministrator } from '../dbAPI.js'
 
 
 /* GET users listing. */
@@ -44,6 +44,17 @@ router.get('/shopping_cart', function(req, res){
     }
   }else{
     res.end('No data. User is not logged in')
+  }
+})
+
+router.post('/message_to_administrator', function(req, res){
+  const {email, title, message} = req.body
+  try{
+    console.log(req.body)
+    saveMessgeToAdministrator(email, title, message)
+    res.end()
+  }catch{
+    res.status(401).end()
   }
 })
 
