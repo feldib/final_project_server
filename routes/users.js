@@ -152,7 +152,7 @@ const users = [
 
 //registering needs to be changed!
 router.post('/new_user', async function(req, res){
-  const {last_name, first_name, email, password, address, phone_number} = req.body
+  const {last_name, first_name, email, password} = req.body
 
   const registered = await checkIfRegistered(email)
   console.log(registered)
@@ -162,12 +162,11 @@ router.post('/new_user', async function(req, res){
     !last_name ||
     !first_name ||
     !email ||
-    !password ||
-    !address
+    !password
   ){
     res.end("missing data")
   }else{
-    await registerUser(last_name, first_name, email, password, address, phone_number)
+    await registerUser(last_name, first_name, email, password)
     res.end("true")
   }
 })

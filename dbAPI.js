@@ -97,7 +97,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
 
     if(min && max){
       sql_query += ` price BETWEEN ? AND ? `
-      data.push(parseInt(min), parseInt(max))
+      data.push(min, max)
       needs_and=true
     }
     else if(min){
@@ -214,27 +214,17 @@ const checkIfRegistered = async (email) => {
     return results.length !== 0
 }
 
-const registerUser = async (last_name, first_name, email, password, address, phone_number) =>{
+const registerUser = async (last_name, first_name, email, password) =>{
     const connection = await makeConnection()
-    const data = [last_name, first_name, email, password, address]
-    if(phone_number){
-      data.push(phone_number)
-    }
+    const data = [last_name, first_name, email, password]
     await connection.query(
         `
-          insert into users (last_name, first_name, email, passw, address
-            ${
-            phone_number ? `, phone_number` : ""
-          }) 
+          insert into users (last_name, first_name, email, passw)
           values (
             ?,
             ?,
             ?,
-            ?,
             ?
-            ${
-              phone_number ? `, ? ` : ""
-            }
           );`, data
       )
     connection.end()
