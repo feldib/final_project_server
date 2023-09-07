@@ -9,7 +9,9 @@ import {
   checkIfArtworkInStock,
   addToShoppingList,
   getShoppingListItems,
-  setShoppingCartItemQuantityToZero
+  setShoppingCartItemQuantityToZero,
+  increaseShoppingCartItemQuantity,
+  decreaseShoppingCartItemQuantity
 } from '../dbAPI.js'
 
 
@@ -77,9 +79,19 @@ router.post('/shopping_cart', async function(req, res){
 //save to shopping cart
 router.post('/remove_item_from_shopping_cart', async function(req, res){
   const artwork_id = req.body.artwork_id
-
   await setShoppingCartItemQuantityToZero(req.session.userid, artwork_id)
+  res.end()
+})
 
+router.post('/increase_shopping_sart_item_quantity', async function(req, res){
+  const artwork_id = req.body.artwork_id
+  await increaseShoppingCartItemQuantity(req.session.userid, artwork_id)
+  res.end()
+})
+
+router.post('/decrease_shopping_sart_item_quantity', async function(req, res){
+  const artwork_id = req.body.artwork_id
+  await decreaseShoppingCartItemQuantity(req.session.userid, artwork_id)
   res.end()
 })
 
