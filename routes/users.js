@@ -7,7 +7,8 @@ import {
   registerUser, 
   saveMessgeToAdministrator,
   checkIfArtworkInStock,
-  addToShoppingList 
+  addToShoppingList,
+  getShoppingListItems
 } from '../dbAPI.js'
 
 
@@ -52,25 +53,12 @@ router.post('/message_to_administrator', function(req, res){
   }
 })
 
-//get wishlist  items
-const items_added_to_wishlist = [
-  {thumnail: "as", title: "Spring", artist: "Boticelli", price:3, quantity:3, tags:["Italian"], categories: ["painting", "oil paining"]},
-  {thumnail: "sdf", title: "David", artist: "Michelangelo", price:2, quantity:6, tags:["French"], categories: ["painting", "oil paining"]}
-]
-
-router.get('/shopping_cart', function(req, res){
-  if(loggedIn){
-    //get items_added_to_wishlist based on userid
-    const items = items_added_to_wishlist
-    if(items){
-      res.end(JSON.stringify(items))
-    }else{
-      res.end("Your wishlist is empty")
-    }
-  }else{
-    res.end('No data. User is not logged in')
-  }
+router.get('/shopping_cart', async function(req, res){
+  const artworks = await getShoppingListItems(req.session.userid)
+  res.json(artworks)
 })
+
+
 
 //save to shopping cart
 router.post('/shopping_cart', async function(req, res){
@@ -88,30 +76,19 @@ router.post('/shopping_cart', async function(req, res){
 })
 
 //save to wishlist 
-router.post('/wishlist', function(req, res){
-  const individual_users_wishlist = [
-    {id: "0", thumnail: "as", title: "Spring", artist: "Boticelli", price:3, quantity:3, tags:["Italian"], categories: ["painting", "oil paining"]}
-  ]
-  const new_item = req.body
-  if(loggedIn){
-    if(new_item.quantity != 0){
-      const item = individual_users_wishlist.find((artwork)=>{
-        return artwork.id === new_item.id
-      })
+// router.post('/wishlist', async function(req, res){
+//   const artwork_id = req.body.artwork_id
 
-      if(!item){
-        individual_users_wishlist.push(new_item)
-      }
+//   const artworkInStock = await checkIfArtworkInStock(artwork_id)
 
-      res.end(JSON.stringify(individual_users_wishlist))
-    }else{
-      res.end('No pieces left of item')
-    }
-    
-  }else{
-    res.end('No success. User is not logged in')
-  }
-})
+//   if(artworkInStock){
+//     await addToShoppingList(req.session.userid, artwork_id)
+//   }else{
+//     res.status(400)
+//   }
+
+//   res.end()
+// })
 
 router.post('/reviews', function(req, res){
   const {title, text} = req.body
