@@ -438,6 +438,29 @@ const addToShoppingList = async (user_id, artwork_id) => {
   connection.end()
 }
 
+const setShoppingCartItemQuantityToZero = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+
+  const [quantity_results] = await connection.query(`
+      SELECT quantity FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
+  `, [user_id, artwork_id])
+
+  const quantity = quantity_results[0].quantity
+
+  await connection.query(`
+      UPDATE artworks SET quantity = quantity + ? WHERE id = ?
+  `, [quantity, artwork_id])
+
+  await connection.query(`
+      UPDATE 
+      artworks_in_shopping_list 
+      SET quantity = 0
+      WHERE user_id = ? AND artwork_id = ? 
+  `, [user_id, artwork_id])
+
+  connection.end()
+}
+
 const getShoppingListItems = async (user_id) => {
   const connection = await makeConnection()
 
@@ -463,6 +486,9 @@ const getShoppingListItems = async (user_id) => {
         return artwork
       }
     ))
+    results = results.filter((item)=>{
+      return item.quantity > 0
+    })
   }
 
   connection.end()
@@ -489,5 +515,6 @@ export {
     checkIfArtworkInStock,
     addToShoppingList,
     getShoppingListItems,
-    getSpecificCategory
+    getSpecificCategory,
+    setShoppingCartItemQuantityToZero
 }

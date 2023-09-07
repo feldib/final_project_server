@@ -8,7 +8,8 @@ import {
   saveMessgeToAdministrator,
   checkIfArtworkInStock,
   addToShoppingList,
-  getShoppingListItems
+  getShoppingListItems,
+  setShoppingCartItemQuantityToZero
 } from '../dbAPI.js'
 
 
@@ -58,8 +59,6 @@ router.get('/shopping_cart', async function(req, res){
   res.json(artworks)
 })
 
-
-
 //save to shopping cart
 router.post('/shopping_cart', async function(req, res){
   const artwork_id = req.body.artwork_id
@@ -71,6 +70,15 @@ router.post('/shopping_cart', async function(req, res){
   }else{
     res.status(400)
   }
+
+  res.end()
+})
+
+//save to shopping cart
+router.post('/remove_item_from_shopping_cart', async function(req, res){
+  const artwork_id = req.body.artwork_id
+
+  await setShoppingCartItemQuantityToZero(req.session.userid, artwork_id)
 
   res.end()
 })
@@ -142,23 +150,6 @@ router.get('/invoice_data', function(req, res){
   }
 })
 
-//post invoice data
-const invoices = [
-  { id: "0", 
-    first_name:"Elemér", 
-    last_name:"Horváth", 
-    address:"Malmö, Sweden", 
-    phone:"+36 1 788 7777",
-    order_id: "124"
-  },
-  { id: "1", 
-    first_name:"Dezső", 
-    last_name:"Lakatos-Weißburger", 
-    address:"Oslo, Norway", 
-    phone:"+33 7 420 7777",
-    order_id: "678765"
-  },
-]
 
 router.post('/invoice_data', function(req, res){
   if(loggedIn){
