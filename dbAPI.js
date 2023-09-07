@@ -411,7 +411,7 @@ const incrementItemInShoppingList = async (user_id, artwork_id) => {
       UPDATE 
       artworks_in_shopping_list 
       SET quantity = quantity + 1 
-      WHERE id = ? AND artwork_id = ? 
+      WHERE user_id = ? AND artwork_id = ? 
   `, [user_id, artwork_id])
 
   connection.end()
@@ -438,6 +438,37 @@ const addToShoppingList = async (user_id, artwork_id) => {
   connection.end()
 }
 
+const getShoppingListItems = async (user_id) => {
+  const connection = await makeConnection()
+
+  const [artworks] = await connection.query(`
+    SELECT artworks.id, artworks.title, artworks.price, artworks.artist_name, artworks_in_shopping_list.quantity, artworks.category_id FROM artworks
+    LEFT JOIN artworks_in_shopping_list 
+    ON artworks.id = artworks_in_shopping_list.artwork_id
+    WHERE artworks_in_shopping_list.user_id = ? 
+  `, [user_id])
+
+  let results = artworks
+  if(!artworks.length){
+    console.log("No items in shopping cart")
+  }else{
+    results = await Promise.all(artworks.map(
+      async(artwork)=>{
+        const thumbnail = await getThumbnail(artwork.id)
+        const cname = await getSpecificCategory(artwork.category_id)
+        const tags = await getSpecificTags(artwork.id)
+        artwork.thumbnail = thumbnail
+        artwork.cname = cname
+        artwork.tags = tags
+        return artwork
+      }
+    ))
+  }
+
+  connection.end()
+  return results
+}
+
 export {
     getUser, 
     getCategories, 
@@ -456,5 +487,7 @@ export {
     getReviews,
     saveMessgeToAdministrator,
     checkIfArtworkInStock,
-    addToShoppingList
+    addToShoppingList,
+    getShoppingListItems,
+    getSpecificCategory
 }
