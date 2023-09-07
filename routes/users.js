@@ -1,6 +1,14 @@
 import { Router } from 'express';
 const router = Router();
-import { getFeatured, getThumbnail, checkIfRegistered, registerUser, saveMessgeToAdministrator } from '../dbAPI.js'
+import { 
+  getFeatured, 
+  getThumbnail, 
+  checkIfRegistered, 
+  registerUser, 
+  saveMessgeToAdministrator,
+  checkIfArtworkInStock,
+  addToShoppingList 
+} from '../dbAPI.js'
 
 
 /* GET users listing. */
@@ -31,20 +39,6 @@ router.get('/recommendation/featured/', async function(req, res){
     ))
   }
   res.json(results)
-})
-
-router.get('/shopping_cart', function(req, res){
-  if(loggedIn){
-    //get items_added_to_shopping_cart based on userid
-    const items = items_added_to_shopping_cart
-    if(items){
-      res.end(JSON.stringify(items))
-    }else{
-      res.end("Your shopping cart is empty")
-    }
-  }else{
-    res.end('No data. User is not logged in')
-  }
 })
 
 router.post('/message_to_administrator', function(req, res){
@@ -79,33 +73,18 @@ router.get('/shopping_cart', function(req, res){
 })
 
 //save to shopping cart
-router.post('/shopping_cart', function(req, res){
-  const individual_users_shopping_cart = [
-    {id: "0", thumnail: "as", title: "Spring", artist: "Boticelli", price:3, quantity:3, tags:["Italian"], categories: ["painting", "oil paining"]}
-  ]
-  const new_item = req.body
-  if(loggedIn){
-    if(new_item.quantity != 0){
-      const item = individual_users_shopping_cart.find((artwork)=>{
-        return artwork.id === new_item.id
-      })
+router.post('/shopping_cart', async function(req, res){
+  const artwork_id = req.body.artwork_id
 
-      if(item){
-        item.quantity++
-      }
-      
-      else{
-        individual_users_shopping_cart.push(new_item)
-      }
+  const artworkInStock = await checkIfArtworkInStock(artwork_id)
 
-      res.end(JSON.stringify(individual_users_shopping_cart))
-    }else{
-      res.end('No pieces left of item')
-    }
-    
+  if(artworkInStock){
+    await addToShoppingList(req.session.userid, artwork_id)
   }else{
-    res.end('No success. User is not logged in')
+    res.status(400)
   }
+
+  res.end()
 })
 
 //save to wishlist 
@@ -133,9 +112,6 @@ router.post('/wishlist', function(req, res){
     res.end('No success. User is not logged in')
   }
 })
-
-//post review
-const reviews = [{user_id: "0", text: "blabla"}]
 
 router.post('/reviews', function(req, res){
   const {title, text} = req.body

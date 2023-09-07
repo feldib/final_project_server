@@ -376,6 +376,68 @@ const saveMessgeToAdministrator = async (email, title, message) =>{
   connection.end()
 }
 
+const checkIfArtworkInStock = async (id) => {
+  const connection = await makeConnection()
+
+  const [result] = await connection.query(`
+      SELECT quantity FROM artworks WHERE id = ?
+  `, [id])
+
+  connection.end()
+
+  if(!result.length){
+    return new Error("artwork not in database")
+  }else{
+    return result[0].quantity > 0
+  }
+}
+
+const addNewItemToShoppingList = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+
+  await connection.query(`
+      INSERT INTO 
+      artworks_in_shopping_list(user_id, quantity, artwork_id) 
+      VALUES(?, 1, ?)
+  `, [user_id, artwork_id])
+
+  connection.end()
+}
+
+const incrementItemInShoppingList = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+
+  await connection.query(`
+      UPDATE 
+      artworks_in_shopping_list 
+      SET quantity = quantity + 1 
+      WHERE id = ? AND artwork_id = ? 
+  `, [user_id, artwork_id])
+
+  connection.end()
+}
+
+const addToShoppingList = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+
+  await connection.query(`
+      UPDATE artworks SET quantity = quantity-1 WHERE id = ?
+  `, [artwork_id])
+
+  const [prev] = await connection.query(`
+      SELECT * FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
+  `, [user_id, artwork_id])
+
+  console.log(prev)
+
+  if(prev[0]){
+    await incrementItemInShoppingList(user_id, artwork_id)
+  }else{
+    await addNewItemToShoppingList(user_id, artwork_id)
+  }
+  connection.end()
+}
+
 export {
     getUser, 
     getCategories, 
@@ -392,5 +454,7 @@ export {
     verifyUser,
     getDataOfArtwork,
     getReviews,
-    saveMessgeToAdministrator
+    saveMessgeToAdministrator,
+    checkIfArtworkInStock,
+    addToShoppingList
 }
