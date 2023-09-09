@@ -176,10 +176,10 @@ const getFeatured = async () => {
   const [artwork_ids] = await connection.execute(`SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC LIMIT 2`)
 
   const question_marks = artwork_ids
-                          .slice(1)
-                          .map(
-                            (id)=>{return "?"}
-                          ).join(', ')
+    .slice(1)
+    .map(
+      (id)=>{return "?"}
+    ).join(', ')
   const [artworks] = await connection.query("SELECT id, title, price FROM artworks WHERE id IN (" + question_marks + ")",
   [
     artwork_ids.map(
@@ -547,6 +547,87 @@ const getShoppingListItems = async (user_id) => {
   return results
 }
 
+const checkIfWishlisted = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+
+  const [prev] = await connection.query(`
+      SELECT removed FROM wishlisted WHERE user_id = ? AND artwork_id = ?
+  `, [user_id, artwork_id])
+  console.log("prev:", JSON.stringify(prev))
+  connection.end()
+  if(prev.length){
+    return prev[0].removed ? false : true
+  }else{
+    return false
+  }
+}
+
+const addToWishlisted = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+
+  const [prev] = await connection.query(`
+      SELECT id FROM wishlisted WHERE user_id = ? AND artwork_id = ?
+  `, [user_id, artwork_id])
+
+  if(prev.length){
+    await connection.query(`
+      UPDATE wishlisted SET removed = false, time_wishlisted = now() WHERE id = ?
+  `, [prev[0].id])
+  }else{
+    await connection.query(`
+      INSERT INTO wishlisted(user_id, artwork_id) VALUES(?, ?)
+  `, [user_id, artwork_id])
+  }
+
+  connection.end()
+}
+
+const removeFromWishlisted = async (user_id, artwork_id) => {
+  const connection = await makeConnection()
+  const wishlisted = await checkIfWishlisted(user_id, artwork_id)
+  if(wishlisted){
+    await connection.query(`
+      UPDATE wishlisted SET removed = true WHERE user_id = ? AND artwork_id = ?
+    `, [user_id, artwork_id])
+  }
+
+  connection.end()
+}
+
+const getWishlisted = async (user_id) => {
+  const connection = await makeConnection()
+
+  const [wishlisted] = await connection.query(`
+      SELECT artworks.id, artworks.title, artworks.price, artworks.artist_name, artworks.quantity, artworks.category_id 
+      FROM artworks LEFT JOIN wishlisted 
+      ON artworks.id = wishlisted.artwork_id
+      WHERE wishlisted.user_id = ? 
+      AND wishlisted.removed = false 
+      AND artworks.removed = false
+  `, [user_id])
+
+  let results = wishlisted
+  if(!wishlisted.length){
+    console.log("No wishlisted items")
+  }else{
+    results = await Promise.all(wishlisted.map(
+      async(artwork)=>{
+        const thumbnail = await getThumbnail(artwork.id)
+        const cname = await getSpecificCategory(artwork.category_id)
+        const tags = await getSpecificTags(artwork.id)
+        artwork.thumbnail = thumbnail
+        artwork.cname = cname
+        artwork.tags = tags
+        return artwork
+      }
+    ))
+  }
+
+  connection.end()
+
+  return results
+}
+
 export {
     getUser, 
     getCategories, 
@@ -570,5 +651,9 @@ export {
     getSpecificCategory,
     setShoppingCartItemQuantityToZero,
     increaseShoppingCartItemQuantity,
-    decreaseShoppingCartItemQuantity
+    decreaseShoppingCartItemQuantity,
+    addToWishlisted,
+    removeFromWishlisted,
+    getWishlisted,
+    checkIfWishlisted
 }

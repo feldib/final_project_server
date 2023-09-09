@@ -11,7 +11,11 @@ import {
   getShoppingListItems,
   setShoppingCartItemQuantityToZero,
   increaseShoppingCartItemQuantity,
-  decreaseShoppingCartItemQuantity
+  decreaseShoppingCartItemQuantity,
+  addToWishlisted,
+  removeFromWishlisted,
+  getWishlisted,
+  checkIfWishlisted
 } from '../dbAPI.js'
 
 
@@ -61,7 +65,6 @@ router.get('/shopping_cart', async function(req, res){
   res.json(artworks)
 })
 
-//save to shopping cart
 router.post('/shopping_cart', async function(req, res){
   const artwork_id = req.body.artwork_id
 
@@ -76,7 +79,6 @@ router.post('/shopping_cart', async function(req, res){
   res.end()
 })
 
-//save to shopping cart
 router.post('/remove_item_from_shopping_cart', async function(req, res){
   const artwork_id = req.body.artwork_id
   await setShoppingCartItemQuantityToZero(req.session.userid, artwork_id)
@@ -95,20 +97,41 @@ router.post('/decrease_shopping_sart_item_quantity', async function(req, res){
   res.end()
 })
 
-//save to wishlist 
-// router.post('/wishlist', async function(req, res){
-//   const artwork_id = req.body.artwork_id
+router.get('/wishlisted', async function(req, res){
+  if(req.session.userid){
+    const artworks = await getWishlisted(req.session.userid)
+    res.json(artworks)
+  }else{
+    res.status(400)
+  }
+})
 
-//   const artworkInStock = await checkIfArtworkInStock(artwork_id)
+router.post('/wishlisted', async function(req, res){
+  const artwork_id = req.body.artwork_id
+  if(req.session.userid){
+      await addToWishlisted(req.session.userid, artwork_id)
+  }
+  res.end()
+})
 
-//   if(artworkInStock){
-//     await addToShoppingList(req.session.userid, artwork_id)
-//   }else{
-//     res.status(400)
-//   }
+router.post('/remove_from_wishlisted', async function(req, res){
+  if(req.session.userid){
+      const artwork_id = req.body.artwork_id
+      await removeFromWishlisted(req.session.userid, artwork_id)
+  }
+  res.end()
 
-//   res.end()
-// })
+})
+
+router.post('/is_wishlisted', async function(req, res){
+  if(req.session.userid){
+    const artwork_id = req.body.artwork_id
+    const is_wishlisted = await checkIfWishlisted(req.session.userid, artwork_id)
+    res.json(is_wishlisted)
+  }else{
+    res.status(400)
+  }
+})
 
 router.post('/reviews', function(req, res){
   const {title, text} = req.body
