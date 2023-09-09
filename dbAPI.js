@@ -598,12 +598,34 @@ const getWishlisted = async (user_id) => {
   const connection = await makeConnection()
 
   const [wishlisted] = await connection.query(`
-      SELECT user_id, integer, artwork_id, time_wishlisted FROM wishlisted WHERE user_id = ? AND removed = false
+      SELECT artworks.id, artworks.title, artworks.price, artworks.artist_name, artworks.quantity, artworks.category_id 
+      FROM artworks LEFT JOIN wishlisted 
+      ON artworks.id = wishlisted.artwork_id
+      WHERE wishlisted.user_id = ? 
+      AND wishlisted.removed = false 
+      AND artworks.removed = false
   `, [user_id])
+
+  let results = wishlisted
+  if(!wishlisted.length){
+    console.log("No wishlisted items")
+  }else{
+    results = await Promise.all(wishlisted.map(
+      async(artwork)=>{
+        const thumbnail = await getThumbnail(artwork.id)
+        const cname = await getSpecificCategory(artwork.category_id)
+        const tags = await getSpecificTags(artwork.id)
+        artwork.thumbnail = thumbnail
+        artwork.cname = cname
+        artwork.tags = tags
+        return artwork
+      }
+    ))
+  }
 
   connection.end()
 
-  return wishlisted
+  return results
 }
 
 export {
