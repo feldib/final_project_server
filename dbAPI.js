@@ -19,7 +19,7 @@ const makeConnection = async () =>
 const getUser = async (email, password) => {
   const connection = await makeConnection()
   const [results] = await connection.query(
-        `SELECT id, last_name, first_name, email, address, is_admin FROM users WHERE email = ? AND passw = ?;`,
+        `SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;`,
         [email, password]
       )
 
@@ -33,7 +33,7 @@ const getUser = async (email, password) => {
 const getUserWithId = async (id) => {
     const connection = await makeConnection()
     const [results] = await connection.query(
-          `SELECT last_name, first_name, email, address, is_admin FROM users WHERE id = ?;`,
+          `SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;`,
           [id]
         )
   
@@ -628,6 +628,22 @@ const getWishlisted = async (user_id) => {
   return results
 }
 
+const updateUserData = async (user_id, field_name, value) => {
+  const connection = await makeConnection()
+
+  if(
+    [
+      "first_name", "last_name", "email", "address", "phone_number"
+    ].includes(field_name)
+  ){
+    await connection.query(`
+      UPDATE users SET ${field_name} = ? WHERE id = ?
+    `, [value, user_id])
+  }
+
+  connection.end()
+}
+
 export {
     getUser, 
     getCategories, 
@@ -655,5 +671,6 @@ export {
     addToWishlisted,
     removeFromWishlisted,
     getWishlisted,
-    checkIfWishlisted
+    checkIfWishlisted,
+    updateUserData
 }

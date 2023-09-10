@@ -15,7 +15,8 @@ import {
   addToWishlisted,
   removeFromWishlisted,
   getWishlisted,
-  checkIfWishlisted
+  checkIfWishlisted,
+  updateUserData
 } from '../dbAPI.js'
 
 
@@ -141,10 +142,9 @@ router.post('/reviews', function(req, res){
   res.end(JSON.stringify(reviews))
 })
 
-const users = [
-  {id: "0", email: "user@user.com", first_name:"Béla", last_name:"Nagy", password: "user", address:"Bp, Hungary", phone:"+36 1 788 8888", isAdmin: false},
-  {id: "1", email: "admin@admin.com", first_name:"Elemér", last_name:"Horváth", password: "admin", address:"Malmö, Sweden", phone:"+36 1 788 7777",  isAdmin: true}
-]
+router.post('/update_data', async(req, res)=>{
+  await updateUserData(req.session.userid, req.body.field_name, req.body.value)
+})
 
 //registering needs to be changed!
 router.post('/new_user', async function(req, res){
@@ -167,41 +167,41 @@ router.post('/new_user', async function(req, res){
   }
 })
 
-//get invoice data
-router.get('/invoice_data', function(req, res){
-  if(loggedIn){
-    //get invoice_data of user with userID
-    const user = users.find((user)=>{
-      return user.id === userID
-    })
-    const {first_name, last_name, address, email, phone} = user
+// //get invoice data
+// router.get('/invoice_data', function(req, res){
+//   if(loggedIn){
+//     //get invoice_data of user with userID
+//     const user = users.find((user)=>{
+//       return user.id === userID
+//     })
+//     const {first_name, last_name, address, email, phone} = user
 
-    const invoice_data = {first_name, last_name, address, email, phone}
+//     const invoice_data = {first_name, last_name, address, email, phone}
 
-    res.end(JSON.stringify(invoice_data))
+//     res.end(JSON.stringify(invoice_data))
 
-  }else{
-    res.end('No data. User is not logged in')
-  }
-})
+//   }else{
+//     res.end('No data. User is not logged in')
+//   }
+// })
 
 
-router.post('/invoice_data', function(req, res){
-  if(loggedIn){
-    // {first_name, last_name, address, email, phone, order_id}
-    const new_invoice_data = req.body
+// router.post('/invoice_data', function(req, res){
+//   if(loggedIn){
+//     // {first_name, last_name, address, email, phone, order_id}
+//     const new_invoice_data = req.body
 
-    invoices.push({
-      id: invoices.length,
-      ...new_invoice_data
-    })
+//     invoices.push({
+//       id: invoices.length,
+//       ...new_invoice_data
+//     })
 
-    res.end(JSON.stringify(invoices))
+//     res.end(JSON.stringify(invoices))
 
-  }else{
-    res.end('No data. User is not logged in')
-  }
-})
+//   }else{
+//     res.end('No data. User is not logged in')
+//   }
+// })
 
 
 
