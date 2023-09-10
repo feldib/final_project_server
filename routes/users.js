@@ -169,7 +169,6 @@ router.post('/new_user', async function(req, res){
 })
 
 router.post('/make_order', async(req, res)=>{
-  console.log(req.session.userid)
   await makeOrder(req.session.userid, req.body.invoice_data)
   res.end()
 })
