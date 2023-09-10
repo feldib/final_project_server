@@ -12,7 +12,8 @@ import {
   resetPassword,
   verifyPaswordToken,
   verifyUser,
-  getReviews
+  getReviews,
+  getOrdersOfUser
 } from '../dbAPI.js'
 
 /* GET home page. */
@@ -101,6 +102,11 @@ router.get('/reviews', async function(req, res){
     console.log("No categories found.")
   }
   res.json(reviews)
+})
+
+router.get('/get_orders_of_user', async function(req, res){
+  const orderData = await getOrdersOfUser(req.session.userid)
+  res.json(orderData)
 })
 
 export default router;
