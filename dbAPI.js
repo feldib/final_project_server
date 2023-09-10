@@ -663,10 +663,10 @@ const makeOrder = async (user_id, invoice_data) => {
     async(item)=>{
       console.log(JSON.stringify(item))
       await connection.query(`
-        INSERT INTO artworks_ordered(order_id, quantity, artwork_id) VALUES(?, ?, ?)
-      `, [order_id, item.quantity, item.id])
+        INSERT INTO artworks_ordered(order_id, quantity, price, artwork_id) VALUES(?, ?, ?, ?)
+      `, [order_id, item.quantity, item.price, item.id])
 
-        await await connection.query(`
+        await connection.query(`
         UPDATE 
         artworks_in_shopping_list 
         SET quantity = 0
@@ -681,6 +681,59 @@ const makeOrder = async (user_id, invoice_data) => {
   `, [order_id, invoice_data.last_name, invoice_data.first_name, invoice_data.email, invoice_data.address, invoice_data.phone_number])
 
   connection.end()
+}
+
+const getOrderData = async (order_id) => {
+  const connection = await makeConnection()
+
+  const [results] = await connection.query(`
+    SELECT artworks_ordered.price * artworks_ordered.quantity as cost, 
+    artworks.category_id, artworks_ordered.price, artworks_ordered.quantity, artworks.id,
+    artworks.title, artworks.artist_name 
+    FROM artworks_ordered LEFT JOIN artworks
+    ON artworks.id = artworks_ordered.artwork_id
+    WHERE artworks_ordered.order_id = ?
+  `, [order_id])
+
+  await Promise.all(results.map(
+    async(artwork)=>{
+      const thumbnail = await getThumbnail(artwork.id)
+      const cname = await getSpecificCategory(artwork.category_id)
+      const tags = await getSpecificTags(artwork.id)
+      artwork.thumbnail = thumbnail
+      artwork.cname = cname
+      artwork.tags = tags
+      return artwork
+    }
+  ))
+
+  connection.end()
+
+  return results
+}
+
+const getOrdersOfUser = async (user_id) => {
+  const connection = await makeConnection()
+
+  const [results] = await connection.query(`
+    SELECT id, time_ordered FROM orders WHERE user_id = ?
+  `, [user_id])
+
+  const orderDataCollection = await Promise.all(results.map(
+    async(ord)=>{
+      const orderData = {time_ordered: ord.time_ordered}
+      const res = await getOrderData(ord.id)
+      orderData.totalCost = res.map(item => item.cost).reduce((prev, item)=>prev+item)
+      orderData.items = res.map((item)=>{
+        const { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name } = item
+        return { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name }
+      })
+      return orderData
+    }
+  ))
+  connection.end()
+
+  return orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered)
 }
 
 export {
@@ -712,5 +765,6 @@ export {
     getWishlisted,
     checkIfWishlisted,
     updateUserData,
-    makeOrder
+    makeOrder,
+    getOrdersOfUser
 }
