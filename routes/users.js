@@ -16,7 +16,8 @@ import {
   removeFromWishlisted,
   getWishlisted,
   checkIfWishlisted,
-  updateUserData
+  updateUserData,
+  makeOrder
 } from '../dbAPI.js'
 
 
@@ -167,42 +168,11 @@ router.post('/new_user', async function(req, res){
   }
 })
 
-// //get invoice data
-// router.get('/invoice_data', function(req, res){
-//   if(loggedIn){
-//     //get invoice_data of user with userID
-//     const user = users.find((user)=>{
-//       return user.id === userID
-//     })
-//     const {first_name, last_name, address, email, phone} = user
-
-//     const invoice_data = {first_name, last_name, address, email, phone}
-
-//     res.end(JSON.stringify(invoice_data))
-
-//   }else{
-//     res.end('No data. User is not logged in')
-//   }
-// })
-
-
-// router.post('/invoice_data', function(req, res){
-//   if(loggedIn){
-//     // {first_name, last_name, address, email, phone, order_id}
-//     const new_invoice_data = req.body
-
-//     invoices.push({
-//       id: invoices.length,
-//       ...new_invoice_data
-//     })
-
-//     res.end(JSON.stringify(invoices))
-
-//   }else{
-//     res.end('No data. User is not logged in')
-//   }
-// })
-
+router.post('/make_order', async(req, res)=>{
+  console.log(req.session.userid)
+  await makeOrder(req.session.userid, req.body.invoice_data)
+  res.end()
+})
 
 
 export default router;

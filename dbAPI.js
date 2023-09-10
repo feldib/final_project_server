@@ -644,6 +644,45 @@ const updateUserData = async (user_id, field_name, value) => {
   connection.end()
 }
 
+const makeOrder = async (user_id, invoice_data) => {
+  const connection = await makeConnection()
+  const shoppingListItems = await getShoppingListItems(user_id)
+
+  await connection.query(`
+    INSERT INTO orders(user_id) VALUES(?)
+  `, [user_id])
+
+  const [results] = await connection.query(`
+    SELECT id FROM orders WHERE user_id = ?
+    AND time_ordered = (SELECT MAX(time_ordered) FROM orders WHERE user_id = ?)
+  `, [user_id, user_id])
+
+  const order_id = results[0].id
+
+  await Promise.all(shoppingListItems.map(
+    async(item)=>{
+      console.log(JSON.stringify(item))
+      await connection.query(`
+        INSERT INTO artworks_ordered(order_id, quantity, artwork_id) VALUES(?, ?, ?)
+      `, [order_id, item.quantity, item.id])
+
+        await await connection.query(`
+        UPDATE 
+        artworks_in_shopping_list 
+        SET quantity = 0
+        WHERE user_id = ? AND artwork_id = ? 
+    `, [user_id, item.id])
+    }
+  ))
+
+  await connection.query(`
+    INSERT INTO invoice_data(order_id, last_name, first_name, email, address, phone_number)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `, [order_id, invoice_data.last_name, invoice_data.first_name, invoice_data.email, invoice_data.address, invoice_data.phone_number])
+
+  connection.end()
+}
+
 export {
     getUser, 
     getCategories, 
@@ -672,5 +711,6 @@ export {
     removeFromWishlisted,
     getWishlisted,
     checkIfWishlisted,
-    updateUserData
+    updateUserData,
+    makeOrder
 }
