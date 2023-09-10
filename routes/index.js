@@ -24,6 +24,7 @@ router.post('/login', async function(req, res){
   const {email, password} = req.body
   const user = await getUser(email, password)
   if(user !== undefined){
+    console.log(user)
     req.session.userid = user.id
     res.json(user)
   }else{
