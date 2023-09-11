@@ -78,8 +78,9 @@ router.post('/decrease_shopping_sart_item_quantity', async function(req, res){
 })
 
 router.get('/wishlisted', async function(req, res){
+  const reccomdendation = req.query.reccomdendation || false
   if(req.session.userid){
-    const artworks = await getWishlisted(req.session.userid)
+    const artworks = await getWishlisted(req.session.userid, reccomdendation)
     res.json(artworks)
   }else{
     res.status(400)
