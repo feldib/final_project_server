@@ -1,8 +1,8 @@
 import { Router } from 'express'
 const router = Router()
-import { getDataOfArtwork } from '../dbAPI.js'
 
 import { 
+  getDataOfArtwork,
   getUser, 
   getUserWithId, 
   getCategories, 
@@ -28,6 +28,7 @@ router.post('/login', async function(req, res){
   if(user !== undefined){
     console.log(user)
     req.session.userid = user.id
+    req.session.isadmin = user.is_admin
     res.json(user)
   }else{
     res.status(401).end()

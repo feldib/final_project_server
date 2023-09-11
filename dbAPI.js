@@ -348,6 +348,15 @@ if(!req.session.userid){
 }
 }
 
+const verifyAdmin = (req, res, next) => {
+  if(!req.session.isadmin){
+      res.status(401).end("You are not authenticated")
+  }else{
+      req.isadmin = req.session.isadmin
+      next()
+  }
+  }
+
 const getReviews = async(artwork_id) => {
   const connection = await makeConnection() 
   const [reviews] = await connection.query(
@@ -358,7 +367,20 @@ const getReviews = async(artwork_id) => {
       [artwork_id]
       )
   connection.end()
-  console.log(JSON.stringify(reviews))
+
+  return reviews
+}
+
+const getUnapprovedReviews = async() => {
+  const connection = await makeConnection() 
+  const [reviews] = await connection.execute(
+      `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
+      reviews.user_id, reviews.time_review_posted, reviews.title, reviews.review_text
+      FROM reviews LEFT JOIN users ON reviews.user_id = users.id
+      WHERE reviews.approved = false AND reviews.removed = false`
+    )
+  connection.end()
+
   return reviews
 }
 
@@ -782,6 +804,24 @@ const leaveReview = async (user_id, artwork_id, title, review_text) =>{
   connection.end()
 }
 
+const approveReview = async (id) =>{
+  const connection = await makeConnection()
+  await connection.query(`
+      UPDATE reviews SET approved = true where id = ?
+  `, [id])
+
+  connection.end()
+}
+
+const removeReview = async (id) =>{
+  const connection = await makeConnection()
+  await connection.query(`
+      UPDATE reviews SET removed = true where id = ?
+  `, [id])
+
+  connection.end()
+}
+
 export {
     getUser, 
     getCategories, 
@@ -813,5 +853,9 @@ export {
     updateUserData,
     makeOrder,
     getOrdersOfUser,
-    leaveReview
+    leaveReview,
+    getUnapprovedReviews,
+    verifyAdmin,
+    approveReview,
+    removeReview
 }
