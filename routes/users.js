@@ -17,7 +17,8 @@ import {
   getWishlisted,
   checkIfWishlisted,
   updateUserData,
-  makeOrder
+  makeOrder,
+  leaveReview
 } from '../dbAPI.js'
 
 
@@ -172,6 +173,12 @@ router.post('/make_order', async(req, res)=>{
   await makeOrder(req.session.userid, req.body.invoice_data)
   res.end()
 })
+
+router.post('/leave_review', async(req, res)=>{
+  await leaveReview(req.session.userid, req.body.artwork_id, req.body.title, req.body.review_text)
+  res.end()
+})
+
 
 
 export default router;

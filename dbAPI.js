@@ -9,12 +9,12 @@ const client_host = "http://localhost:3001"
 
 const makeConnection = async () =>
   createConnection({
-          host: process.env.HOST,
-          port: process.env.DB_PORT,
-          user: process.env.USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME
-      })
+    host: process.env.HOST,
+    port: process.env.DB_PORT,
+    user: process.env.USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+})
 
 const getUser = async (email, password) => {
   const connection = await makeConnection()
@@ -24,7 +24,7 @@ const getUser = async (email, password) => {
       )
 
   connection.end()
-
+    console.log(email, password)
   const user = results[0]
 
   return user
@@ -647,39 +647,40 @@ const updateUserData = async (user_id, field_name, value) => {
 const makeOrder = async (user_id, invoice_data) => {
   const connection = await makeConnection()
   const shoppingListItems = await getShoppingListItems(user_id)
-
-  await connection.query(`
+  if(shoppingListItems.length){
+    await connection.query(`
     INSERT INTO orders(user_id) VALUES(?)
-  `, [user_id])
+    `, [user_id])
 
-  const [results] = await connection.query(`
-    SELECT id FROM orders WHERE user_id = ?
-    AND time_ordered = (SELECT MAX(time_ordered) FROM orders WHERE user_id = ?)
-  `, [user_id, user_id])
+    const [results] = await connection.query(`
+      SELECT id FROM orders WHERE user_id = ?
+      AND time_ordered = (SELECT MAX(time_ordered) FROM orders WHERE user_id = ?)
+    `, [user_id, user_id])
 
-  const order_id = results[0].id
+    const order_id = results[0].id
 
-  await Promise.all(shoppingListItems.map(
-    async(item)=>{
-      console.log(JSON.stringify(item))
-      await connection.query(`
-        INSERT INTO artworks_ordered(order_id, quantity, price, artwork_id) VALUES(?, ?, ?, ?)
-      `, [order_id, item.quantity, item.price, item.id])
-
+    await Promise.all(shoppingListItems.map(
+      async(item)=>{
+        console.log(JSON.stringify(item))
         await connection.query(`
-        UPDATE 
-        artworks_in_shopping_list 
-        SET quantity = 0
-        WHERE user_id = ? AND artwork_id = ? 
-    `, [user_id, item.id])
-    }
-  ))
+          INSERT INTO artworks_ordered(order_id, quantity, price, artwork_id) VALUES(?, ?, ?, ?)
+        `, [order_id, item.quantity, item.price, item.id])
 
-  await connection.query(`
-    INSERT INTO invoice_data(order_id, last_name, first_name, email, address, phone_number)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `, [order_id, invoice_data.last_name, invoice_data.first_name, invoice_data.email, invoice_data.address, invoice_data.phone_number])
+          await connection.query(`
+          UPDATE 
+          artworks_in_shopping_list 
+          SET quantity = 0
+          WHERE user_id = ? AND artwork_id = ? 
+      `, [user_id, item.id])
+      }
+    ))
 
+    await connection.query(`
+      INSERT INTO invoice_data(order_id, last_name, first_name, email, address, phone_number)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [order_id, invoice_data.last_name, invoice_data.first_name, invoice_data.email, invoice_data.address, invoice_data.phone_number])
+
+  }
   connection.end()
 }
 
@@ -719,21 +720,39 @@ const getOrdersOfUser = async (user_id) => {
     SELECT id, time_ordered FROM orders WHERE user_id = ?
   `, [user_id])
 
-  const orderDataCollection = await Promise.all(results.map(
-    async(ord)=>{
-      const orderData = {time_ordered: ord.time_ordered}
-      const res = await getOrderData(ord.id)
-      orderData.totalCost = res.map(item => item.cost).reduce((prev, item)=>prev+item)
-      orderData.items = res.map((item)=>{
-        const { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name } = item
-        return { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name }
-      })
-      return orderData
-    }
-  ))
+  let orderDataCollection = results
+  console.log(results)
+  if(results.length){
+    orderDataCollection = await Promise.all(results.map(
+      async(ord)=>{
+        const orderData = {time_ordered: ord.time_ordered}
+        const res = await getOrderData(ord.id)
+        orderData.totalCost = res.map(item => item.cost).reduce((prev, item)=>prev+item)
+        orderData.items = res.map((item)=>{
+          const { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name } = item
+          return { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name }
+        })
+        return orderData
+      }
+    ))
+
+    orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered)
+  }
+  
   connection.end()
 
-  return orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered)
+  return orderDataCollection
+}
+
+const leaveReview = async (user_id, artwork_id, title, review_text) =>{
+  const connection = await makeConnection()
+
+  await connection.query(`
+      INSERT INTO reviews(user_id, artwork_id, title, review_text)
+      VALUES(?, ?, ?, ?)
+  `, [user_id, artwork_id, title, review_text])
+
+  connection.end()
 }
 
 export {
@@ -766,5 +785,6 @@ export {
     checkIfWishlisted,
     updateUserData,
     makeOrder,
-    getOrdersOfUser
+    getOrdersOfUser,
+    leaveReview
 }
