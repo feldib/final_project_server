@@ -205,6 +205,22 @@ const getThumbnail = async (id) => {
     return thumbnail[0].picture_path
 }
 
+const getOtherPictures = async (artwork_id) => {
+  const connection = await makeConnection() 
+  const [results] = await connection.query(
+      `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false`, [artwork_id]
+      )
+  let pictures = results
+  if(results.length){
+    pictures.map((pic)=>{
+      return pic.picture_path
+    })
+  }
+
+  connection.end()
+  return pictures
+}
+
 const checkIfRegistered = async (email) => {
     const connection = await makeConnection()
     const [results, fields] = await connection.query(
@@ -359,9 +375,10 @@ const getDataOfArtwork = async (id) => {
   if(artwork){
     const tags = await getSpecificTags(id)
     artwork.tags = tags
+    artwork.other_pictures = await getOtherPictures(id)
   }
   connection.end()
-
+  console.log(artwork)
   return artwork
 }
 
