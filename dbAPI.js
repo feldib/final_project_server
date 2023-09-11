@@ -9,11 +9,11 @@ const client_host = "http://localhost:3001"
 
 const makeConnection = async () =>
   createConnection({
-          host: "localhost",
-          port: 3306,
-          user: "root",
-          password: "1997",
-          database: "ecommerce"
+          host: process.env.HOST,
+          port: process.env.DB_PORT,
+          user: process.env.USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME
       })
 
 const getUser = async (email, password) => {
