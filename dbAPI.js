@@ -171,11 +171,11 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
   return artworks
 }
 
-const getFeatured = async (reccomendation = false) => { 
+const getFeatured = async (reccomdendation) => { 
   const connection = await makeConnection()  
   const [artwork_ids] = await connection.execute(`
     SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC
-    ${reccomendation ? " LIMIT 2" : ""}
+    ${reccomdendation ? " LIMIT 2" : ""}
   `)
 
   const [results] = await connection.query(
@@ -620,7 +620,7 @@ const removeFromWishlisted = async (user_id, artwork_id) => {
   connection.end()
 }
 
-const getWishlisted = async (user_id) => {
+const getWishlisted = async (user_id, reccomdendation) => {
   const connection = await makeConnection()
 
   const [wishlisted] = await connection.query(`
@@ -630,6 +630,7 @@ const getWishlisted = async (user_id) => {
       WHERE wishlisted.user_id = ? 
       AND wishlisted.removed = false 
       AND artworks.removed = false
+      ${reccomdendation ? " LIMIT 2" : ""}
   `, [user_id])
 
   let results = wishlisted
