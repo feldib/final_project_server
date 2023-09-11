@@ -13,7 +13,8 @@ import {
   verifyPaswordToken,
   verifyUser,
   getReviews,
-  getOrdersOfUser
+  getOrdersOfUser,
+  getFeatured
 } from '../dbAPI.js'
 
 /* GET home page. */
@@ -107,6 +108,16 @@ router.get('/reviews', async function(req, res){
 router.get('/get_orders_of_user', async function(req, res){
   const orderData = await getOrdersOfUser(req.session.userid)
   res.json(orderData)
+})
+
+router.get('/featured', async function(req, res){  
+  const reccomdendation = req.query.reccomdendation || false
+  const artworks = await getFeatured(reccomdendation)
+  let results = artworks
+  if(!artworks.length){
+    console.log("No featured artworks")
+  }
+  res.json(results)
 })
 
 export default router;

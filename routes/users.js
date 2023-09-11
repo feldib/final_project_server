@@ -1,8 +1,6 @@
 import { Router } from 'express';
 const router = Router();
 import { 
-  getFeatured, 
-  getThumbnail, 
   checkIfRegistered, 
   registerUser, 
   saveMessgeToAdministrator,
@@ -29,27 +27,6 @@ router.get('/', function(req, res, next) {
 
 router.get('/user_page', function(req, res, next){
   res.end('User Page Data')
-})
-
-
-router.get('/recommendation/featured/', async function(req, res){  
-  const artworks = await getFeatured()
-  let results = artworks
-  if(!artworks.length){
-    console.log("No featured artworks")
-  }else{
-    results = await Promise.all(artworks.map(
-      async(artwork)=>{
-        const thumbnail = await getThumbnail(artwork.id)
-        if(thumbnail){
-          return { ...artwork, thumbnail: thumbnail } 
-        }else{
-          return artwork
-        }
-      }
-    ))
-  }
-  res.json(results)
 })
 
 router.post('/message_to_administrator', function(req, res){

@@ -171,26 +171,35 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
   return artworks
 }
 
-const getFeatured = async () => { 
+const getFeatured = async (reccomendation = false) => { 
   const connection = await makeConnection()  
-  const [artwork_ids] = await connection.execute(`SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC LIMIT 2`)
+  const [artwork_ids] = await connection.execute(`
+    SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC
+    ${reccomendation ? " LIMIT 2" : ""}
+  `)
 
-  const question_marks = artwork_ids
-    .slice(1)
-    .map(
-      (id)=>{return "?"}
-    ).join(', ')
-  const [artworks] = await connection.query("SELECT id, title, price FROM artworks WHERE id IN (" + question_marks + ")",
-  [
-    artwork_ids.map(
-      obj => {
-        return (
-            obj.artwork_id
-          )
-      }
-    )
-    ]
+  const [results] = await connection.query(
+    `SELECT id, title, price FROM artworks WHERE id IN (${
+      artwork_ids
+        .map(obj => "?")
+        .join(", ")
+    })`,
+    artwork_ids.map(obj => obj.artwork_id)
   )
+  let artworks = results
+  if(artworks.length){
+    artworks = await Promise.all(results.map(
+      async(artwork)=>{
+        const thumbnail = await getThumbnail(artwork.id)
+        if(thumbnail){
+          return { ...artwork, thumbnail: thumbnail } 
+        }else{
+          return artwork
+        }
+      }
+    ))
+  }
+  
 
   connection.end()
   return artworks
