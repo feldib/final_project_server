@@ -356,7 +356,7 @@ const verifyAdmin = (req, res, next) => {
   }
   }
 
-const getReviews = async(artwork_id) => {
+const getReviewsOfArtwork = async(artwork_id) => {
   const connection = await makeConnection() 
   const [reviews] = await connection.query(
       `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
@@ -380,6 +380,22 @@ const getUnapprovedReviews = async() => {
       FROM reviews LEFT JOIN users ON reviews.user_id = users.id
       LEFT JOIN artworks ON reviews.artwork_id = artworks.id
       WHERE reviews.approved = false AND reviews.removed = false`
+    )
+  connection.end()
+
+  return reviews
+}
+
+const getReviewsOfUser = async(user_id) => {
+  const connection = await makeConnection() 
+  const [reviews] = await connection.query(
+      `SELECT reviews.id, reviews.time_review_posted, reviews.title, 
+      artworks.id as artwork_id, artworks.title as artwork_title,
+      artworks.artist_name, reviews.approved, reviews.review_text
+      FROM reviews LEFT JOIN users ON reviews.user_id = users.id
+      LEFT JOIN artworks ON reviews.artwork_id = artworks.id
+      WHERE reviews.user_id = ? AND reviews.removed = false`,
+      [user_id]
     )
   connection.end()
 
@@ -839,7 +855,7 @@ export {
     verifyPaswordToken,
     verifyUser,
     getDataOfArtwork,
-    getReviews,
+    getReviewsOfArtwork,
     saveMessgeToAdministrator,
     checkIfArtworkInStock,
     addToShoppingList,
@@ -859,5 +875,6 @@ export {
     getUnapprovedReviews,
     verifyAdmin,
     approveReview,
-    removeReview
+    removeReview,
+    getReviewsOfUser
 }

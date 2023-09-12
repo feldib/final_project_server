@@ -18,7 +18,8 @@ import {
   updateUserData,
   makeOrder,
   leaveReview,
-  getOrdersOfUser
+  getOrdersOfUser,
+  getReviewsOfUser
 } from '../dbAPI.js'
 
 
@@ -139,6 +140,11 @@ router.post('/leave_review', verifyUser, async(req, res)=>{
 router.get('/get_orders_of_user', verifyUser, async function(req, res){
   const orderData = await getOrdersOfUser(req.id)
   res.json(orderData)
+})
+
+router.get('/get_reviews_of_user', verifyUser, async function(req, res){
+  const reviewData = await getReviewsOfUser(req.id)
+  res.json(reviewData)
 })
 
 export default router;
