@@ -24,7 +24,6 @@ const getUser = async (email, password) => {
       )
 
   connection.end()
-    console.log(email, password)
   const user = results[0]
 
   return user
@@ -494,8 +493,6 @@ const addToShoppingList = async (user_id, artwork_id) => {
       SELECT * FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
   `, [user_id, artwork_id])
 
-  console.log(prev)
-
   if(prev[0]){
     await incrementItemInShoppingList(user_id, artwork_id)
   }else{
@@ -619,7 +616,6 @@ const checkIfWishlisted = async (user_id, artwork_id) => {
   const [prev] = await connection.query(`
       SELECT removed FROM wishlisted WHERE user_id = ? AND artwork_id = ?
   `, [user_id, artwork_id])
-  console.log("prev:", JSON.stringify(prev))
   connection.end()
   if(prev.length){
     return prev[0].removed ? false : true
@@ -728,7 +724,6 @@ const makeOrder = async (user_id, invoice_data) => {
 
     await Promise.all(shoppingListItems.map(
       async(item)=>{
-        console.log(JSON.stringify(item))
         await connection.query(`
           INSERT INTO artworks_ordered(order_id, quantity, price, artwork_id) VALUES(?, ?, ?, ?)
         `, [order_id, item.quantity, item.price, item.id])
@@ -757,9 +752,12 @@ const getOrderData = async (order_id) => {
   const [results] = await connection.query(`
     SELECT artworks_ordered.price * artworks_ordered.quantity as cost, 
     artworks.category_id, artworks_ordered.price, artworks_ordered.quantity, artworks.id,
-    artworks.title, artworks.artist_name 
+    artworks.title, artworks.artist_name, CONCAT(users.first_name, " ", users.last_name) as user_name,
+    users.id as user_id
     FROM artworks_ordered LEFT JOIN artworks
     ON artworks.id = artworks_ordered.artwork_id
+    LEFT JOIN orders ON orders.id = order_id
+    LEFT JOIN users ON users.id = orders.user_id
     WHERE artworks_ordered.order_id = ?
   `, [order_id])
 
@@ -788,7 +786,6 @@ const getOrdersOfUser = async (user_id) => {
   `, [user_id])
 
   let orderDataCollection = results
-  console.log(results)
   if(results.length){
     orderDataCollection = await Promise.all(results.map(
       async(ord)=>{
@@ -800,6 +797,36 @@ const getOrdersOfUser = async (user_id) => {
           return { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name }
         })
         return orderData
+      }
+    ))
+
+    orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered)
+  }
+  
+  connection.end()
+
+  return orderDataCollection
+}
+
+const getOrders = async () => {
+  const connection = await makeConnection()
+
+  const [results] = await connection.execute("SELECT id, time_ordered FROM orders")
+
+  let orderDataCollection = results
+  if(results.length){
+    orderDataCollection = await Promise.all(results.map(
+      async(ord)=>{
+        const orderData = {time_ordered: ord.time_ordered}
+        const res = await getOrderData(ord.id)
+        orderData.totalCost = res.map(item => item.cost).reduce((prev, item)=>prev+item)
+        orderData.items = res.map((item)=>{
+          const { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name } = item
+          return { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name }
+        })
+        orderData.user = {user_name: res[0].user_name, user_id: res[0].user_id }
+
+          return orderData
       }
     ))
 
@@ -876,5 +903,6 @@ export {
     verifyAdmin,
     approveReview,
     removeReview,
-    getReviewsOfUser
+    getReviewsOfUser,
+    getOrders
 }
