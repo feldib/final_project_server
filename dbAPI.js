@@ -374,8 +374,11 @@ const getUnapprovedReviews = async() => {
   const connection = await makeConnection() 
   const [reviews] = await connection.execute(
       `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
-      reviews.user_id, reviews.time_review_posted, reviews.title, reviews.review_text
+      reviews.user_id, reviews.time_review_posted, reviews.title, reviews.review_text,
+      artworks.id as artwork_id, artworks.title as artwork_title,
+      artworks.artist_name
       FROM reviews LEFT JOIN users ON reviews.user_id = users.id
+      LEFT JOIN artworks ON reviews.artwork_id = artworks.id
       WHERE reviews.approved = false AND reviews.removed = false`
     )
   connection.end()

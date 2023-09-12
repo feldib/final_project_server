@@ -19,6 +19,7 @@ router.get('/admin_page', function(req, res, next){
 
 router.get('/get_unapproved_reviews', verifyAdmin, async function(req, res){
     const reviews = await getUnapprovedReviews()
+    console.log(reviews)
     res.json(reviews)  
 })
 
