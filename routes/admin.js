@@ -8,7 +8,9 @@ import {
   removeReview,
   getOrders,
   getUnansweredMessages,
-  sendReplyToMessage
+  sendReplyToMessage,
+  getRegisteredUsers,
+  getOrdersOfUser
 } from '../dbAPI.js'
 
 /* GET users listing. */
@@ -22,7 +24,6 @@ router.get('/admin_page', function(req, res, next){
 
 router.get('/get_unapproved_reviews', verifyAdmin, async function(req, res){
     const reviews = await getUnapprovedReviews()
-    console.log(reviews)
     res.json(reviews)  
 })
 
@@ -49,6 +50,16 @@ router.get('/unanswered_messages', verifyAdmin, async function(req, res){
 router.post('/reply_to_message', verifyAdmin, async function(req, res){
   await sendReplyToMessage(req.body.message_id, req.body.email, req.body.reply_title, req.body.reply_text)
   res.end()
+})
+
+router.get('/users', verifyAdmin, async function(req, res){
+  const users = await getRegisteredUsers()
+  res.json(users)
+})
+
+router.post('/get_orders_of_user', verifyAdmin, async function(req, res){
+  const orderData = await getOrdersOfUser(req.body.user_id)
+  res.json(orderData)
 })
 
 export default router;

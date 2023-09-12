@@ -43,6 +43,17 @@ const getUserWithId = async (id) => {
     return user
   }
 
+const getRegisteredUsers = async () => {
+  const connection = await makeConnection()
+  const [users] = await connection.execute(
+        `SELECT id, last_name, first_name, email, address, phone_number FROM users
+        WHERE is_admin = false;`
+      )
+
+  connection.end()
+  return users
+}
+
 const getCategories = async () => {
   const connection = await makeConnection()
   const [results] = await connection.execute("SELECT id, cname FROM categories WHERE removed = false;")
@@ -468,7 +479,6 @@ const getDataOfArtwork = async (id) => {
     artwork.other_pictures = await getOtherPictures(id)
   }
   connection.end()
-  console.log(artwork)
   return artwork
 }
 
@@ -963,5 +973,6 @@ export {
     getReviewsOfUser,
     getOrders,
     getUnansweredMessages,
-    sendReplyToMessage
+    sendReplyToMessage,
+    getRegisteredUsers
 }
