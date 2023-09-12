@@ -112,8 +112,8 @@ router.get('/get_orders_of_user', async function(req, res){
 })
 
 router.get('/featured', async function(req, res){  
-  const reccomdendation = req.query.reccomdendation || false
-  const artworks = await getFeatured(reccomdendation)
+  const n = req.query.n
+  const artworks = await getFeatured(n)
   let results = artworks
   if(!artworks.length){
     console.log("No featured artworks")
