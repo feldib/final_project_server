@@ -5,7 +5,8 @@ import {
   getUnapprovedReviews,
   verifyAdmin,
   approveReview,
-  removeReview
+  removeReview,
+  getOrders
 } from '../dbAPI.js'
 
 /* GET users listing. */
@@ -32,5 +33,12 @@ router.post('/disapprove_review', verifyAdmin, async function(req, res){
   const reviews = await removeReview(req.body.review_id)
   res.end()
 })
+
+router.get('/get_orders', verifyAdmin, async function(req, res){
+  const orderData = await getOrders()
+  res.json(orderData)
+})
+
+
 
 export default router;
