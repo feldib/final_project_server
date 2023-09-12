@@ -12,7 +12,7 @@ import {
   resetPassword,
   verifyPaswordToken,
   verifyUser,
-  getReviews,
+  getReviewsOfArtwork,
   getFeatured
 } from '../dbAPI.js'
 
@@ -95,7 +95,7 @@ router.get('/artwork', async function(req, res){
 
 router.get('/reviews', async function(req, res){
   const {id} = req.query
-  const reviews = await getReviews(id)
+  const reviews = await getReviewsOfArtwork(id)
   if(!reviews.length){
     console.log("No categories found.")
   }
