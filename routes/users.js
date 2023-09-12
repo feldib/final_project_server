@@ -78,9 +78,9 @@ router.post('/decrease_shopping_sart_item_quantity', async function(req, res){
 })
 
 router.get('/wishlisted', async function(req, res){
-  const reccomdendation = req.query.reccomdendation || false
+  const n = req.query.n
   if(req.session.userid){
-    const artworks = await getWishlisted(req.session.userid, reccomdendation)
+    const artworks = await getWishlisted(req.session.userid, n)
     res.json(artworks)
   }else{
     res.status(400)
@@ -140,10 +140,10 @@ router.post('/new_user', async function(req, res){
     !email ||
     !password
   ){
-    res.end("missing data")
+    res.status(400).end()
   }else{
     await registerUser(last_name, first_name, email, password)
-    res.end("true")
+    res.end()
   }
 })
 
