@@ -13,7 +13,6 @@ import {
   verifyPaswordToken,
   verifyUser,
   getReviews,
-  getOrdersOfUser,
   getFeatured
 } from '../dbAPI.js'
 
@@ -37,10 +36,7 @@ router.post('/login', async function(req, res){
 
 router.get('/logged_in', verifyUser, async function(req, res){
     const user = await getUserWithId(req.id)
-    res.json({
-      Status: "Success",
-      user
-    })
+    res.json({user})
 })
 
 router.get('/log_out', async function(req, res){
@@ -104,11 +100,6 @@ router.get('/reviews', async function(req, res){
     console.log("No categories found.")
   }
   res.json(reviews)
-})
-
-router.get('/get_orders_of_user', async function(req, res){
-  const orderData = await getOrdersOfUser(req.session.userid)
-  res.json(orderData)
 })
 
 router.get('/featured', async function(req, res){  

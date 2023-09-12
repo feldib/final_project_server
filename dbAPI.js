@@ -330,7 +330,7 @@ const verifyPaswordToken = (req, res, next) => {
       jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
         if(err){
           console.log(err)
-          res.end("Tokens do not match")
+          res.status(401).end("Tokens do not match")
         }else{
           next()
         }
@@ -340,8 +340,7 @@ const verifyPaswordToken = (req, res, next) => {
 
 const verifyUser = (req, res, next) => {
 if(!req.session.userid){
-    // res.status(401).end("You are not authenticated")
-    res.end("You are not authenticated")
+    res.status(401).end("You are not authenticated")
 }else{
     req.id = req.session.userid
     next()
