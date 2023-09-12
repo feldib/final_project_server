@@ -275,10 +275,10 @@ const checkEmail = async (email) => {
 const sendLinkToResetPassword = async ({email, id}) => {
     try{
         const transporter = nodemailer.createTransport({
-            service : "hotmail",
+            service : process.env.TRANSPORTER_SERVICE,
             auth : {
-                user : "apitlibamarmindennevfoglalt@outlook.hu",
-                pass : "hHsD633!"
+                user : process.env.TRANSPORTER_AUTH_USER,
+                pass : process.env.TRANSPORTER_AUTH_PASS
             },
             tls: {
                 rejectUnauthorized: false
@@ -292,7 +292,7 @@ const sendLinkToResetPassword = async ({email, id}) => {
         )
 
         const mailOptions = {
-        from: 'apitlibamarmindennevfoglalt@outlook.hu',
+        from: process.env.TRANSPORTER_AUTH_USER,
         to: `${email}`,
         subject: 'Reset password',
         html: `
@@ -312,6 +312,48 @@ const sendLinkToResetPassword = async ({email, id}) => {
         console.log(error)
     }
     
+}
+
+const sendReplyToMessage = async (message_id, email, reply_title, reply_text) => {
+  try{
+      const transporter = nodemailer.createTransport({
+          service : process.env.TRANSPORTER_SERVICE,
+          auth : {
+              user : process.env.TRANSPORTER_AUTH_USER,
+              pass : process.env.TRANSPORTER_AUTH_PASS
+          },
+          tls: {
+              rejectUnauthorized: false
+            }
+      })
+      const mailOptions = {
+      from: process.env.TRANSPORTER_AUTH_USER,
+      to: `${email}`,
+      subject: `${reply_title}`,
+      html: `
+          ${reply_text}
+      `
+      };
+        
+      transporter.sendMail(mailOptions, async function (error, info){
+      if (error) {
+          console.log(error);
+      } else {
+          console.log('Email sent: ' + info.response)
+          const connection = await makeConnection()
+
+          connection.query(`
+            UPDATE messages_to_administrator
+            SET answered = true
+            WHERE id = ?
+          `,[message_id])
+
+          connection.end()
+      }
+      })
+  }catch(error){
+      console.log(error)
+  }
 }
 
 const resetPassword = async (new_password, email) => {
@@ -867,6 +909,21 @@ const removeReview = async (id) =>{
   connection.end()
 }
 
+const getUnansweredMessages = async() => {
+  const connection = await makeConnection() 
+  const [messages] = await connection.execute(
+      `SELECT id, email, message_title, message_txt, message_time
+      FROM messages_to_administrator
+      WHERE answered = false AND removed = false
+      `
+    )
+  connection.end()
+
+  console.log(messages)
+
+  return messages
+}
+
 export {
     getUser, 
     getCategories, 
@@ -904,5 +961,7 @@ export {
     approveReview,
     removeReview,
     getReviewsOfUser,
-    getOrders
+    getOrders,
+    getUnansweredMessages,
+    sendReplyToMessage
 }
