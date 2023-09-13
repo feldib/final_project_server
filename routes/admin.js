@@ -10,7 +10,11 @@ import {
   getUnansweredMessages,
   sendReplyToMessage,
   getRegisteredUsers,
-  getOrdersOfUser
+  getOrdersOfUser,
+  removeArtwork,
+  checkIfFeatured,
+  addToFeatured,
+  removeFromFeatured
 } from '../dbAPI.js'
 
 /* GET users listing. */
@@ -61,5 +65,30 @@ router.post('/get_orders_of_user', verifyAdmin, async function(req, res){
   const orderData = await getOrdersOfUser(req.body.user_id)
   res.json(orderData)
 })
+
+router.post('/remove_artwork', verifyAdmin, async function(req, res){
+  const artwork = await removeArtwork(req.body.artwork_id)
+  res.end()
+})
+
+router.post('/is_featured', verifyAdmin, async function(req, res){
+  const artwork_id = req.body.artwork_id
+  const is_wishlisted = await checkIfFeatured(artwork_id)
+  res.json(is_wishlisted)
+})
+
+router.post('/featured', verifyAdmin, async function(req, res){
+  const artwork_id = req.body.artwork_id
+    await addToFeatured(artwork_id)
+  res.end()
+})
+
+router.post('/remove_from_featured', verifyAdmin, async function(req, res){
+  const artwork_id = req.body.artwork_id
+  await removeFromFeatured(artwork_id)
+  res.end()
+
+})
+
 
 export default router;
