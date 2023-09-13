@@ -90,7 +90,7 @@ const getSpecificTags = async (artwork_id) => {
 const searchArtworks = async (min, max, title, artist_name, category_id, order, n) => {
   const connection = await makeConnection()
 
-  let sql_query = "SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks"
+  let sql_query = "SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks WHERE removed=false"
 
   const data = []
 
@@ -103,7 +103,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     artist_name ||
     category_id  
   ){
-    sql_query += " WHERE "
+    sql_query += " AND "
 
     if(min && max){
       sql_query += ` price BETWEEN ? AND ? `
@@ -345,6 +345,8 @@ const sendReplyToMessage = async (message_id, email, reply_title, reply_text) =>
           ${reply_text}
       `
       };
+
+      console.log(mailOptions)
         
       transporter.sendMail(mailOptions, async function (error, info){
       if (error) {
@@ -929,9 +931,62 @@ const getUnansweredMessages = async() => {
     )
   connection.end()
 
-  console.log(messages)
-
   return messages
+}
+
+const removeArtwork = async (artwork_id) =>{
+  const connection = await makeConnection()
+  await connection.query(`
+      UPDATE artworks SET removed = true where id = ?
+  `, [artwork_id])
+
+  connection.end()
+}
+
+const checkIfFeatured = async (artwork_id) => {
+  const connection = await makeConnection()
+
+  const [prev] = await connection.query(`
+      SELECT removed FROM featured WHERE artwork_id = ?
+  `, [artwork_id])
+  connection.end()
+  if(prev.length){
+    return prev[0].removed ? false : true
+  }else{
+    return false
+  }
+}
+
+const addToFeatured = async (artwork_id) => {
+  const connection = await makeConnection()
+
+  const [prev] = await connection.query(`
+      SELECT id FROM featured WHERE artwork_id = ?
+  `, [artwork_id])
+
+  if(prev.length){
+    await connection.query(`
+      UPDATE featured SET removed = false, date_featured = now() WHERE id = ?
+  `, [prev[0].id])
+  }else{
+    await connection.query(`
+      INSERT INTO featured(artwork_id) VALUES(?)
+  `, [artwork_id])
+  }
+
+  connection.end()
+}
+
+const removeFromFeatured = async (artwork_id) => {
+  const connection = await makeConnection()
+  const featured = await checkIfFeatured(artwork_id)
+  if(featured){
+    await connection.query(`
+      UPDATE featured SET removed = true WHERE artwork_id = ?
+    `, [artwork_id])
+  }
+
+  connection.end()
 }
 
 export {
@@ -974,5 +1029,9 @@ export {
     getOrders,
     getUnansweredMessages,
     sendReplyToMessage,
-    getRegisteredUsers
+    getRegisteredUsers,
+    removeArtwork,
+    checkIfFeatured,
+    addToFeatured,
+    removeFromFeatured
 }
