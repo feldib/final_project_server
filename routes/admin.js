@@ -14,7 +14,8 @@ import {
   removeArtwork,
   checkIfFeatured,
   addToFeatured,
-  removeFromFeatured
+  removeFromFeatured,
+  addNewArtwork
 } from '../dbAPI.js'
 
 /* GET users listing. */
@@ -86,6 +87,13 @@ router.post('/featured', verifyAdmin, async function(req, res){
 router.post('/remove_from_featured', verifyAdmin, async function(req, res){
   const artwork_id = req.body.artwork_id
   await removeFromFeatured(artwork_id)
+  res.end()
+
+})
+
+router.post('/add_new_artwork', verifyAdmin, async function(req, res){
+  const artwork = req.body.artwork
+  await addNewArtwork(artwork)
   res.end()
 
 })
