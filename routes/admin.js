@@ -15,7 +15,8 @@ import {
   checkIfFeatured,
   addToFeatured,
   removeFromFeatured,
-  addNewArtwork
+  addNewArtwork,
+  addArtworkTags
 } from '../dbAPI.js'
 
 /* GET users listing. */

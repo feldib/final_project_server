@@ -989,12 +989,61 @@ const removeFromFeatured = async (artwork_id) => {
   connection.end()
 }
 
+const addArtworkTags = async (artwork_id, tags) => {
+  Promise.all(tags.map(async(tag)=>{
+
+    let connection = await makeConnection()
+
+    const results = await connection.query(`
+      SELECT id, removed FROM tags WHERE tname = ?
+    `, [tag])
+
+    let tag_id=""
+
+    if(results.length && results[0].removed){
+      tag_id = results[0].id
+      await connection.query(`
+        UPDATE tags SET removed = true
+      `, [tag_id])
+    }else{
+      console.log("tname: ", tag)
+      const insertedResults = await connection.query(`
+        INSERT INTO tags (tname) value (?)
+      `, [tag])
+
+      tag_id = insertedResults[0].id
+    }
+
+    await connection.query(`
+      INSERT INTO artwork_tags (artwork_id, tag_id) VALUES (?, ?)
+    `, [artwork_id, tag_id])
+
+    connection.end()
+  }))
+}
+
+const addPictures = async (artwork_id, picture_paths) => {
+  let connection = await makeConnection()
+
+  Promise.all(picture_paths.map(async(picture_path)=>{
+    await connection.query(`
+    INSERT INTO artwork_pictures(artwork_id, picture_path)
+    VALUES (?, ?)
+  `, [
+      artwork_id,
+      picture_path,
+    ])
+  }))
+
+  connection.end()
+}
+
 const addNewArtwork = async (artwork) => {
   let connection = await makeConnection()
 
   console.log(artwork)
 
-    await connection.query(`
+    const insertResults = await connection.query(`
       INSERT INTO artworks(title, artist_name, price, quantity, descript, category_id)
       VALUES (?, ?, ?, ?, ?, ?)
     `, [
@@ -1006,56 +1055,9 @@ const addNewArtwork = async (artwork) => {
         artwork.category_id
       ])
 
-    const res = await connection.query(`
-      SELECT id FROM artworks WHERE title = ? AND artist_name = ? AND price = ? AND quantity = ? AND descript = ? AND category_id = ?
-    `, [
-      artwork.title, 
-      artwork.artist_name, 
-      artwork.price, 
-      artwork.quantity, 
-      artwork.description, 
-      artwork.category_id
-    ])
-
-    const artwork_id = res[0].id
-
-    Promise.all(artwork.tags.map(async(tag)=>{
-      const res = await connection.query(`
-        SELECT id, removed FROM tags WHERE tname = ?
-      `, [tag])
-
-      const tag_exists = res.length
-
-      let tag_id = ""
-
-      if(!tag_exists){
-        tag_id = res[0].id
-      }else{
-        if(res[0].removed){
-          await connection.query(`
-            UPDATE tags SET removed = false WHERE id = ?
-          `, [tag_id])
-          tag_id = res[0].id
-        }else{
-          await connection.query(`
-            INSERT INTO tags (tname) VALUE (?)
-          `, [tag])
-
-          connection.end()
-          connection = await makeConnection()
-          
-          const res = await connection.query(`
-            SELECT id FROM tags WHERE tname = ?
-          `, [tag])
-          
-          tag_id = res[0].id
-        }
-      }
-
-      await connection.query(`
-        INSERT INTO artwork_tags (tag_id, artwork_id) VALUES (?, ?)
-      `, [tag_id, artwork_id])
-    }))
+    const artwork_id = insertResults[0].insertId
+   
+    await addArtworkTags(artwork_id, artwork.tags)
 
     await connection.query(`
       INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail)
@@ -1066,17 +1068,9 @@ const addNewArtwork = async (artwork) => {
         true
       ])
 
-    Promise.all(artwork.other_pictures.map(async(picture_path)=>{
-      await connection.query(`
-      INSERT INTO artwork_pictures(artwork_id, picture_path)
-      VALUES (?, ?)
-    `, [
-        artwork_id,
-        picture_path,
-      ])
-    }))
-
   connection.end()
+
+  addPictures(artwork_id, artwork.other_pictures)
 }
 
 export {
@@ -1124,5 +1118,6 @@ export {
     checkIfFeatured,
     addToFeatured,
     removeFromFeatured,
-    addNewArtwork
+    addNewArtwork,
+    addArtworkTags
 }
