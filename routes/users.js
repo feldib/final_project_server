@@ -1,17 +1,17 @@
 import { Router } from 'express';
 const router = Router();
+
+import { verifyUser } from '../db_api/verification.js';
+
 import { 
-  verifyUser,
   checkIfRegistered,  
   checkIfArtworkInStock,
   getShoppingListItems,
-  removeFromWishlisted,
   getWishlisted,
   checkIfWishlisted,
-  updateUserData,
   getOrdersOfUser,
   getReviewsOfUser
-} from '../db_api/dbAPI.js'
+} from '../db_api/get_data_from_db.js'
 
 import {
   registerUser,
@@ -27,6 +27,12 @@ import {
   increaseShoppingCartItemQuantity,
   decreaseShoppingCartItemQuantity,
 } from '../db_api/change_value_in_database.js'
+
+import { 
+  removeFromWishlisted,
+  updateUserData ,
+
+} from '../db_api/change_value_in_database.js';
 
 router.post('/message_to_administrator', function(req, res){
   const {email, title, message} = req.body
