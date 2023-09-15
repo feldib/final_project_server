@@ -13,11 +13,13 @@ import {
   getOrdersOfUser,
   removeArtwork,
   checkIfFeatured,
-  addToFeatured,
   removeFromFeatured,
+} from '../db_api/dbAPI.js'
+
+import {
+  addToFeatured,
   addNewArtwork,
-  addArtworkTags
-} from '../dbAPI.js'
+} from '../db_api/add_to_database.js'
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {

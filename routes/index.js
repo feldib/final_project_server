@@ -14,7 +14,7 @@ import {
   verifyUser,
   getReviewsOfArtwork,
   getFeatured
-} from '../dbAPI.js'
+} from '../db_api/dbAPI.js'
 
 /* GET home page. */
 router.get('/', function(req, res, next) {

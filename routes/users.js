@@ -2,25 +2,31 @@ import { Router } from 'express';
 const router = Router();
 import { 
   verifyUser,
-  checkIfRegistered, 
-  registerUser, 
-  saveMessgeToAdministrator,
+  checkIfRegistered,  
   checkIfArtworkInStock,
-  addToShoppingList,
   getShoppingListItems,
-  setShoppingCartItemQuantityToZero,
-  increaseShoppingCartItemQuantity,
-  decreaseShoppingCartItemQuantity,
-  addToWishlisted,
   removeFromWishlisted,
   getWishlisted,
   checkIfWishlisted,
   updateUserData,
-  makeOrder,
-  leaveReview,
   getOrdersOfUser,
   getReviewsOfUser
-} from '../dbAPI.js'
+} from '../db_api/dbAPI.js'
+
+import {
+  registerUser,
+  saveMessgeToAdministrator,
+  addToShoppingList,
+  makeOrder,
+  leaveReview,
+  addToWishlisted,
+} from '../db_api/add_to_database.js'
+
+import {
+  setShoppingCartItemQuantityToZero,
+  increaseShoppingCartItemQuantity,
+  decreaseShoppingCartItemQuantity,
+} from '../db_api/change_value_in_database.js'
 
 
 /* GET users listing. */
