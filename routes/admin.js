@@ -19,15 +19,6 @@ import {
   addArtworkTags
 } from '../dbAPI.js'
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
-
-router.get('/admin_page', function(req, res, next){
-  res.end('Admin Page Data')
-})
-
 router.get('/get_unapproved_reviews', verifyAdmin, async function(req, res){
     const reviews = await getUnapprovedReviews()
     res.json(reviews)  

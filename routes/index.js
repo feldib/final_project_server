@@ -16,11 +16,6 @@ import {
   getFeatured
 } from '../dbAPI.js'
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
-
 router.post('/login', async function(req, res){
   const {email, password} = req.body
   const user = await getUser(email, password)
@@ -41,9 +36,7 @@ router.get('/logged_in', verifyUser, async function(req, res){
 
 router.get('/log_out', async function(req, res){
   req.session.destroy()
-  res.json({
-    Status: "Logged out successfully"
-  })
+  res.end("Logged out successfully")
 })
 
 router.post('/forgot_password', async function(req, res){
