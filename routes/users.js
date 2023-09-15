@@ -22,12 +22,6 @@ import {
   getReviewsOfUser
 } from '../dbAPI.js'
 
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-})
-
 router.post('/message_to_administrator', function(req, res){
   const {email, title, message} = req.body
   try{
@@ -104,6 +98,7 @@ router.post('/is_wishlisted', verifyUser, async function(req, res){
 
 router.post('/update_data', verifyUser, async(req, res)=>{
   await updateUserData(req.id, req.body.field_name, req.body.value)
+  res.end()
 })
 
 router.post('/new_user', async function(req, res){
