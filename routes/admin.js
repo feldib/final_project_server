@@ -13,11 +13,13 @@ import {
   getOrdersOfUser,
   removeArtwork,
   checkIfFeatured,
-  addToFeatured,
   removeFromFeatured,
+} from '../db_api/dbAPI.js'
+
+import {
+  addToFeatured,
   addNewArtwork,
-  addArtworkTags
-} from '../dbAPI.js'
+} from '../db_api/add_to_database.js'
 
 router.get('/get_unapproved_reviews', verifyAdmin, async function(req, res){
     const reviews = await getUnapprovedReviews()

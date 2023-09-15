@@ -14,7 +14,7 @@ import {
   verifyUser,
   getReviewsOfArtwork,
   getFeatured
-} from '../dbAPI.js'
+} from '../db_api/dbAPI.js'
 
 router.post('/login', async function(req, res){
   const {email, password} = req.body
