@@ -94,7 +94,6 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
 
   const data = []
 
-  //mindig hozzáadni a mostani szöveget ?-lel, és pusholni az arraybe magát a változót!
   let needs_and = false
   if(
     min ||
@@ -765,16 +764,11 @@ const makeOrder = async (user_id, invoice_data) => {
   const connection = await makeConnection()
   const shoppingListItems = await getShoppingListItems(user_id)
   if(shoppingListItems.length){
-    await connection.query(`
+    const insertedResults = await connection.query(`
     INSERT INTO orders(user_id) VALUES(?)
     `, [user_id])
 
-    const [results] = await connection.query(`
-      SELECT id FROM orders WHERE user_id = ?
-      AND time_ordered = (SELECT MAX(time_ordered) FROM orders WHERE user_id = ?)
-    `, [user_id, user_id])
-
-    const order_id = results[0].id
+    const order_id = insertedResults[0].insertId
 
     await Promise.all(shoppingListItems.map(
       async(item)=>{
