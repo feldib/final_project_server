@@ -2,7 +2,7 @@ import { createConnection } from "mysql2/promise"
 import dotenv from "dotenv"
 dotenv.config()
 import { incrementItemInShoppingList } from "./change_value_in_database.js"
-import { getShoppingListItems } from "./dbAPI.js"
+import { getShoppingListItems } from "./get_data_from_db.js"
 
 const makeConnection = async () =>
   createConnection({

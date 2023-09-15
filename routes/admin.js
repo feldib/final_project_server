@@ -1,25 +1,29 @@
 import { Router } from 'express';
 const router = Router()
 
+import { verifyAdmin } from '../db_api/verification.js';
+
 import { 
   getUnapprovedReviews,
-  verifyAdmin,
-  approveReview,
-  removeReview,
   getOrders,
   getUnansweredMessages,
-  sendReplyToMessage,
   getRegisteredUsers,
   getOrdersOfUser,
-  removeArtwork,
   checkIfFeatured,
-  removeFromFeatured,
-} from '../db_api/dbAPI.js'
+} from '../db_api/get_data_from_db.js'
 
 import {
   addToFeatured,
   addNewArtwork,
 } from '../db_api/add_to_database.js'
+
+import {
+  approveReview,
+  removeReview,
+  removeFromFeatured
+} from '../db_api/change_value_in_database.js'
+
+import { sendReplyToMessage } from '../db_api/send_email.js';
 
 router.get('/get_unapproved_reviews', verifyAdmin, async function(req, res){
     const reviews = await getUnapprovedReviews()

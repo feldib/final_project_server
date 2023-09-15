@@ -1,5 +1,3 @@
-import nodemailer from 'nodemailer'
-import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 dotenv.config()
 import { createConnection } from "mysql2/promise"
@@ -12,8 +10,6 @@ const makeConnection = async () =>
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 })
-
-const client_host = "http://localhost:3001"
 
 const getUser = async (email, password) => {
   const connection = await makeConnection()
@@ -265,133 +261,6 @@ const checkEmail = async (email) => {
     }
 }
 
-const sendLinkToResetPassword = async ({email, id}) => {
-    try{
-        const transporter = nodemailer.createTransport({
-            service : process.env.TRANSPORTER_SERVICE,
-            auth : {
-                user : process.env.TRANSPORTER_AUTH_USER,
-                pass : process.env.TRANSPORTER_AUTH_PASS
-            },
-            tls: {
-                rejectUnauthorized: false
-              }
-        })
-        
-        const token = jwt.sign(
-            {id}, 
-            process.env.SECRET_KEY,
-            {expiresIn: '1d'}
-        )
-
-        const mailOptions = {
-        from: process.env.TRANSPORTER_AUTH_USER,
-        to: `${email}`,
-        subject: 'Reset password',
-        html: `
-            <p>Click here to reset your password: </p>
-            <a href = "${client_host}/reset_password?token=${token}&email=${email}">Link</a>
-        `
-        };
-          
-        transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-        })
-    }catch(error){
-        console.log(error)
-    }
-    
-}
-
-const sendReplyToMessage = async (message_id, email, reply_title, reply_text) => {
-  try{
-      const transporter = nodemailer.createTransport({
-          service : process.env.TRANSPORTER_SERVICE,
-          auth : {
-              user : process.env.TRANSPORTER_AUTH_USER,
-              pass : process.env.TRANSPORTER_AUTH_PASS
-          },
-          tls: {
-              rejectUnauthorized: false
-            }
-      })
-      const mailOptions = {
-      from: process.env.TRANSPORTER_AUTH_USER,
-      to: `${email}`,
-      subject: `${reply_title}`,
-      html: `
-          ${reply_text}
-      `
-      };
-
-      console.log(mailOptions)
-        
-      transporter.sendMail(mailOptions, async function (error, info){
-      if (error) {
-          console.log(error);
-      } else {
-          console.log('Email sent: ' + info.response)
-          const connection = await makeConnection()
-
-          connection.query(`
-            UPDATE messages_to_administrator
-            SET answered = true
-            WHERE id = ?
-          `,[message_id])
-
-          connection.end()
-      }
-      })
-  }catch(error){
-      console.log(error)
-  }
-}
-
-const resetPassword = async (new_password, email) => {
-  const connection = await makeConnection()
-  await connection.query(
-        `UPDATE users SET passw = ? WHERE email = ?;`, [new_password, email]
-  )
-}
-
-const verifyPaswordToken = (req, res, next) => {
-    const {token} = req.body
-    if(!token){
-      res.end("You are not authenticated")
-    }else{
-      jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-        if(err){
-          console.log(err)
-          res.status(401).end("Tokens do not match")
-        }else{
-          next()
-        }
-      })
-    }
-  }
-
-const verifyUser = (req, res, next) => {
-if(!req.session.userid){
-    res.status(401).end("You are not authenticated")
-}else{
-    req.id = req.session.userid
-    next()
-}
-}
-
-const verifyAdmin = (req, res, next) => {
-  if(!req.session.isadmin){
-      res.status(401).end("You are not authenticated")
-  }else{
-      req.isadmin = req.session.isadmin
-      next()
-  }
-  }
-
 const getReviewsOfArtwork = async(artwork_id) => {
   const connection = await makeConnection() 
   const [reviews] = await connection.query(
@@ -530,18 +399,6 @@ const checkIfWishlisted = async (user_id, artwork_id) => {
   }
 }
 
-const removeFromWishlisted = async (user_id, artwork_id) => {
-  const connection = await makeConnection()
-  const wishlisted = await checkIfWishlisted(user_id, artwork_id)
-  if(wishlisted){
-    await connection.query(`
-      UPDATE wishlisted SET removed = true WHERE user_id = ? AND artwork_id = ?
-    `, [user_id, artwork_id])
-  }
-
-  connection.end()
-}
-
 const getWishlisted = async (user_id, n) => {
   const connection = await makeConnection()
 
@@ -575,22 +432,6 @@ const getWishlisted = async (user_id, n) => {
   connection.end()
 
   return results
-}
-
-const updateUserData = async (user_id, field_name, value) => {
-  const connection = await makeConnection()
-
-  if(
-    [
-      "first_name", "last_name", "email", "address", "phone_number"
-    ].includes(field_name)
-  ){
-    await connection.query(`
-      UPDATE users SET ${field_name} = ? WHERE id = ?
-    `, [value, user_id])
-  }
-
-  connection.end()
 }
 
 const getOrderData = async (order_id) => {
@@ -685,24 +526,6 @@ const getOrders = async () => {
   return orderDataCollection
 }
 
-const approveReview = async (id) =>{
-  const connection = await makeConnection()
-  await connection.query(`
-      UPDATE reviews SET approved = true where id = ?
-  `, [id])
-
-  connection.end()
-}
-
-const removeReview = async (id) =>{
-  const connection = await makeConnection()
-  await connection.query(`
-      UPDATE reviews SET removed = true where id = ?
-  `, [id])
-
-  connection.end()
-}
-
 const getUnansweredMessages = async() => {
   const connection = await makeConnection() 
   const [messages] = await connection.execute(
@@ -716,14 +539,7 @@ const getUnansweredMessages = async() => {
   return messages
 }
 
-const removeArtwork = async (artwork_id) =>{
-  const connection = await makeConnection()
-  await connection.query(`
-      UPDATE artworks SET removed = true where id = ?
-  `, [artwork_id])
 
-  connection.end()
-}
 
 const checkIfFeatured = async (artwork_id) => {
   const connection = await makeConnection()
@@ -739,18 +555,6 @@ const checkIfFeatured = async (artwork_id) => {
   }
 }
 
-const removeFromFeatured = async (artwork_id) => {
-  const connection = await makeConnection()
-  const featured = await checkIfFeatured(artwork_id)
-  if(featured){
-    await connection.query(`
-      UPDATE featured SET removed = true WHERE artwork_id = ?
-    `, [artwork_id])
-  }
-
-  connection.end()
-}
-
 export {
     getUser, 
     getCategories, 
@@ -759,31 +563,19 @@ export {
     getThumbnail, 
     checkIfRegistered, 
     checkEmail,
-    sendLinkToResetPassword,
-    resetPassword,
     getUserWithId,
-    verifyPaswordToken,
-    verifyUser,
     getDataOfArtwork,
     getReviewsOfArtwork,
     checkIfArtworkInStock,
     getShoppingListItems,
     getSpecificCategory,
-    removeFromWishlisted,
     getWishlisted,
     checkIfWishlisted,
-    updateUserData,
     getOrdersOfUser,
     getUnapprovedReviews,
-    verifyAdmin,
-    approveReview,
-    removeReview,
     getReviewsOfUser,
     getOrders,
     getUnansweredMessages,
-    sendReplyToMessage,
     getRegisteredUsers,
-    removeArtwork,
     checkIfFeatured,
-    removeFromFeatured,
 }

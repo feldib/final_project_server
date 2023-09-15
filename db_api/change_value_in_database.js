@@ -99,11 +99,93 @@ const incrementItemInShoppingList = async (user_id, artwork_id) => {
     connection.end()
   }
 
+  const resetPassword = async (new_password, email) => {
+    const connection = await makeConnection()
+    await connection.query(
+          `UPDATE users SET passw = ? WHERE email = ?;`, [new_password, email]
+    )
+  }
+
+  const removeFromWishlisted = async (user_id, artwork_id) => {
+    const connection = await makeConnection()
+    const wishlisted = await checkIfWishlisted(user_id, artwork_id)
+    if(wishlisted){
+      await connection.query(`
+        UPDATE wishlisted SET removed = true WHERE user_id = ? AND artwork_id = ?
+      `, [user_id, artwork_id])
+    }
   
+    connection.end()
+  }
+
+  const updateUserData = async (user_id, field_name, value) => {
+    const connection = await makeConnection()
+  
+    if(
+      [
+        "first_name", "last_name", "email", "address", "phone_number"
+      ].includes(field_name)
+    ){
+      await connection.query(`
+        UPDATE users SET ${field_name} = ? WHERE id = ?
+      `, [value, user_id])
+    }
+  
+    connection.end()
+  }
+  
+
+  const approveReview = async (id) =>{
+    const connection = await makeConnection()
+    await connection.query(`
+        UPDATE reviews SET approved = true where id = ?
+    `, [id])
+  
+    connection.end()
+  }
+  
+  const removeReview = async (id) =>{
+    const connection = await makeConnection()
+    await connection.query(`
+        UPDATE reviews SET removed = true where id = ?
+    `, [id])
+  
+    connection.end()
+  }
+
+  const removeFromFeatured = async (artwork_id) => {
+    const connection = await makeConnection()
+    const featured = await checkIfFeatured(artwork_id)
+    if(featured){
+      await connection.query(`
+        UPDATE featured SET removed = true WHERE artwork_id = ?
+      `, [artwork_id])
+    }
+  
+    connection.end()
+  }
+
+  const removeArtwork = async (artwork_id) =>{
+    const connection = await makeConnection()
+    await connection.query(`
+        UPDATE artworks SET removed = true where id = ?
+    `, [artwork_id])
+  
+    connection.end()
+  }
+
 
 export {
     setShoppingCartItemQuantityToZero,
     decreaseShoppingCartItemQuantity,
     increaseShoppingCartItemQuantity,
     incrementItemInShoppingList,
+    resetPassword,
+    removeFromWishlisted,
+    updateUserData,
+    approveReview,
+    removeReview,
+    removeFromFeatured,
+    removeArtwork,
+    
 }
