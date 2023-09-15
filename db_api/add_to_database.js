@@ -156,6 +156,9 @@ const makeOrder = async (user_id, invoice_data) => {
 
   const addArtworkTags = async (artwork_id, tags) => {
     Promise.all(tags.map(async(tag)=>{
+
+      console.log("artwork_id: ", artwork_id)
+      console.log("tag: ", tag)
   
       let connection = await makeConnection()
   
@@ -175,8 +178,7 @@ const makeOrder = async (user_id, invoice_data) => {
         const insertedResults = await connection.query(`
           INSERT INTO tags (tname) value (?)
         `, [tag])
-  
-        tag_id = insertedResults[0].id
+        tag_id = insertedResults[0].insertId
       }
   
       await connection.query(`
