@@ -26,6 +26,7 @@ import {
   setShoppingCartItemQuantityToZero,
   increaseShoppingCartItemQuantity,
   decreaseShoppingCartItemQuantity,
+  replaceSavedShoppingCart
 } from '../db_api/change_value_in_database.js'
 
 import { 
@@ -70,10 +71,14 @@ router.post('/remove_item_from_shopping_cart', verifyUser, async function(req, r
   res.end()
 })
 
-router.post('/increase_shopping_sart_item_quantity', verifyUser, async function(req, res){
+router.post('/increase_shopping_sart_item_quantity', verifyUser, function(req, res){
   const artwork_id = req.body.artwork_id
-  await increaseShoppingCartItemQuantity(req.id, artwork_id)
-  res.end()
+  increaseShoppingCartItemQuantity(req.id, artwork_id).then(()=>{
+    res.end()
+  }).catch(()=>{
+    res.status(400).end()
+  })
+  
 })
 
 router.post('/decrease_shopping_sart_item_quantity', verifyUser, async function(req, res){
@@ -152,6 +157,11 @@ router.get('/get_orders_of_user', verifyUser, async function(req, res){
 router.get('/get_reviews_of_user', verifyUser, async function(req, res){
   const reviewData = await getReviewsOfUser(req.id)
   res.json(reviewData)
+})
+
+router.post('/replace_saved_shopping_cart', verifyUser, async(req, res)=>{
+  await replaceSavedShoppingCart(req.id, req.body.shopping_cart)
+  res.end()
 })
 
 export default router;
