@@ -40,34 +40,34 @@ const saveMessgeToAdministrator = async (email, title, message) =>{
     connection.end()
   }
 
-const addNewItemToShoppingList = async (user_id, artwork_id) => {
+const addNewItemToShoppingList = async (user_id, artwork_id, n=1) => {
     const connection = await makeConnection()
   
     await connection.query(`
         INSERT INTO 
         artworks_in_shopping_list(user_id, quantity, artwork_id) 
-        VALUES(?, 1, ?)
-    `, [user_id, artwork_id])
+        VALUES(?, ?, ?)
+    `, [user_id, n, artwork_id])
   
     connection.end()
   }
 
 
-const addToShoppingList = async (user_id, artwork_id) => {
+const addToShoppingList = async (user_id, artwork_id, n=1) => {
     const connection = await makeConnection()
 
     await connection.query(`
-        UPDATE artworks SET quantity = quantity-1 WHERE id = ?
-    `, [artwork_id])
+        UPDATE artworks SET quantity = quantity-? WHERE id = ?
+    `, [n, artwork_id])
 
     const [prev] = await connection.query(`
         SELECT * FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `, [user_id, artwork_id])
 
     if(prev[0]){
-        await incrementItemInShoppingList(user_id, artwork_id)
+        await incrementItemInShoppingList(user_id, artwork_id, n)
     }else{
-        await addNewItemToShoppingList(user_id, artwork_id)
+        await addNewItemToShoppingList(user_id, artwork_id, n)
     }
     connection.end()
 }

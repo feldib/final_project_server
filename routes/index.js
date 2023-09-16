@@ -11,7 +11,8 @@ import {
   searchArtworks, 
   checkEmail, 
   getReviewsOfArtwork,
-  getFeatured
+  getFeatured,
+  findArtworkWithId
 } from '../db_api/get_data_from_db.js'
 
 import { sendLinkToResetPassword } from '../db_api/send_email.js'
@@ -79,6 +80,15 @@ router.get('/search_artworks', async function(req, res){
   }
   res.json(results)
 })
+
+
+router.get('/find_artwork_by_id', async function(req, res){
+  const {artwork_id} = req.query
+  const artwork = await findArtworkWithId(artwork_id)
+  res.json(artwork)
+})
+
+
 
 //artwork page
 router.get('/artwork', async function(req, res){

@@ -65,7 +65,6 @@ const getSpecificCategory = async (category_id) => {
 }
 
 
-
 const getSpecificTags = async (artwork_id) => {
   const connection = await makeConnection()
   const [tags] = await connection.query(
@@ -175,6 +174,27 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
   return artworks
 }
 
+const findArtworkWithId = async (artwork_id) => {
+  const connection = await makeConnection()
+
+  const [result] = await connection.query(`
+  SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks WHERE removed=false AND id = ?
+  `, [artwork_id])
+
+  const artwork = result[0]
+
+  connection.end()
+
+  const thumbnail = await getThumbnail(artwork_id)
+  const cname = await getSpecificCategory(artwork.category_id)
+  const tags = await getSpecificTags(artwork_id)
+  artwork.thumbnail = thumbnail
+  artwork.cname = cname
+  artwork.tags = tags
+
+  return artwork
+}
+
 const getFeatured = async (n) => { 
   const connection = await makeConnection()  
   const [artwork_ids] = await connection.execute(`
@@ -183,7 +203,7 @@ const getFeatured = async (n) => {
   `)
 
   const [results] = await connection.query(
-    `SELECT id, title, price FROM artworks WHERE id IN (${
+    `SELECT id, title, price, quantity FROM artworks WHERE id IN (${
       artwork_ids
         .map(obj => "?")
         .join(", ")
@@ -555,6 +575,19 @@ const checkIfFeatured = async (artwork_id) => {
   }
 }
 
+const getQuantityOfArtworkInStock = async (artwork_id) => {
+  const connection = await makeConnection()
+
+  const [res] = await connection.query(`
+    SELECT quantity FROM artworks WHERE id = ?
+  `, [artwork_id])
+
+  connection.end()
+
+  return res[0].quantity
+}
+
+
 export {
     getUser, 
     getCategories, 
@@ -578,4 +611,6 @@ export {
     getUnansweredMessages,
     getRegisteredUsers,
     checkIfFeatured,
+    findArtworkWithId,
+    getQuantityOfArtworkInStock
 }
