@@ -178,6 +178,11 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
     await connection.query(`
         UPDATE artworks SET removed = true where id = ?
     `, [artwork_id])
+
+    await connection.query(`
+        UPDATE artwork_tags SET removed = true where artwork_id = ?
+    `, [artwork_id])
+
   
     connection.end()
   }

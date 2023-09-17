@@ -20,7 +20,8 @@ import {
 import {
   approveReview,
   removeReview,
-  removeFromFeatured
+  removeFromFeatured,
+  removeArtwork
 } from '../db_api/change_value_in_database.js'
 
 import { sendReplyToMessage } from '../db_api/send_email.js';
@@ -94,6 +95,10 @@ router.post('/add_new_artwork', verifyAdmin, async function(req, res){
   await addNewArtwork(artwork)
   res.end()
 
+})
+
+router.get('/is_admin', verifyAdmin, async function(req, res){
+  res.end()
 })
 
 
