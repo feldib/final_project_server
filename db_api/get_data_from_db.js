@@ -81,7 +81,7 @@ const getSpecificTags = async (artwork_id) => {
   return tags
 }
 
-const searchArtworks = async (min, max, title, artist_name, category_id, order, n) => {
+const searchArtworks = async (min, max, title, artist_name, category_id, order, n, offset) => {
   const connection = await makeConnection()
 
   let sql_query = "SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks WHERE removed=false"
@@ -97,7 +97,6 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     category_id  
   ){
     sql_query += " AND "
-  }
 
     if(min && max){
       sql_query += ` price BETWEEN ? AND ? `
@@ -154,11 +153,16 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
         sql_query += " DESC "
       }
     }
+  }
 
-    if(n){
-      sql_query += ` LIMIT ? `
-      data.push(parseInt(n))
-    }
+  sql_query += ` LIMIT ? `
+  data.push(parseInt(n))
+  
+  if(offset){
+    sql_query += ` OFFSET ? `
+    data.push(parseInt(offset))
+  }
+  
 
   const [artworks] = await connection.query(sql_query + ";", data)
   connection.end()
@@ -241,13 +245,7 @@ const getThumbnail = async (id) => {
 const getOtherPictures = async (artwork_id) => {
   const connection = await makeConnection() 
   const [results] = await connection.query(
-      `
-        SELECT picture_path 
-        FROM artwork_pictures 
-        WHERE artwork_id = ? 
-        AND is_thumbnail = false
-        AND removed = false
-      `, [artwork_id]
+      `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false`, [artwork_id]
       )
   let pictures = results
   if(results.length){
