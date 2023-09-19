@@ -184,13 +184,15 @@ const makeOrder = async (user_id, invoice_data) => {
       const [results] = await connection.query(`
         SELECT id, removed FROM tags WHERE tname = ?
       `, [tag])
-
-      console.log("results: ", JSON.stringify(results))
   
       let tag_id=""
       
       if(results.length){
+        console.log("results.length, result", JSON.stringify(results))
+
         tag_id = results[0].id
+
+        console.log("results.length, tag_id: ", tag_id)
 
         if(results[0].removed){
           await connection.query(`
@@ -199,21 +201,32 @@ const makeOrder = async (user_id, invoice_data) => {
         }
       }
       else{
-          console.log("tname: ", tag)
-          const insertedResults = await connection.query(`
+          const insertedResult = await connection.query(`
             INSERT INTO tags (tname) value (?)
           `, [tag])
-          tag_id = insertedResults[0].insertId
+          tag_id = insertedResult[0].insertId
+
+          console.log("!results.length, insertedResult[0].insertId: ", insertedResult[0].insertId)
       }
 
       const [prevArtworkTags] = await connection.query(`
-      SELECT id FROM artwork_tags WHERE artwork_id = ? AND tag_id = ?
+      SELECT id, removed FROM artwork_tags WHERE artwork_id = ? AND tag_id = ?
     `, [artwork_id, tag_id])
-      
+    
+    console.log("prevArtworkTags: ", JSON.stringify(prevArtworkTags))
+
       if(!prevArtworkTags.length){
+
         await connection.query(`
           INSERT INTO artwork_tags (artwork_id, tag_id) VALUES (?, ?)
         `, [artwork_id, tag_id])
+
+      }else if(prevArtworkTags[0].removed){
+
+        await connection.query(`
+          UPDATE artwork_tags SET removed = false WHERE id = ?
+        `, [prevArtworkTags[0].id])
+
       }
       
   

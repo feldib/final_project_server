@@ -142,7 +142,10 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
     const connection = await makeConnection()
 
     const [tags_of_artwork] = await connection.query(`
-        SELECT artwork_tags.id as artwork_tag_id, tags.id as tag_id, tags.tname 
+        SELECT 
+          artwork_tags.id as artwork_tag_id, 
+          tags.id as tag_id, 
+          tags.tname 
         FROM artwork_tags 
         LEFT JOIN tags
         ON tags.id = artwork_tags.tag_id
@@ -150,45 +153,24 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
       `, [artwork_id]) 
 
     const tagsToAdd = tags.filter(
-      (tag)=>{
-
-        return !tags_of_artwork.map((tg)=>{
-
-          return tg.tname
-
-        }).includes(
-
-          tag.tname
-
+      (tag) => !tags_of_artwork.some(
+          tg => tg.tname === tag
         )
-      }
     )
 
     await addArtworkTags(artwork_id, tagsToAdd)
 
     const tagsToRemove = tags_of_artwork.filter(
-      (tag)=>{
+      (tg) => !tags.includes(tg.tname)
+    ) 
 
-        return !tags.map((tg)=>{
-
-          return tg.tname
-
-        }).includes(
-
-          tag.tname
-
-        )
-      }
-    )    
+    console.log("tagsToRemove: ", JSON.stringify(tagsToRemove))
 
     await Promise.all(tagsToRemove.map(async (tag) => {
-      const res = await connection.query(`
-        SELECT id FROM tags WHERE tname = ?
-      `, [tag.tname])
 
       await connection.query(`
-        UPDATE artwork_tags SET removed = true WHERE artwork_id = ? AND tag_id = ?
-      `, [artwork_id, res[0].id]) 
+        UPDATE artwork_tags SET removed = true WHERE id = ?
+      `, [tag.artwork_tag_id]) 
     }))
 
     connection.end()
@@ -219,18 +201,12 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
       }
     )
 
-    console.log("picturesToAdd: ", JSON.stringify(picturesToAdd))
-
     await addPictures(artwork_id, picturesToAdd)
 
     const picturesToRemove = pictures_of_artwork.filter(
       (picture)=>{
 
-        console.log("picture: ", JSON.stringify(picture))
-
         return !other_pictures.map((pic)=>{
-
-          console.log("pic: ", JSON.stringify(pic))
 
           return pic
 
@@ -241,8 +217,6 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
         )
       }
     )    
-
-    console.log("picturesToRemove: ", JSON.stringify(picturesToRemove))
 
     await Promise.all(picturesToRemove.map(async (picture) => {
       await connection.query(`
@@ -260,8 +234,6 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
     const [results] = await connection.query(`
       SELECT id FROM artwork_pictures WHERE is_thumbnail = true AND artwork_id = ?
     `, [artwork_id])
-
-    console.log("results: ", JSON.stringify(results))
 
     if(results.length){
       await connection.query(`
