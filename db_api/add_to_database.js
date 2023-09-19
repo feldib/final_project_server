@@ -139,19 +139,37 @@ const makeOrder = async (user_id, invoice_data) => {
   }
 
   const addPictures = async (artwork_id, picture_paths) => {
-    let connection = await makeConnection()
   
     Promise.all(picture_paths.map(async(picture_path)=>{
-      await connection.query(`
-      INSERT INTO artwork_pictures(artwork_id, picture_path)
-      VALUES (?, ?)
-    `, [
+      let connection = await makeConnection()
+
+      const [res] = await connection.query(`
+        SELECT removed FROM artwork_pictures WHERE artwork_id=? AND picture_path=?
+      `, [
         artwork_id,
         picture_path,
       ])
+
+      if(res.length){
+        await connection.query(`
+            UPDATE artwork_pictures SET removed = false WHERE artwork_id=? AND picture_path=?
+          `, [
+            artwork_id,
+            picture_path,
+          ])
+      }else{
+        await connection.query(`
+          INSERT INTO artwork_pictures(artwork_id, picture_path)
+          VALUES (?, ?)
+        `, [
+            artwork_id,
+            picture_path,
+          ])
+      }
+
+      connection.end()
+      
     }))
-  
-    connection.end()
   }
 
   const addArtworkTags = async (artwork_id, tags) => {

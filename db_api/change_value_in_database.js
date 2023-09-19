@@ -198,32 +198,41 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
     const connection = await makeConnection()
 
     const [pictures_of_artwork] = await connection.query(`
-        SELECT id, picture_path FROM artwork_pictures WHERE artwork_id = ?
+        SELECT id, picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false
       `, [artwork_id]) 
 
     const picturesToAdd = other_pictures.filter(
       (picture)=>{
 
+
         return !pictures_of_artwork.map((pic)=>{
+
+
 
           return pic.picture_path
 
         }).includes(
 
-          picture.picture_path
+          picture
 
         )
       }
     )
+
+    console.log("picturesToAdd: ", JSON.stringify(picturesToAdd))
 
     await addPictures(artwork_id, picturesToAdd)
 
     const picturesToRemove = pictures_of_artwork.filter(
       (picture)=>{
 
-        return !other_pictures.map((tg)=>{
+        console.log("picture: ", JSON.stringify(picture))
 
-          return tg.picture_path
+        return !other_pictures.map((pic)=>{
+
+          console.log("pic: ", JSON.stringify(pic))
+
+          return pic
 
         }).includes(
 
@@ -232,6 +241,8 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
         )
       }
     )    
+
+    console.log("picturesToRemove: ", JSON.stringify(picturesToRemove))
 
     await Promise.all(picturesToRemove.map(async (picture) => {
       await connection.query(`

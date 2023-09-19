@@ -241,7 +241,13 @@ const getThumbnail = async (id) => {
 const getOtherPictures = async (artwork_id) => {
   const connection = await makeConnection() 
   const [results] = await connection.query(
-      `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false`, [artwork_id]
+      `
+        SELECT picture_path 
+        FROM artwork_pictures 
+        WHERE artwork_id = ? 
+        AND is_thumbnail = false
+        AND removed = false
+      `, [artwork_id]
       )
   let pictures = results
   if(results.length){
