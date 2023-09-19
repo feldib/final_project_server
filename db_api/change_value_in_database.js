@@ -246,9 +246,11 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
 
     const connection = await makeConnection()
 
-    const results = await connection.query(`
+    const [results] = await connection.query(`
       SELECT id FROM artwork_pictures WHERE is_thumbnail = true AND artwork_id = ?
     `, [artwork_id])
+
+    console.log("results: ", JSON.stringify(results))
 
     if(results.length){
       await connection.query(`
