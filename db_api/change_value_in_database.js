@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 dotenv.config()
 import { createConnection } from "mysql2/promise"
 import { checkIfWishlisted, checkIfFeatured, getQuantityOfArtworkInStock } from "./get_data_from_db.js"
-import { addToShoppingList } from './add_to_database.js' 
+import { addToShoppingList, addArtworkTags, addPictures } from './add_to_database.js' 
 
 const makeConnection = async () =>
   createConnection({
@@ -32,10 +32,6 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
     const [quantity_results] = await connection.query(`
         SELECT quantity FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `, [user_id, artwork_id])
-
-    console.log("artwork_id: ", artwork_id)
-    console.log("user_id: ", user_id)
-    console.log("quantity_results: ", quantity_results)
 
     const quantity = quantity_results[0].quantity
   
@@ -141,7 +137,148 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
   
     connection.end()
   }
-  
+
+  const updateArtworkTags = async (artwork_id, tags) => {
+    const connection = await makeConnection()
+
+    const [tags_of_artwork] = await connection.query(`
+        SELECT 
+          artwork_tags.id as artwork_tag_id, 
+          tags.id as tag_id, 
+          tags.tname 
+        FROM artwork_tags 
+        LEFT JOIN tags
+        ON tags.id = artwork_tags.tag_id
+        WHERE artwork_id = ? AND artwork_tags.removed = false
+      `, [artwork_id]) 
+
+    const tagsToAdd = tags.filter(
+      (tag) => !tags_of_artwork.some(
+          tg => tg.tname === tag
+        )
+    )
+
+    console.log("tagsToAdd: ", JSON.stringify(tagsToAdd))
+
+    await addArtworkTags(artwork_id, tagsToAdd)
+
+    const tagsToRemove = tags_of_artwork.filter(
+      (tg) => !tags.includes(tg.tname)
+    ) 
+
+
+    await Promise.all(tagsToRemove.map(async (tag) => {
+
+      await connection.query(`
+        UPDATE artwork_tags SET removed = true WHERE id = ?
+      `, [tag.artwork_tag_id]) 
+    }))
+
+    connection.end()
+  }
+
+  const updateArtworkPictures = async (artwork_id, other_pictures) => {
+    const connection = await makeConnection()
+
+    const [pictures_of_artwork] = await connection.query(`
+        SELECT id, picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false
+      `, [artwork_id]) 
+
+    const picturesToAdd = other_pictures.filter(
+      (picture)=>{
+
+
+        return !pictures_of_artwork.map((pic)=>{
+
+
+
+          return pic.picture_path
+
+        }).includes(
+
+          picture
+
+        )
+      }
+    )
+
+    await addPictures(artwork_id, picturesToAdd)
+
+    const picturesToRemove = pictures_of_artwork.filter(
+      (picture)=>{
+
+        return !other_pictures.map((pic)=>{
+
+          return pic
+
+        }).includes(
+
+          picture.picture_path
+
+        )
+      }
+    )    
+
+    await Promise.all(picturesToRemove.map(async (picture) => {
+      await connection.query(`
+        UPDATE artwork_pictures SET removed = true WHERE artwork_id = ? AND picture_path = ?
+      `, [artwork_id, picture.picture_path]) 
+    }))
+
+    connection.end()
+  }
+
+  const updateThumbnail = async (artwork_id, thumbnail) => {
+
+    const connection = await makeConnection()
+
+    const [results] = await connection.query(`
+      SELECT id FROM artwork_pictures WHERE is_thumbnail = true AND artwork_id = ?
+    `, [artwork_id])
+
+    if(results.length){
+      await connection.query(`
+        UPDATE artwork_pictures SET picture_path = ? WHERE id = ?
+      `, [thumbnail, results[0].id])
+    }
+
+    connection.end()
+
+  }
+
+  const updateArtworkData = async (artwork_id, field_name, value) => {
+ 
+    if(
+      [
+        "title", "artist_name", "price", "quantity", "descript", "category_id"
+      ].includes(field_name)
+    ){
+      const connection = await makeConnection()
+
+      await connection.query(`
+        UPDATE artworks SET ${field_name} = ? WHERE id = ?
+      `, [value, artwork_id])
+
+      connection.end()
+    }else if("tags" === field_name){
+
+      await updateArtworkTags(artwork_id, value.map((tag)=>{
+        return tag.tname
+      }))
+
+    }else if("other_pictures" === field_name){
+
+      await updateArtworkPictures(artwork_id, value.map((pic)=>{
+        return pic.picture_path
+      }))
+
+    }else if("thumbnail" === field_name){
+
+      await updateThumbnail(artwork_id, value)
+
+    }
+
+  }  
 
   const approveReview = async (id) =>{
     const connection = await makeConnection()
@@ -227,5 +364,6 @@ export {
     removeReview,
     removeFromFeatured,
     removeArtwork,
-    replaceSavedShoppingCart
+    replaceSavedShoppingCart,
+    updateArtworkData
 }
