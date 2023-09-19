@@ -97,6 +97,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     category_id  
   ){
     sql_query += " AND "
+  }
 
     if(min && max){
       sql_query += ` price BETWEEN ? AND ? `
@@ -158,7 +159,6 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
       sql_query += ` LIMIT ? `
       data.push(parseInt(n))
     }
-  }
 
   const [artworks] = await connection.query(sql_query + ";", data)
   connection.end()

@@ -21,7 +21,8 @@ import {
   approveReview,
   removeReview,
   removeFromFeatured,
-  removeArtwork
+  removeArtwork,
+  updateArtworkData
 } from '../db_api/change_value_in_database.js'
 
 import { sendReplyToMessage } from '../db_api/send_email.js';
@@ -73,8 +74,8 @@ router.post('/remove_artwork', verifyAdmin, async function(req, res){
 
 router.post('/is_featured', verifyAdmin, async function(req, res){
   const artwork_id = req.body.artwork_id
-  const is_wishlisted = await checkIfFeatured(artwork_id)
-  res.json(is_wishlisted)
+  const is_featured = await checkIfFeatured(artwork_id)
+  res.json(is_featured)
 })
 
 router.post('/featured', verifyAdmin, async function(req, res){
@@ -101,5 +102,10 @@ router.get('/is_admin', verifyAdmin, async function(req, res){
   res.end()
 })
 
+
+router.post('/update_artwork_data', verifyAdmin, async(req, res)=>{
+  await updateArtworkData(req.body.artwork_id, req.body.field_name, req.body.value)
+  res.end()
+})
 
 export default router;
