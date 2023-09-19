@@ -149,7 +149,7 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
         FROM artwork_tags 
         LEFT JOIN tags
         ON tags.id = artwork_tags.tag_id
-        WHERE artwork_id = ?
+        WHERE artwork_id = ? AND artwork_tags.removed = false
       `, [artwork_id]) 
 
     const tagsToAdd = tags.filter(
@@ -158,13 +158,14 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
         )
     )
 
+    console.log("tagsToAdd: ", JSON.stringify(tagsToAdd))
+
     await addArtworkTags(artwork_id, tagsToAdd)
 
     const tagsToRemove = tags_of_artwork.filter(
       (tg) => !tags.includes(tg.tname)
     ) 
 
-    console.log("tagsToRemove: ", JSON.stringify(tagsToRemove))
 
     await Promise.all(tagsToRemove.map(async (tag) => {
 
