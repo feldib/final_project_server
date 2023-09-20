@@ -144,16 +144,15 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
       sql_query += ` category_id = ? `
       data.push(parseInt(category_id))
     }
-
-    if(order){
-      sql_query += " ORDER BY date_added"
-      if(order==="asc"){
-        sql_query += " ASC "
-      }else if(order==="desc"){
-        sql_query += " DESC "
-      }
-    }
   }
+
+  sql_query += " ORDER BY date_added"
+  if(order==="asc"){
+    sql_query += " ASC "
+  }else if(order==="desc"){
+    sql_query += " DESC "
+  }
+  
 
   sql_query += ` LIMIT ? `
   data.push(parseInt(n))
