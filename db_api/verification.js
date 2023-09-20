@@ -19,6 +19,7 @@ const verifyPaswordToken = (req, res, next) => {
   }
 
 const verifyUser = (req, res, next) => {
+console.log(req.session.userid)
 if(!req.session.userid){
     res.status(401).end("You are not authenticated")
 }else{
