@@ -162,6 +162,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     data.push(parseInt(offset))
   }
   
+  console.log("offset", offset)
 
   const [artworks] = await connection.query(sql_query + ";", data)
   connection.end()
@@ -174,6 +175,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     artwork.cname = cname
     artwork.tags = tags
   }))
+
   return artworks
 }
 
