@@ -12,6 +12,7 @@ import {
   checkEmail, 
   getReviewsOfArtwork,
   getFeatured,
+  getNewestArtworks,
   findArtworkWithId
 } from '../db_api/get_data_from_db.js'
 
@@ -118,5 +119,16 @@ router.get('/featured', async function(req, res){
   }
   res.json(results)
 })
+
+router.get('/newest', async function(req, res){  
+  const n = req.query.n
+  const artworks = await getNewestArtworks(n)
+  let results = artworks
+  if(!artworks.length){
+    console.log("No artworks")
+  }
+  res.json(results)
+})
+
 
 export default router;
