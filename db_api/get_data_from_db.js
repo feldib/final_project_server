@@ -208,7 +208,7 @@ const getFeatured = async (n) => {
   `)
 
   const [results] = await connection.query(
-    `SELECT id, title, price, quantity FROM artworks WHERE id IN (${
+    `SELECT id, title, price, quantity FROM artworks WHERE removed = false AND id IN (${
       artwork_ids
         .map(obj => "?")
         .join(", ")
@@ -229,6 +229,31 @@ const getFeatured = async (n) => {
     ))
   }
   
+
+  connection.end()
+  return artworks
+}
+
+const getNewestArtworks = async (n) => { 
+  const connection = await makeConnection()  
+
+  const [results] = await connection.execute(
+    `SELECT id, title, price, quantity FROM artworks WHERE removed = false ORDER BY date_added DESC ${n ? ` LIMIT ${n}` : ""}`
+  )
+
+  let artworks = results
+  if(artworks.length){
+    artworks = await Promise.all(results.map(
+      async(artwork)=>{
+        const thumbnail = await getThumbnail(artwork.id)
+        if(thumbnail){
+          return { ...artwork, thumbnail: thumbnail } 
+        }else{
+          return artwork
+        }
+      }
+    ))
+  }
 
   connection.end()
   return artworks
@@ -617,5 +642,6 @@ export {
     getRegisteredUsers,
     checkIfFeatured,
     findArtworkWithId,
-    getQuantityOfArtworkInStock
+    getQuantityOfArtworkInStock,
+    getNewestArtworks
 }
