@@ -259,6 +259,40 @@ const getNewestArtworks = async (n) => {
   return artworks
 }
 
+const getWishlistedTheMost = async (n) => { 
+  const connection = await makeConnection()  
+
+  const [results] = await connection.execute(
+    `SELECT times_wishlisted, artworks.id, artworks.title, artworks.price, artworks.quantity 
+    FROM artworks 
+    LEFT JOIN
+      (
+        SELECT COUNT(*) AS times_wishlisted, artwork_id FROM wishlisted WHERE removed = false GROUP BY artwork_id
+      ) as wishlisted
+    ON artworks.id = wishlisted.artwork_id
+    WHERE artworks.removed = false
+    ORDER BY wishlisted.times_wishlisted DESC 
+    ${n ? ` LIMIT ${n}` : ""}`
+  )
+
+  let artworks = results
+  if(artworks.length){
+    artworks = await Promise.all(results.map(
+      async(artwork)=>{
+        const thumbnail = await getThumbnail(artwork.id)
+        if(thumbnail){
+          return { ...artwork, thumbnail: thumbnail } 
+        }else{
+          return artwork
+        }
+      }
+    ))
+  }
+
+  connection.end()
+  return artworks
+}
+
 const getThumbnail = async (id) => {
     const connection = await makeConnection() 
     const [thumbnail] = await connection.query(
@@ -643,5 +677,6 @@ export {
     checkIfFeatured,
     findArtworkWithId,
     getQuantityOfArtworkInStock,
-    getNewestArtworks
+    getNewestArtworks,
+    getWishlistedTheMost
 }
