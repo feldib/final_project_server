@@ -208,7 +208,7 @@ const getFeatured = async (n) => {
   `)
 
   const [results] = await connection.query(
-    `SELECT id, title, price, quantity FROM artworks WHERE removed = false AND id IN (${
+    `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false AND id IN (${
       artwork_ids
         .map(obj => "?")
         .join(", ")
@@ -238,7 +238,7 @@ const getNewestArtworks = async (n) => {
   const connection = await makeConnection()  
 
   const [results] = await connection.execute(
-    `SELECT id, title, price, quantity FROM artworks WHERE removed = false ORDER BY date_added DESC ${n ? ` LIMIT ${n}` : ""}`
+    `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false ORDER BY date_added DESC ${n ? ` LIMIT ${n}` : ""}`
   )
 
   let artworks = results
@@ -263,7 +263,7 @@ const getWishlistedTheMost = async (n) => {
   const connection = await makeConnection()  
 
   const [results] = await connection.execute(
-    `SELECT times_wishlisted, artworks.id, artworks.title, artworks.price, artworks.quantity 
+    `SELECT times_wishlisted, artworks.id, artworks.title, artworks.price, artworks.quantity, artworks.artist_name
     FROM artworks 
     LEFT JOIN
       (
@@ -487,7 +487,7 @@ const getWishlisted = async (user_id, n) => {
   const connection = await makeConnection()
 
   const [wishlisted] = await connection.query(`
-      SELECT artworks.id, artworks.title, artworks.price, artworks.artist_name, artworks.quantity, artworks.category_id 
+      SELECT artworks.id, artworks.title, artworks.price, artworks.artist_name, artworks.quantity, artworks.category_id, artworks.artist_name 
       FROM artworks LEFT JOIN wishlisted 
       ON artworks.id = wishlisted.artwork_id
       WHERE wishlisted.user_id = ? 
