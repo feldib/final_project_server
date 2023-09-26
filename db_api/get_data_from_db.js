@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 dotenv.config()
 import { createConnection } from "mysql2/promise"
+import fs from 'fs/promises'
 
 const makeConnection = async () =>
   createConnection({
@@ -293,29 +294,26 @@ const getWishlistedTheMost = async (n) => {
   return artworks
 }
 
-const getThumbnail = async (id) => {
-    const connection = await makeConnection() 
-    const [thumbnail] = await connection.query(
-        `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = true`, [id]
-        )
-    connection.end()
-    return thumbnail[0].picture_path
+const getThumbnail = async (artwork_id) => {
+  const path = `images/${artwork_id}/thumbnail`
+
+  const files = await fs.readdir(`public/${path}`)
+
+  const file_name = files[0]
+
+  return `${path}/${file_name}`
 }
 
 const getOtherPictures = async (artwork_id) => {
-  const connection = await makeConnection() 
-  const [results] = await connection.query(
-      `SELECT picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false`, [artwork_id]
-      )
-  let pictures = results
-  if(results.length){
-    pictures.map((pic)=>{
-      return pic.picture_path
-    })
-  }
+  const path = `images/${artwork_id}/other_pictures`
 
-  connection.end()
-  return pictures
+  const pictures = await fs.readdir(`public/${path}`)
+
+  const picture_paths = pictures.map((file_name)=>{
+    return `${path}/${file_name}`
+  })
+
+  return picture_paths
 }
 
 const checkIfRegistered = async (email) => {
@@ -395,16 +393,14 @@ const getDataOfArtwork = async (id) => {
   const connection = await makeConnection()
 
   const [artworks] = await connection.query(
-    `SELECT artwork_pictures.picture_path 'thumbnail', categories.cname, 
+    `SELECT categories.cname, 
     artworks.title, artworks.artist_name, artworks.price, 
     artworks.quantity, artworks.category_id, artworks.date_added, 
     artworks.descript 
     FROM artworks 
     LEFT JOIN categories ON artworks.category_id = categories.id
-    LEFT JOIN artwork_pictures ON artworks.id = artwork_pictures.artwork_id
     WHERE artworks.id=? 
-    AND categories.removed = false 
-    AND artwork_pictures.is_thumbnail = true`,
+    AND categories.removed = false`,
     [id]
   )
 
@@ -412,6 +408,7 @@ const getDataOfArtwork = async (id) => {
   const artwork = artworks[0]
   if(artwork){
     const tags = await getSpecificTags(id)
+    artwork.thumbnail = await getThumbnail(id)
     artwork.tags = tags
     artwork.other_pictures = await getOtherPictures(id)
   }
