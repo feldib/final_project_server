@@ -1,5 +1,6 @@
-import { Router } from 'express';
+import { Router } from 'express'
 const router = Router()
+import fs from 'fs/promises'
 
 import { verifyAdmin } from '../db_api/verification.js';
 
@@ -25,7 +26,104 @@ import {
   updateArtworkData
 } from '../db_api/change_value_in_database.js'
 
-import { sendReplyToMessage } from '../db_api/send_email.js';
+import { sendReplyToMessage } from '../db_api/send_email.js'
+
+const now = new Date()
+
+import multer from 'multer'
+
+const newTumbnailStorage = multer.diskStorage({
+  destination: function(req, file, cb){
+
+    console.log("req: ", req)
+    
+    console.log("thumbnail file:", file)
+
+
+    cb(null, `images/${req.query.artwork_id}/thumbnail`)
+
+  },
+
+  filename:  function(req, file, cb){
+
+    console.log("thumbnail path:", `${req.query.artwork_id}_${now}_${file.originalname}`)
+
+
+    cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`)
+  }
+})
+
+const newOtherImagesStorage = multer.diskStorage({
+  destination: function(req, file, cb){
+      
+      console.log("other pictures file:", file)
+      
+      cb(null, `images/${req.query.artwork_id}/other_pictures`)
+  },
+
+  filename:  function(req, file, cb){
+
+    console.log("other pictures path:", `${req.query.artwork_id}_${now}_${file.originalname}`)
+
+    cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`)
+  }
+})
+
+const uploadNewThumbnail = multer({storage: newTumbnailStorage})
+
+const uploadNewOtherImages = multer({storage: newOtherImagesStorage})
+
+async function checkThumbnailPath(req, res, next){
+  let imagePath = `images/${req.query.artwork_id}/thumbnail`
+
+  console.log("req: ", req)
+    
+  await fs.access(imagePath, fs.constants.F_OK)
+    .catch(async(err)=>{
+      if(err){
+        await fs.mkdir(imagePath, {recursive: true})
+      }
+    })
+    
+  next()
+}
+
+async function checkOtherPicturesPath(req, res, next){
+  let imagePath = `images/${req.query.artwork_id}/other_pictures`
+    
+  await fs.access(imagePath, fs.constants.F_OK)
+    .catch(async(err)=>{
+      if(err){
+        await fs.mkdir(imagePath, {recursive: true})
+      }
+    })
+    
+  next()
+}
+
+router.post('/thumbnail', 
+  verifyAdmin, 
+  checkThumbnailPath,
+  uploadNewThumbnail.single('thumbnail'), 
+  function(req,res){
+
+    console.log("req.file: ", req.file)
+
+    res.end()
+  }
+)
+
+router.post('/picture', 
+  verifyAdmin, 
+  checkOtherPicturesPath,
+  uploadNewOtherImages.single('picture'), 
+  function(req,res){
+
+    console.log("req.file: ", req.file)
+
+    res.end()
+  }
+)
 
 router.get('/get_unapproved_reviews', verifyAdmin, async function(req, res){
     const reviews = await getUnapprovedReviews()
@@ -93,8 +191,9 @@ router.post('/remove_from_featured', verifyAdmin, async function(req, res){
 
 router.post('/add_new_artwork', verifyAdmin, async function(req, res){
   const artwork = req.body.artwork
-  await addNewArtwork(artwork)
-  res.end()
+  const artwork_id = await addNewArtwork(artwork)
+
+  res.json(artwork_id)
 
 })
 

@@ -1,5 +1,5 @@
-import { Router } from 'express';
-const router = Router();
+import { Router } from 'express'
+const router = Router()
 
 import { verifyUser } from '../db_api/verification.js';
 

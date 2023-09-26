@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 dotenv.config()
 import { createConnection } from "mysql2/promise"
 import { checkIfWishlisted, checkIfFeatured, getQuantityOfArtworkInStock } from "./get_data_from_db.js"
-import { addToShoppingList, addArtworkTags, addPictures } from './add_to_database.js' 
+import { addToShoppingList, addArtworkTags } from './add_to_database.js' 
 
 const makeConnection = async () =>
   createConnection({
@@ -177,75 +177,6 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
     connection.end()
   }
 
-  const updateArtworkPictures = async (artwork_id, other_pictures) => {
-    const connection = await makeConnection()
-
-    const [pictures_of_artwork] = await connection.query(`
-        SELECT id, picture_path FROM artwork_pictures WHERE artwork_id = ? AND is_thumbnail = false
-      `, [artwork_id]) 
-
-    const picturesToAdd = other_pictures.filter(
-      (picture)=>{
-
-
-        return !pictures_of_artwork.map((pic)=>{
-
-
-
-          return pic.picture_path
-
-        }).includes(
-
-          picture
-
-        )
-      }
-    )
-
-    await addPictures(artwork_id, picturesToAdd)
-
-    const picturesToRemove = pictures_of_artwork.filter(
-      (picture)=>{
-
-        return !other_pictures.map((pic)=>{
-
-          return pic
-
-        }).includes(
-
-          picture.picture_path
-
-        )
-      }
-    )    
-
-    await Promise.all(picturesToRemove.map(async (picture) => {
-      await connection.query(`
-        UPDATE artwork_pictures SET removed = true WHERE artwork_id = ? AND picture_path = ?
-      `, [artwork_id, picture.picture_path]) 
-    }))
-
-    connection.end()
-  }
-
-  const updateThumbnail = async (artwork_id, thumbnail) => {
-
-    const connection = await makeConnection()
-
-    const [results] = await connection.query(`
-      SELECT id FROM artwork_pictures WHERE is_thumbnail = true AND artwork_id = ?
-    `, [artwork_id])
-
-    if(results.length){
-      await connection.query(`
-        UPDATE artwork_pictures SET picture_path = ? WHERE id = ?
-      `, [thumbnail, results[0].id])
-    }
-
-    connection.end()
-
-  }
-
   const updateArtworkData = async (artwork_id, field_name, value) => {
  
     if(
@@ -266,18 +197,7 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n=1) => {
         return tag.tname
       }))
 
-    }else if("other_pictures" === field_name){
-
-      await updateArtworkPictures(artwork_id, value.map((pic)=>{
-        return pic.picture_path
-      }))
-
-    }else if("thumbnail" === field_name){
-
-      await updateThumbnail(artwork_id, value)
-
     }
-
   }  
 
   const approveReview = async (id) =>{
