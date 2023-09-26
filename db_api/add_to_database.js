@@ -138,46 +138,8 @@ const makeOrder = async (user_id, invoice_data) => {
     connection.end()
   }
 
-  const addPictures = async (artwork_id, picture_paths) => {
-  
-    Promise.all(picture_paths.map(async(picture_path)=>{
-      let connection = await makeConnection()
-
-      const [res] = await connection.query(`
-        SELECT removed FROM artwork_pictures WHERE artwork_id=? AND picture_path=?
-      `, [
-        artwork_id,
-        picture_path,
-      ])
-
-      if(res.length){
-        await connection.query(`
-            UPDATE artwork_pictures SET removed = false WHERE artwork_id=? AND picture_path=?
-          `, [
-            artwork_id,
-            picture_path,
-          ])
-      }else{
-        await connection.query(`
-          INSERT INTO artwork_pictures(artwork_id, picture_path)
-          VALUES (?, ?)
-        `, [
-            artwork_id,
-            picture_path,
-          ])
-      }
-
-      connection.end()
-      
-    }))
-  }
-
   const addArtworkTags = async (artwork_id, tags) => {
     Promise.all(tags.map(async(tag)=>{
-
-      console.log()
-      console.log("artwork_id: ", artwork_id)
-      console.log("tag: ", tag)
   
       let connection = await makeConnection()
   
@@ -205,16 +167,12 @@ const makeOrder = async (user_id, invoice_data) => {
             INSERT INTO tags (tname) value (?)
           `, [tag])
           tag_id = insertedResult[0].insertId
-
-          console.log("!results.length, insertedResult[0].insertId: ", insertedResult[0].insertId)
       }
 
       const [prevArtworkTags] = await connection.query(`
       SELECT id, removed FROM artwork_tags WHERE artwork_id = ? AND tag_id = ?
     `, [artwork_id, tag_id])
     
-    console.log("prevArtworkTags: ", JSON.stringify(prevArtworkTags))
-
       if(!prevArtworkTags.length){
 
         await connection.query(`
@@ -255,18 +213,10 @@ const makeOrder = async (user_id, invoice_data) => {
      
       await addArtworkTags(artwork_id, artwork.tags)
   
-      await connection.query(`
-        INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail)
-        VALUES (?, ?, ?)
-      `, [
-          artwork_id,
-          artwork.thumbnail,
-          true
-        ])
-  
     connection.end()
+
+    return artwork_id
   
-    addPictures(artwork_id, artwork.other_pictures)
   }
 
   const addToWishlisted = async (user_id, artwork_id) => {
@@ -299,5 +249,4 @@ export {
     addNewArtwork,
     addToWishlisted,
     addArtworkTags,
-    addPictures
 }
