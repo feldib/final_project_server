@@ -1,6 +1,8 @@
 import { Router } from 'express'
 const router = Router()
 import fs from 'fs/promises'
+import dotenv from "dotenv"
+dotenv.config()
 
 import { verifyAdmin } from '../db_api/verification.js';
 
@@ -35,7 +37,7 @@ import multer from 'multer'
 const newTumbnailStorage = multer.diskStorage({
   destination: function(req, file, cb){
 
-    cb(null, `images/${req.query.artwork_id}/thumbnail`)
+    cb(null, `public/images/${req.query.artwork_id}/thumbnail`)
 
   },
 
@@ -62,7 +64,7 @@ const uploadNewThumbnail = multer({storage: newTumbnailStorage})
 const uploadNewOtherImages = multer({storage: newOtherImagesStorage})
 
 async function checkThumbnailPath(req, res, next){
-  let imagePath = `images/${req.query.artwork_id}/thumbnail`
+  let imagePath = `public/images${req.query.artwork_id}/thumbnail`
     
   await fs.access(imagePath, fs.constants.F_OK)
     .catch(async(err)=>{
@@ -75,7 +77,7 @@ async function checkThumbnailPath(req, res, next){
 }
 
 async function checkOtherPicturesPath(req, res, next){
-  let imagePath = `images/${req.query.artwork_id}/other_pictures`
+  let imagePath = `public/images${req.query.artwork_id}/other_pictures`
     
   await fs.access(imagePath, fs.constants.F_OK)
     .catch(async(err)=>{
@@ -97,22 +99,9 @@ router.post('/thumbnail',
   }
 )
 
-async function checkThumbnailPath(req, res, next){
-  let imagePath = `images/${req.body.artwork_id}/thumbnail`
-    
-  await fs.access(imagePath, fs.constants.F_OK)
-    .catch(async(err)=>{
-      if(err){
-        await fs.mkdir(imagePath, {recursive: true})
-      }
-    })
-    
-  next()
-}
-
 async function removePreviousThumbnail(req, res, next){
 
-  const path = `images/${req.body.artwork_id}/thumbnail`
+  const path = `public/images${req.body.artwork_id}/thumbnail`
 
   const files = await fs.readdir(path)
 
@@ -140,6 +129,16 @@ async function removePicture(req, res, next){
 
   next()
 }
+
+router.get('/name_of_other_pictures', async function(req,res){
+  const artwork_id = req.query.artwork_id
+
+  const path = `public/images${artwork_id}/other_pictures`
+
+  const files = await fs.readdir(path)
+
+  res.json(files)
+})
 
 router.post('/remove_picture', 
   verifyAdmin, 
