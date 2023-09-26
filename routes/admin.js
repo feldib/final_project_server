@@ -35,19 +35,11 @@ import multer from 'multer'
 const newTumbnailStorage = multer.diskStorage({
   destination: function(req, file, cb){
 
-    console.log("req: ", req)
-    
-    console.log("thumbnail file:", file)
-
-
     cb(null, `images/${req.query.artwork_id}/thumbnail`)
 
   },
 
   filename:  function(req, file, cb){
-
-    console.log("thumbnail path:", `${req.query.artwork_id}_${now}_${file.originalname}`)
-
 
     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`)
   }
@@ -55,15 +47,11 @@ const newTumbnailStorage = multer.diskStorage({
 
 const newOtherImagesStorage = multer.diskStorage({
   destination: function(req, file, cb){
-      
-      console.log("other pictures file:", file)
-      
+            
       cb(null, `images/${req.query.artwork_id}/other_pictures`)
   },
 
   filename:  function(req, file, cb){
-
-    console.log("other pictures path:", `${req.query.artwork_id}_${now}_${file.originalname}`)
 
     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`)
   }
@@ -75,8 +63,6 @@ const uploadNewOtherImages = multer({storage: newOtherImagesStorage})
 
 async function checkThumbnailPath(req, res, next){
   let imagePath = `images/${req.query.artwork_id}/thumbnail`
-
-  console.log("req: ", req)
     
   await fs.access(imagePath, fs.constants.F_OK)
     .catch(async(err)=>{
@@ -107,8 +93,59 @@ router.post('/thumbnail',
   uploadNewThumbnail.single('thumbnail'), 
   function(req,res){
 
-    console.log("req.file: ", req.file)
+    res.end()
+  }
+)
 
+async function checkThumbnailPath(req, res, next){
+  let imagePath = `images/${req.body.artwork_id}/thumbnail`
+    
+  await fs.access(imagePath, fs.constants.F_OK)
+    .catch(async(err)=>{
+      if(err){
+        await fs.mkdir(imagePath, {recursive: true})
+      }
+    })
+    
+  next()
+}
+
+async function removePreviousThumbnail(req, res, next){
+
+  const path = `images/${req.body.artwork_id}/thumbnail`
+
+  const files = await fs.readdir(path)
+
+  await Promise.all(files.map((file)=>{
+    fs.unlink(`${path}/${file}`)
+  }))
+
+  next()
+}
+
+router.post('/replace_thumbnail', 
+  verifyAdmin, 
+  removePreviousThumbnail,
+  checkThumbnailPath,
+  uploadNewThumbnail.single('thumbnail'), 
+  function(req,res){
+
+    res.end()
+  }
+)
+
+async function removePicture(req, res, next){
+
+  await fs.unlink(`${path}/${req.file.originalname}`)
+
+  next()
+}
+
+router.post('/remove_picture', 
+  verifyAdmin, 
+  checkOtherPicturesPath,
+  uploadNewOtherImages.single('picture'), 
+  function(req,res){
     res.end()
   }
 )
@@ -118,9 +155,6 @@ router.post('/picture',
   checkOtherPicturesPath,
   uploadNewOtherImages.single('picture'), 
   function(req,res){
-
-    console.log("req.file: ", req.file)
-
     res.end()
   }
 )
