@@ -50,7 +50,7 @@ const newTumbnailStorage = multer.diskStorage({
 const newOtherImagesStorage = multer.diskStorage({
   destination: function(req, file, cb){
             
-      cb(null, `images/${req.query.artwork_id}/other_pictures`)
+      cb(null, `public/images/${req.query.artwork_id}/other_pictures`)
   },
 
   filename:  function(req, file, cb){
@@ -64,7 +64,7 @@ const uploadNewThumbnail = multer({storage: newTumbnailStorage})
 const uploadNewOtherImages = multer({storage: newOtherImagesStorage})
 
 async function checkThumbnailPath(req, res, next){
-  let imagePath = `public/images${req.query.artwork_id}/thumbnail`
+  let imagePath = `public/images/${req.query.artwork_id}/thumbnail`
     
   await fs.access(imagePath, fs.constants.F_OK)
     .catch(async(err)=>{
@@ -77,7 +77,7 @@ async function checkThumbnailPath(req, res, next){
 }
 
 async function checkOtherPicturesPath(req, res, next){
-  let imagePath = `public/images${req.query.artwork_id}/other_pictures`
+  let imagePath = `public/images/${req.query.artwork_id}/other_pictures`
     
   await fs.access(imagePath, fs.constants.F_OK)
     .catch(async(err)=>{
@@ -101,7 +101,7 @@ router.post('/thumbnail',
 
 async function removePreviousThumbnail(req, res, next){
 
-  const path = `public/images${req.body.artwork_id}/thumbnail`
+  const path = `public/images/${req.query.artwork_id}/thumbnail`
 
   const files = await fs.readdir(path)
 
@@ -118,33 +118,17 @@ router.post('/replace_thumbnail',
   checkThumbnailPath,
   uploadNewThumbnail.single('thumbnail'), 
   function(req,res){
-
     res.end()
   }
 )
 
-async function removePicture(req, res, next){
-
-  await fs.unlink(`${path}/${req.file.originalname}`)
-
-  next()
+async function removePicture(artwork_id, file_name){
+  const path = `public/images/${artwork_id}/other_pictures`
+  await fs.unlink(`${path}/${file_name}`)
 }
 
-router.get('/name_of_other_pictures', async function(req,res){
-  const artwork_id = req.query.artwork_id
-
-  const path = `public/images${artwork_id}/other_pictures`
-
-  const files = await fs.readdir(path)
-
-  res.json(files)
-})
-
-router.post('/remove_picture', 
-  verifyAdmin, 
-  checkOtherPicturesPath,
-  uploadNewOtherImages.single('picture'), 
-  function(req,res){
+router.post('/remove_picture', verifyAdmin, async function(req,res){
+    await removePicture(req.body.artwork_id, req.body.file_name)
     res.end()
   }
 )
