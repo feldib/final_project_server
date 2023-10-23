@@ -82,10 +82,25 @@ const getSpecificTags = async (artwork_id) => {
   return tags
 }
 
-const searchArtworks = async (min, max, title, artist_name, category_id, order, n, offset) => {
+const searchArtworks = async (min, max, title, artist_name, category_id, order, n, offset, only_featured) => {
   const connection = await makeConnection()
 
-  let sql_query = "SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks WHERE removed=false"
+  let sql_query = `
+    SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
+  `
+  if(only_featured==="true"){
+    sql_query += `
+     RIGHT JOIN featured
+     ON featured.artwork_id = artworks.id
+     WHERE featured.removed=false
+     AND `
+  }else{
+    sql_query += " WHERE "
+  }
+
+  sql_query += " artworks.removed=false "
+
+  console.log(`only_featured = ${only_featured}`)
 
   const data = []
 
@@ -163,7 +178,7 @@ const searchArtworks = async (min, max, title, artist_name, category_id, order, 
     data.push(parseInt(offset))
   }
   
-  console.log("offset", offset)
+  console.log(sql_query)
 
   const [artworks] = await connection.query(sql_query + ";", data)
   connection.end()
