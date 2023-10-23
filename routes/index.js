@@ -75,8 +75,8 @@ router.get('/categories', async function(req, res){
 })
 
 router.get('/search_artworks', async function(req, res){
-  const {min, max, title, artist_name, category_id, order, n, offset} = req.query
-  const results = await searchArtworks(min, max, title, artist_name, category_id, order, n, offset)
+  const {min, max, title, artist_name, category_id, order, n, offset, only_featured} = req.query
+  const results = await searchArtworks(min, max, title, artist_name, category_id, order, n, offset, only_featured)
   if(!results.length){
     console.log("No results for the search.")
   }
