@@ -312,9 +312,13 @@ const getWishlistedTheMost = async (n) => {
 const getThumbnail = async (artwork_id) => {
   const path = `images/${artwork_id}/thumbnail`
 
-  const files = await fs.readdir(`public/${path}`)
+  const files = await fs.readdir(`public/${path}`).catch(
+    ()=>{
+      return undefined
+    }
+  )
 
-  const file_name = files[0]
+  const file_name = files ? files[0] : ""
 
   return `${path}/${file_name}`
 }
@@ -322,13 +326,20 @@ const getThumbnail = async (artwork_id) => {
 const getOtherPictures = async (artwork_id) => {
   const path = `images/${artwork_id}/other_pictures`
 
-  const pictures = await fs.readdir(`public/${path}`)
-
-  const picture_paths = pictures.map((file_name)=>{
-    return `${path}/${file_name}`
+  const pictures = await fs.readdir(`public/${path}`).catch(()=>{
+    return undefined
   })
 
-  return picture_paths
+  if(pictures){
+    const picture_paths = pictures.map((file_name)=>{
+      return `${path}/${file_name}`
+    })
+  
+    return picture_paths
+  }else{
+    return []
+  }
+  
 }
 
 const checkIfRegistered = async (email) => {
