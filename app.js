@@ -28,7 +28,7 @@ app.use(
 )
 
 app.use(cors({
-  origin: ['http://localhost:3001'],
+  origin: [process.env.CLIENT_HOST],
   methods: ["POST", "GET"],
   credentials: true
 

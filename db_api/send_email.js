@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 dotenv.config()
 import { createConnection } from "mysql2/promise"
 
-const client_host = "http://localhost:3001"
+const client_host = process.env.CLIENT_HOST
 
 const makeConnection = async () =>
   createConnection({
