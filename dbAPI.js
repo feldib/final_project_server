@@ -4,14 +4,11 @@ import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 dotenv.config()
 
-const client_host = "http://localhost:3001"
-
-
 const makeConnection = async () =>
   createConnection({
-    host: process.env.HOST,
+    host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    user: process.env.USER,
+    user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 })
@@ -307,7 +304,7 @@ const sendLinkToResetPassword = async ({email, id}) => {
         subject: 'Reset password',
         html: `
             <p>Click here to reset your password: </p>
-            <a href = "${client_host}/reset_password?token=${token}&email=${email}">Link</a>
+            <a href = "${process.env.CLIENT_HOST}/reset_password?token=${token}&email=${email}">Link</a>
         `
         };
           
