@@ -1,0 +1,56 @@
+export function getUser(email: any, password: any): Promise<any>;
+export function getCategories(): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function searchArtworks(min: any, max: any, title: any, artist_name: any, category_id: any, order: any, n: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function getFeatured(n: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function getThumbnail(id: any): Promise<any>;
+export function checkIfRegistered(email: any): Promise<boolean>;
+export function registerUser(last_name: any, first_name: any, email: any, password: any): Promise<void>;
+export function checkEmail(email: any): Promise<{
+    registered: boolean;
+    id: any;
+} | {
+    registered: boolean;
+    id?: undefined;
+}>;
+export function sendLinkToResetPassword({ email, id }: {
+    email: any;
+    id: any;
+}): Promise<void>;
+export function resetPassword(new_password: any, email: any): Promise<void>;
+export function getUserWithId(id: any): Promise<any>;
+export function verifyPaswordToken(req: any, res: any, next: any): void;
+export function verifyUser(req: any, res: any, next: any): void;
+export function getDataOfArtwork(id: any): Promise<any>;
+export function getReviewsOfArtwork(artwork_id: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function saveMessgeToAdministrator(email: any, title: any, message: any): Promise<void>;
+export function checkIfArtworkInStock(id: any): Promise<boolean | Error>;
+export function addToShoppingList(user_id: any, artwork_id: any): Promise<void>;
+export function getShoppingListItems(user_id: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function getSpecificCategory(category_id: any): Promise<any>;
+export function setShoppingCartItemQuantityToZero(user_id: any, artwork_id: any): Promise<void>;
+export function increaseShoppingCartItemQuantity(user_id: any, artwork_id: any): Promise<void>;
+export function decreaseShoppingCartItemQuantity(user_id: any, artwork_id: any): Promise<void>;
+export function addToWishlisted(user_id: any, artwork_id: any): Promise<void>;
+export function removeFromWishlisted(user_id: any, artwork_id: any): Promise<void>;
+export function getWishlisted(user_id: any, n: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function checkIfWishlisted(user_id: any, artwork_id: any): Promise<boolean>;
+export function updateUserData(user_id: any, field_name: any, value: any): Promise<void>;
+export function makeOrder(user_id: any, invoice_data: any): Promise<void>;
+export function getOrdersOfUser(user_id: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function leaveReview(user_id: any, artwork_id: any, title: any, review_text: any): Promise<void>;
+export function getUnapprovedReviews(): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function verifyAdmin(req: any, res: any, next: any): void;
+export function approveReview(id: any): Promise<void>;
+export function removeReview(id: any): Promise<void>;
+export function getReviewsOfUser(user_id: any): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function getOrders(): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function getUnansweredMessages(): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function sendReplyToMessage(message_id: any, email: any, reply_title: any, reply_text: any): Promise<void>;
+export function getRegisteredUsers(): Promise<import("mysql2").OkPacket | import("mysql2").RowDataPacket[] | import("mysql2").ResultSetHeader[] | import("mysql2").RowDataPacket[][] | import("mysql2").OkPacket[] | import("mysql2").ProcedureCallPacket>;
+export function removeArtwork(artwork_id: any): Promise<void>;
+export function checkIfFeatured(artwork_id: any): Promise<boolean>;
+export function addToFeatured(artwork_id: any): Promise<void>;
+export function removeArtworkFromFeatured(artwork_id: any): Promise<void>;
+export function addNewArtwork(artwork: any): Promise<void>;
+export function addArtworkTags(artwork_id: any, tags: any): Promise<void>;
+//# sourceMappingURL=dbAPI.d.ts.map
