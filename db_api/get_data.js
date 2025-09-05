@@ -3,7 +3,7 @@ dotenv.config();
 import fs from "fs/promises";
 import makeConnection from "../connection.js";
 
-const getUser = async (email, password) => {
+export const getUser = async (email, password) => {
   const connection = await makeConnection();
   const [results] = await connection.query(
     `SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;`,
@@ -16,7 +16,7 @@ const getUser = async (email, password) => {
   return user;
 };
 
-const getUserWithId = async (id) => {
+export const getUserWithId = async (id) => {
   const connection = await makeConnection();
   const [results] = await connection.query(
     `SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;`,
@@ -30,7 +30,7 @@ const getUserWithId = async (id) => {
   return user;
 };
 
-const getRegisteredUsers = async () => {
+export const getRegisteredUsers = async () => {
   const connection = await makeConnection();
   const [users] = await connection.execute(
     `SELECT id, last_name, first_name, email, address, phone_number FROM users
@@ -41,7 +41,7 @@ const getRegisteredUsers = async () => {
   return users;
 };
 
-const getCategories = async () => {
+export const getCategories = async () => {
   const connection = await makeConnection();
   const [results] = await connection.execute(
     "SELECT id, cname FROM categories WHERE removed = false;"
@@ -50,7 +50,7 @@ const getCategories = async () => {
   return results;
 };
 
-const getSpecificCategory = async (category_id) => {
+export const getSpecificCategory = async (category_id) => {
   const connection = await makeConnection();
   const [result] = await connection.query(
     `SELECT cname FROM categories WHERE id=? AND removed = false;`,
@@ -61,7 +61,7 @@ const getSpecificCategory = async (category_id) => {
   return cname;
 };
 
-const getSpecificTags = async (artwork_id) => {
+export const getSpecificTags = async (artwork_id) => {
   const connection = await makeConnection();
   const [tags] = await connection.query(
     `SELECT tags.id, tags.tname 
@@ -77,7 +77,7 @@ const getSpecificTags = async (artwork_id) => {
   return tags;
 };
 
-const searchArtworks = async (
+export const searchArtworks = async (
   min,
   max,
   title,
@@ -193,7 +193,7 @@ const searchArtworks = async (
   return artworks;
 };
 
-const findArtworkWithId = async (artwork_id) => {
+export const findArtworkWithId = async (artwork_id) => {
   const connection = await makeConnection();
 
   const [result] = await connection.query(
@@ -217,7 +217,7 @@ const findArtworkWithId = async (artwork_id) => {
   return artwork;
 };
 
-const getFeatured = async (n) => {
+export const getFeatured = async (n) => {
   const connection = await makeConnection();
   const [artwork_ids] = await connection.execute(`
     SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC
@@ -248,7 +248,7 @@ const getFeatured = async (n) => {
   return artworks;
 };
 
-const getNewestArtworks = async (n) => {
+export const getNewestArtworks = async (n) => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute(
@@ -275,7 +275,7 @@ const getNewestArtworks = async (n) => {
   return artworks;
 };
 
-const getWishlistedTheMost = async (n) => {
+export const getWishlistedTheMost = async (n) => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute(
@@ -309,7 +309,7 @@ const getWishlistedTheMost = async (n) => {
   return artworks;
 };
 
-const getThumbnail = async (artwork_id) => {
+export const getThumbnail = async (artwork_id) => {
   const path = `images/${artwork_id}/thumbnail`;
 
   const files = await fs.readdir(`public/${path}`).catch(() => {
@@ -321,7 +321,7 @@ const getThumbnail = async (artwork_id) => {
   return `${path}/${file_name}`;
 };
 
-const getOtherPictures = async (artwork_id) => {
+export const getOtherPictures = async (artwork_id) => {
   const path = `images/${artwork_id}/other_pictures`;
 
   const pictures = await fs.readdir(`public/${path}`).catch(() => {
@@ -339,7 +339,7 @@ const getOtherPictures = async (artwork_id) => {
   }
 };
 
-const checkIfRegistered = async (email) => {
+export const checkIfRegistered = async (email) => {
   const connection = await makeConnection();
   const [results, fields] = await connection.query(
     `SELECT id, is_admin FROM users WHERE email = ?;`,
@@ -349,7 +349,7 @@ const checkIfRegistered = async (email) => {
   return results.length !== 0;
 };
 
-const checkEmail = async (email) => {
+export const checkEmail = async (email) => {
   const connection = await makeConnection();
   const [results, fields] = await connection.query(
     `SELECT id FROM users WHERE email = ?;`,
@@ -368,7 +368,7 @@ const checkEmail = async (email) => {
   }
 };
 
-const getReviewsOfArtwork = async (artwork_id) => {
+export const getReviewsOfArtwork = async (artwork_id) => {
   const connection = await makeConnection();
   const [reviews] = await connection.query(
     `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
@@ -382,7 +382,7 @@ const getReviewsOfArtwork = async (artwork_id) => {
   return reviews;
 };
 
-const getUnapprovedReviews = async () => {
+export const getUnapprovedReviews = async () => {
   const connection = await makeConnection();
   const [reviews] = await connection.execute(
     `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
@@ -398,7 +398,7 @@ const getUnapprovedReviews = async () => {
   return reviews;
 };
 
-const getReviewsOfUser = async (user_id) => {
+export const getReviewsOfUser = async (user_id) => {
   const connection = await makeConnection();
   const [reviews] = await connection.query(
     `SELECT reviews.id, reviews.time_review_posted, reviews.title, 
@@ -414,7 +414,7 @@ const getReviewsOfUser = async (user_id) => {
   return reviews;
 };
 
-const getDataOfArtwork = async (id) => {
+export const getDataOfArtwork = async (id) => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query(
@@ -440,7 +440,7 @@ const getDataOfArtwork = async (id) => {
   return artwork;
 };
 
-const checkIfArtworkInStock = async (id) => {
+export const checkIfArtworkInStock = async (id) => {
   const connection = await makeConnection();
 
   const [result] = await connection.query(
@@ -459,7 +459,7 @@ const checkIfArtworkInStock = async (id) => {
   }
 };
 
-const getShoppingListItems = async (user_id) => {
+export const getShoppingListItems = async (user_id) => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query(
@@ -496,7 +496,7 @@ const getShoppingListItems = async (user_id) => {
   return results;
 };
 
-const checkIfWishlisted = async (user_id, artwork_id) => {
+export const checkIfWishlisted = async (user_id, artwork_id) => {
   const connection = await makeConnection();
 
   const [prev] = await connection.query(
@@ -513,7 +513,7 @@ const checkIfWishlisted = async (user_id, artwork_id) => {
   }
 };
 
-const getWishlisted = async (user_id, n) => {
+export const getWishlisted = async (user_id, n) => {
   const connection = await makeConnection();
 
   const [wishlisted] = await connection.query(
@@ -551,7 +551,7 @@ const getWishlisted = async (user_id, n) => {
   return results;
 };
 
-const getOrderData = async (order_id) => {
+export const getOrderData = async (order_id) => {
   const connection = await makeConnection();
 
   const [results] = await connection.query(
@@ -586,7 +586,7 @@ const getOrderData = async (order_id) => {
   return results;
 };
 
-const getOrdersOfUser = async (user_id) => {
+export const getOrdersOfUser = async (user_id) => {
   const connection = await makeConnection();
 
   const [results] = await connection.query(
@@ -641,7 +641,7 @@ const getOrdersOfUser = async (user_id) => {
   return orderDataCollection;
 };
 
-const getOrders = async () => {
+export const getOrders = async () => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute(
@@ -698,7 +698,7 @@ const getOrders = async () => {
   return orderDataCollection;
 };
 
-const getUnansweredMessages = async () => {
+export const getUnansweredMessages = async () => {
   const connection = await makeConnection();
   const [messages] = await connection.execute(
     `SELECT id, email, message_title, message_txt, message_time
@@ -711,7 +711,7 @@ const getUnansweredMessages = async () => {
   return messages;
 };
 
-const checkIfFeatured = async (artwork_id) => {
+export const checkIfFeatured = async (artwork_id) => {
   const connection = await makeConnection();
 
   const [prev] = await connection.query(
@@ -728,7 +728,7 @@ const checkIfFeatured = async (artwork_id) => {
   }
 };
 
-const getQuantityOfArtworkInStock = async (artwork_id) => {
+export const getQuantityOfArtworkInStock = async (artwork_id) => {
   const connection = await makeConnection();
 
   const [res] = await connection.query(
@@ -741,33 +741,4 @@ const getQuantityOfArtworkInStock = async (artwork_id) => {
   connection.end();
 
   return res[0].quantity;
-};
-
-export {
-  getUser,
-  getCategories,
-  searchArtworks,
-  getFeatured,
-  getThumbnail,
-  checkIfRegistered,
-  checkEmail,
-  getUserWithId,
-  getDataOfArtwork,
-  getReviewsOfArtwork,
-  checkIfArtworkInStock,
-  getShoppingListItems,
-  getSpecificCategory,
-  getWishlisted,
-  checkIfWishlisted,
-  getOrdersOfUser,
-  getUnapprovedReviews,
-  getReviewsOfUser,
-  getOrders,
-  getUnansweredMessages,
-  getRegisteredUsers,
-  checkIfFeatured,
-  findArtworkWithId,
-  getQuantityOfArtworkInStock,
-  getNewestArtworks,
-  getWishlistedTheMost,
 };

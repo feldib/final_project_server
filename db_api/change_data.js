@@ -9,7 +9,11 @@ import {
 import { addToShoppingList, addArtworkTags } from "./add_data.js";
 import makeConnection from "../connection.js";
 
-const incrementItemInShoppingList = async (user_id, artwork_id, n = 1) => {
+export const incrementItemInShoppingList = async (
+  user_id,
+  artwork_id,
+  n = 1
+) => {
   const connection = await makeConnection();
 
   await connection.query(
@@ -25,7 +29,10 @@ const incrementItemInShoppingList = async (user_id, artwork_id, n = 1) => {
   connection.end();
 };
 
-const setShoppingCartItemQuantityToZero = async (user_id, artwork_id) => {
+export const setShoppingCartItemQuantityToZero = async (
+  user_id,
+  artwork_id
+) => {
   const connection = await makeConnection();
 
   const [quantity_results] = await connection.query(
@@ -57,7 +64,7 @@ const setShoppingCartItemQuantityToZero = async (user_id, artwork_id) => {
   connection.end();
 };
 
-const decreaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
+export const decreaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
   const connection = await makeConnection();
 
   const [quantity_results] = await connection.query(
@@ -91,7 +98,7 @@ const decreaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
   connection.end();
 };
 
-const increaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
+export const increaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
   const connection = await makeConnection();
 
   const [quantity_results] = await connection.query(
@@ -127,7 +134,7 @@ const increaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
   connection.end();
 };
 
-const resetPassword = async (new_password, email) => {
+export const resetPassword = async (new_password, email) => {
   const connection = await makeConnection();
   await connection.query(`UPDATE users SET passw = ? WHERE email = ?;`, [
     new_password,
@@ -135,7 +142,7 @@ const resetPassword = async (new_password, email) => {
   ]);
 };
 
-const removeFromWishlisted = async (user_id, artwork_id) => {
+export const removeFromWishlisted = async (user_id, artwork_id) => {
   const connection = await makeConnection();
   const wishlisted = await checkIfWishlisted(user_id, artwork_id);
   if (wishlisted) {
@@ -150,7 +157,7 @@ const removeFromWishlisted = async (user_id, artwork_id) => {
   connection.end();
 };
 
-const updateUserData = async (user_id, field_name, value) => {
+export const updateUserData = async (user_id, field_name, value) => {
   const connection = await makeConnection();
 
   if (
@@ -169,7 +176,7 @@ const updateUserData = async (user_id, field_name, value) => {
   connection.end();
 };
 
-const updateArtworkTags = async (artwork_id, tags) => {
+export const updateArtworkTags = async (artwork_id, tags) => {
   const connection = await makeConnection();
 
   const [tags_of_artwork] = await connection.query(
@@ -210,7 +217,7 @@ const updateArtworkTags = async (artwork_id, tags) => {
   connection.end();
 };
 
-const updateArtworkData = async (artwork_id, field_name, value) => {
+export const updateArtworkData = async (artwork_id, field_name, value) => {
   if (
     [
       "title",
@@ -241,7 +248,7 @@ const updateArtworkData = async (artwork_id, field_name, value) => {
   }
 };
 
-const approveReview = async (id) => {
+export const approveReview = async (id) => {
   const connection = await makeConnection();
   await connection.query(
     `
@@ -253,7 +260,7 @@ const approveReview = async (id) => {
   connection.end();
 };
 
-const removeReview = async (id) => {
+export const removeReview = async (id) => {
   const connection = await makeConnection();
   await connection.query(
     `
@@ -265,7 +272,7 @@ const removeReview = async (id) => {
   connection.end();
 };
 
-const removeFromFeatured = async (artwork_id) => {
+export const removeFromFeatured = async (artwork_id) => {
   const connection = await makeConnection();
   const featured = await checkIfFeatured(artwork_id);
   if (featured) {
@@ -280,7 +287,7 @@ const removeFromFeatured = async (artwork_id) => {
   connection.end();
 };
 
-const removeArtwork = async (artwork_id) => {
+export const removeArtwork = async (artwork_id) => {
   const connection = await makeConnection();
   await connection.query(
     `
@@ -299,7 +306,7 @@ const removeArtwork = async (artwork_id) => {
   connection.end();
 };
 
-const replaceSavedShoppingCart = async (user_id, shopping_cart) => {
+export const replaceSavedShoppingCart = async (user_id, shopping_cart) => {
   const connection = await makeConnection();
 
   const [res] = await connection.query(
@@ -331,20 +338,4 @@ const replaceSavedShoppingCart = async (user_id, shopping_cart) => {
   );
 
   connection.end();
-};
-
-export {
-  setShoppingCartItemQuantityToZero,
-  decreaseShoppingCartItemQuantity,
-  increaseShoppingCartItemQuantity,
-  incrementItemInShoppingList,
-  resetPassword,
-  removeFromWishlisted,
-  updateUserData,
-  approveReview,
-  removeReview,
-  removeFromFeatured,
-  removeArtwork,
-  replaceSavedShoppingCart,
-  updateArtworkData,
 };

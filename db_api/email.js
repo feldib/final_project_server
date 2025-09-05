@@ -6,7 +6,7 @@ dotenv.config();
 
 const client_host = process.env.CLIENT_HOST;
 
-const sendReplyToMessage = async (
+export const sendReplyToMessage = async (
   message_id,
   email,
   reply_title,
@@ -56,7 +56,7 @@ const sendReplyToMessage = async (
   }
 };
 
-const sendLinkToResetPassword = async ({ email, id }) => {
+export const sendLinkToResetPassword = async ({ email, id }) => {
   try {
     const transporter = nodemailer.createTransport({
       service: process.env.TRANSPORTER_SERVICE,
@@ -92,5 +92,3 @@ const sendLinkToResetPassword = async ({ email, id }) => {
     console.log(error);
   }
 };
-
-export { sendReplyToMessage, sendLinkToResetPassword };

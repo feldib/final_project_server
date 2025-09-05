@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
-const verifyPaswordToken = (req, res, next) => {
+export const verifyPaswordToken = (req, res, next) => {
   const { token } = req.body;
   if (!token) {
     res.end("You are not authenticated");
@@ -18,7 +18,7 @@ const verifyPaswordToken = (req, res, next) => {
   }
 };
 
-const verifyUser = (req, res, next) => {
+export const verifyUser = (req, res, next) => {
   console.log(req.session.userid);
   if (!req.session.userid) {
     res.status(401).end("You are not authenticated");
@@ -28,7 +28,7 @@ const verifyUser = (req, res, next) => {
   }
 };
 
-const verifyAdmin = (req, res, next) => {
+export const verifyAdmin = (req, res, next) => {
   if (!req.session.isadmin) {
     res.status(401).end("You are not authenticated");
   } else {
@@ -36,5 +36,3 @@ const verifyAdmin = (req, res, next) => {
     next();
   }
 };
-
-export { verifyPaswordToken, verifyAdmin, verifyUser };

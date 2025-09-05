@@ -4,7 +4,7 @@ import { incrementItemInShoppingList } from "./change_data.js";
 import { getShoppingListItems } from "./get_data.js";
 import makeConnection from "../connection.js";
 
-const registerUser = async (last_name, first_name, email, password) => {
+export const registerUser = async (last_name, first_name, email, password) => {
   const connection = await makeConnection();
   const data = [last_name, first_name, email, password];
   await connection.query(
@@ -21,7 +21,7 @@ const registerUser = async (last_name, first_name, email, password) => {
   connection.end();
 };
 
-const saveMessgeToAdministrator = async (email, title, message) => {
+export const saveMessgeToAdministrator = async (email, title, message) => {
   const connection = await makeConnection();
 
   await connection.query(
@@ -35,7 +35,7 @@ const saveMessgeToAdministrator = async (email, title, message) => {
   connection.end();
 };
 
-const addNewItemToShoppingList = async (user_id, artwork_id, n = 1) => {
+export const addNewItemToShoppingList = async (user_id, artwork_id, n = 1) => {
   const connection = await makeConnection();
 
   await connection.query(
@@ -50,7 +50,7 @@ const addNewItemToShoppingList = async (user_id, artwork_id, n = 1) => {
   connection.end();
 };
 
-const addToShoppingList = async (user_id, artwork_id, n = 1) => {
+export const addToShoppingList = async (user_id, artwork_id, n = 1) => {
   const connection = await makeConnection();
 
   await connection.query(
@@ -75,7 +75,7 @@ const addToShoppingList = async (user_id, artwork_id, n = 1) => {
   connection.end();
 };
 
-const makeOrder = async (user_id, invoice_data) => {
+export const makeOrder = async (user_id, invoice_data) => {
   const connection = await makeConnection();
   const shoppingListItems = await getShoppingListItems(user_id);
   if (shoppingListItems.length) {
@@ -127,7 +127,7 @@ const makeOrder = async (user_id, invoice_data) => {
   connection.end();
 };
 
-const leaveReview = async (user_id, artwork_id, title, review_text) => {
+export const leaveReview = async (user_id, artwork_id, title, review_text) => {
   const connection = await makeConnection();
 
   await connection.query(
@@ -141,7 +141,7 @@ const leaveReview = async (user_id, artwork_id, title, review_text) => {
   connection.end();
 };
 
-const addToFeatured = async (artwork_id) => {
+export const addToFeatured = async (artwork_id) => {
   const connection = await makeConnection();
 
   const [prev] = await connection.query(
@@ -170,7 +170,7 @@ const addToFeatured = async (artwork_id) => {
   connection.end();
 };
 
-const addArtworkTags = async (artwork_id, tags) => {
+export const addArtworkTags = async (artwork_id, tags) => {
   Promise.all(
     tags.map(async (tag) => {
       let connection = await makeConnection();
@@ -234,7 +234,7 @@ const addArtworkTags = async (artwork_id, tags) => {
   );
 };
 
-const addNewArtwork = async (artwork) => {
+export const addNewArtwork = async (artwork) => {
   let connection = await makeConnection();
 
   console.log(artwork);
@@ -263,7 +263,7 @@ const addNewArtwork = async (artwork) => {
   return artwork_id;
 };
 
-const addToWishlisted = async (user_id, artwork_id) => {
+export const addToWishlisted = async (user_id, artwork_id) => {
   const connection = await makeConnection();
 
   const [prev] = await connection.query(
@@ -290,16 +290,4 @@ const addToWishlisted = async (user_id, artwork_id) => {
   }
 
   connection.end();
-};
-
-export {
-  registerUser,
-  saveMessgeToAdministrator,
-  addToShoppingList,
-  makeOrder,
-  leaveReview,
-  addToFeatured,
-  addNewArtwork,
-  addToWishlisted,
-  addArtworkTags,
 };
