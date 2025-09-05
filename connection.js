@@ -1,15 +1,14 @@
 import { createConnection } from "mysql2/promise";
-import dotenv from "dotenv";
-dotenv.config();
+import config from "./config.js";
 
 const makeConnection = async () =>
   createConnection({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    charset: process.env.DB_CHARSET,
+    host: config.database.host,
+    port: config.database.port,
+    user: config.database.user,
+    password: config.database.password,
+    database: config.database.name,
+    charset: config.database.charset,
   });
 
 export default makeConnection;

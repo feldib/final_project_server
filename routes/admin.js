@@ -1,10 +1,8 @@
 import { Router } from "express";
 const router = Router();
 import fs from "fs/promises";
-import dotenv from "dotenv";
-dotenv.config();
 
-import { verifyAdmin } from "../db_api/verification.js";
+import { verifyAdmin } from "../db_api/verify.js";
 
 import {
   getUnapprovedReviews,
@@ -13,9 +11,9 @@ import {
   getRegisteredUsers,
   getOrdersOfUser,
   checkIfFeatured,
-} from "../db_api/get_data_from_db.js";
+} from "../db_api/get_data.js";
 
-import { addToFeatured, addNewArtwork } from "../db_api/add_to_database.js";
+import { addToFeatured, addNewArtwork } from "../db_api/add_data.js";
 
 import {
   approveReview,
@@ -23,9 +21,9 @@ import {
   removeFromFeatured,
   removeArtwork,
   updateArtworkData,
-} from "../db_api/change_value_in_database.js";
+} from "../db_api/change_data.js";
 
-import { sendReplyToMessage } from "../db_api/send_email.js";
+import { sendReplyToMessage } from "../db_api/email.js";
 
 const now = new Date();
 

@@ -1,13 +1,12 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
+import config from "../config.js";
 
 export const verifyPaswordToken = (req, res, next) => {
   const { token } = req.body;
   if (!token) {
     res.end("You are not authenticated");
   } else {
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    jwt.verify(token, config.security.secretKey, (err, decoded) => {
       if (err) {
         console.log(err);
         res.status(401).end("Tokens do not match");

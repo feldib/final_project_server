@@ -1,7 +1,7 @@
 import { Router } from "express";
 const router = Router();
 
-import { verifyUser, verifyPaswordToken } from "../db_api/verification.js";
+import { verifyUser, verifyPaswordToken } from "../db_api/verify.js";
 
 import {
   getDataOfArtwork,
@@ -15,11 +15,11 @@ import {
   getNewestArtworks,
   getWishlistedTheMost,
   findArtworkWithId,
-} from "../db_api/get_data_from_db.js";
+} from "../db_api/get_data.js";
 
-import { sendLinkToResetPassword } from "../db_api/send_email.js";
+import { sendLinkToResetPassword } from "../db_api/email.js";
 
-import { resetPassword } from "../db_api/change_value_in_database.js";
+import { resetPassword } from "../db_api/change_data.js";
 
 router.post("/login", async function (req, res) {
   const { email, password } = req.body;

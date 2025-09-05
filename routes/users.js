@@ -1,7 +1,7 @@
 import { Router } from "express";
 const router = Router();
 
-import { verifyUser } from "../db_api/verification.js";
+import { verifyUser } from "../db_api/verify.js";
 
 import {
   checkIfRegistered,
@@ -11,7 +11,7 @@ import {
   checkIfWishlisted,
   getOrdersOfUser,
   getReviewsOfUser,
-} from "../db_api/get_data_from_db.js";
+} from "../db_api/get_data.js";
 
 import {
   registerUser,
@@ -20,19 +20,16 @@ import {
   makeOrder,
   leaveReview,
   addToWishlisted,
-} from "../db_api/add_to_database.js";
+} from "../db_api/add_data.js";
 
 import {
   setShoppingCartItemQuantityToZero,
   increaseShoppingCartItemQuantity,
   decreaseShoppingCartItemQuantity,
   replaceSavedShoppingCart,
-} from "../db_api/change_value_in_database.js";
+} from "../db_api/change_data.js";
 
-import {
-  removeFromWishlisted,
-  updateUserData,
-} from "../db_api/change_value_in_database.js";
+import { removeFromWishlisted, updateUserData } from "../db_api/change_data.js";
 
 router.post("/message_to_administrator", function (req, res) {
   const { email, title, message } = req.body;

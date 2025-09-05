@@ -1,10 +1,9 @@
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import config from "../config.js";
 import makeConnection from "../connection.js";
-dotenv.config();
 
-const client_host = process.env.CLIENT_HOST;
+const client_host = config.server.clientHost;
 
 export const sendReplyToMessage = async (
   message_id,
@@ -13,18 +12,18 @@ export const sendReplyToMessage = async (
   reply_text
 ) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: process.env.TRANSPORTER_SERVICE,
+    const transporter = nodemailer.createTransporter({
+      service: config.email.service,
       auth: {
-        user: process.env.TRANSPORTER_AUTH_USER,
-        pass: process.env.TRANSPORTER_AUTH_PASS,
+        user: config.email.auth.user,
+        pass: config.email.auth.pass,
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
     const mailOptions = {
-      from: process.env.TRANSPORTER_AUTH_USER,
+      from: config.email.auth.user,
       to: `${email}`,
       subject: `${reply_title}`,
       html: `
@@ -59,20 +58,22 @@ export const sendReplyToMessage = async (
 export const sendLinkToResetPassword = async ({ email, id }) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: process.env.TRANSPORTER_SERVICE,
+      service: config.email.service,
       auth: {
-        user: process.env.TRANSPORTER_AUTH_USER,
-        pass: process.env.TRANSPORTER_AUTH_PASS,
+        user: config.email.auth.user,
+        pass: config.email.auth.pass,
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
 
-    const token = jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+    const token = jwt.sign({ id }, config.security.secretKey, {
+      expiresIn: "1d",
+    });
 
     const mailOptions = {
-      from: process.env.TRANSPORTER_AUTH_USER,
+      from: config.email.auth.user,
       to: `${email}`,
       subject: "Reset password",
       html: `

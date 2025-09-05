@@ -1,8 +1,7 @@
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import makeConnection from "./connection.js";
-dotenv.config();
+import config from "./config.js";
 
 const getUser = async (email, password) => {
   const connection = await makeConnection();
@@ -281,25 +280,27 @@ const checkEmail = async (email) => {
 const sendLinkToResetPassword = async ({ email, id }) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: process.env.TRANSPORTER_SERVICE,
+      service: config.email.service,
       auth: {
-        user: process.env.TRANSPORTER_AUTH_USER,
-        pass: process.env.TRANSPORTER_AUTH_PASS,
+        user: config.email.user,
+        pass: config.email.pass,
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
 
-    const token = jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+    const token = jwt.sign({ id }, config.security.secretKey, {
+      expiresIn: "1d",
+    });
 
     const mailOptions = {
-      from: process.env.TRANSPORTER_AUTH_USER,
+      from: config.email.user,
       to: `${email}`,
       subject: "Reset password",
       html: `
             <p>Click here to reset your password: </p>
-            <a href = "${process.env.CLIENT_HOST}/reset_password?token=${token}&email=${email}">Link</a>
+            <a href = "${config.server.clientHost}/reset_password?token=${token}&email=${email}">Link</a>
         `,
     };
 
@@ -323,17 +324,17 @@ const sendReplyToMessage = async (
 ) => {
   try {
     const transporter = nodemailer.createTransport({
-      service: process.env.TRANSPORTER_SERVICE,
+      service: config.email.service,
       auth: {
-        user: process.env.TRANSPORTER_AUTH_USER,
-        pass: process.env.TRANSPORTER_AUTH_PASS,
+        user: config.email.user,
+        pass: config.email.pass,
       },
       tls: {
         rejectUnauthorized: false,
       },
     });
     const mailOptions = {
-      from: process.env.TRANSPORTER_AUTH_USER,
+      from: config.email.user,
       to: `${email}`,
       subject: `${reply_title}`,
       html: `
@@ -380,7 +381,7 @@ const verifyPaswordToken = (req, res, next) => {
   if (!token) {
     res.end("You are not authenticated");
   } else {
-    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    jwt.verify(token, config.security.secretKey, (err, decoded) => {
       if (err) {
         console.log(err);
         res.status(401).end("Tokens do not match");

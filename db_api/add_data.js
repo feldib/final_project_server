@@ -1,5 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
 import { incrementItemInShoppingList } from "./change_data.js";
 import { getShoppingListItems } from "./get_data.js";
 import makeConnection from "../connection.js";

@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-import { createConnection } from "mysql2/promise";
 import {
   checkIfWishlisted,
   checkIfFeatured,
