@@ -66,7 +66,7 @@ app.use(function (err: any, req: Request, res: Response, _: NextFunction) {
   res.status(err.status || 500);
   res.json({
     message: err.message,
-    error: req.app.get("env") === "development" ? err : {}
+    error: req.app.get("env") === "development" ? err : {},
   });
 });
 
