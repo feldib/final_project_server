@@ -5,8 +5,8 @@ import {
   checkIfWishlisted,
   checkIfFeatured,
   getQuantityOfArtworkInStock,
-} from "./get_data_from_db.js";
-import { addToShoppingList, addArtworkTags } from "./add_to_database.js";
+} from "./get_data.js";
+import { addToShoppingList, addArtworkTags } from "./add_data.js";
 import makeConnection from "../connection.js";
 
 const incrementItemInShoppingList = async (user_id, artwork_id, n = 1) => {

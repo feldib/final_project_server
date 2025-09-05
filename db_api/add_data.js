@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { incrementItemInShoppingList } from "./change_value_in_database.js";
-import { getShoppingListItems } from "./get_data_from_db.js";
+import { incrementItemInShoppingList } from "./change_data.js";
+import { getShoppingListItems } from "./get_data.js";
 import makeConnection from "../connection.js";
 
 const registerUser = async (last_name, first_name, email, password) => {
