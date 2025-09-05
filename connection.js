@@ -9,7 +9,7 @@ const makeConnection = async () =>
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    encoding: process.env.DB_CHARSET,
+    charset: process.env.DB_CHARSET,
   });
 
 export default makeConnection;
