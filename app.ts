@@ -45,7 +45,7 @@ app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(join(__dirname, "public")));
+app.use(express.static(join(__dirname, "../public")));
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
@@ -62,9 +62,12 @@ app.use(function (err: any, req: Request, res: Response, _: NextFunction) {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
-  // render the error page
+  // return JSON error response instead of rendering a view
   res.status(err.status || 500);
-  res.render("error");
+  res.json({
+    message: err.message,
+    error: req.app.get("env") === "development" ? err : {}
+  });
 });
 
 export default app;
