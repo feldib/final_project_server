@@ -43,7 +43,7 @@ export const sendReplyToMessage = async (message_id, email, reply_title, reply_t
         console.log(error);
     }
 };
-export const sendLinkToResetPassword = async ({ email, id }) => {
+export const sendLinkToResetPassword = async ({ email, id, }) => {
     try {
         const transporter = nodemailer.createTransport({
             service: config.email.service,

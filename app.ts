@@ -18,9 +18,9 @@ import sessions from "express-session";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-import indexRouter from "./routes/index";
-import usersRouter from "./routes/users";
-import adminRouter from "./routes/admin";
+import indexRouter from "./routes/index.js";
+import usersRouter from "./routes/users.js";
+import adminRouter from "./routes/admin.js";
 
 const app: Application = express();
 

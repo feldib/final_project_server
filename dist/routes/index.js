@@ -24,7 +24,7 @@ router.get("/logged_in", verifyUser, async function (req, res) {
 router.get("/log_out", async function (req, res) {
     req.session.destroy((err) => {
         if (err) {
-            console.error('Session destruction error:', err);
+            console.error("Session destruction error:", err);
         }
     });
     res.end("Logged out successfully");

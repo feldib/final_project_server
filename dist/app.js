@@ -1,5 +1,5 @@
 import createError from "http-errors";
-import express, { json, urlencoded } from "express";
+import express, { json, urlencoded, } from "express";
 import { join, dirname } from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
@@ -36,7 +36,7 @@ app.use("/admin", adminRouter);
 app.use(function (req, res, next) {
     next(createError(404));
 });
-app.use(function (err, req, res, next) {
+app.use(function (err, req, res, _) {
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};
     res.status(err.status || 500);
