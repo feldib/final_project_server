@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import makeConnection from "../connection";
+import makeConnection from "../connection.js";
 dotenv.config();
 
 const client_host = process.env.CLIENT_HOST;

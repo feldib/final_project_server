@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import fs from "fs/promises";
-import makeConnection from "../connection";
+import makeConnection from "../connection.js";
 
 const getUser = async (email, password) => {
   const connection = await makeConnection();
