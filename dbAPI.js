@@ -1135,7 +1135,7 @@ const addToFeatured = async (artwork_id) => {
   connection.end();
 };
 
-const removeFromFeatured = async (artwork_id) => {
+const removeArtworkFromFeatured = async (artwork_id) => {
   const connection = await makeConnection();
   const featured = await checkIfFeatured(artwork_id);
   if (featured) {
@@ -1295,7 +1295,7 @@ export {
   removeArtwork,
   checkIfFeatured,
   addToFeatured,
-  removeFromFeatured,
+  removeArtworkFromFeatured,
   addNewArtwork,
   addArtworkTags,
 };

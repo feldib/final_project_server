@@ -18,7 +18,7 @@ import { addToFeatured, addNewArtwork } from "../db_api/add_data.js";
 import {
   approveReview,
   removeReview,
-  removeFromFeatured,
+  removeArtworkFromFeatured,
   removeArtwork,
   updateArtworkData,
 } from "../db_api/change_data.js";
@@ -196,7 +196,7 @@ router.post("/featured", verifyAdmin, async function (req, res) {
 
 router.post("/remove_from_featured", verifyAdmin, async function (req, res) {
   const artwork_id = req.body.artwork_id;
-  await removeFromFeatured(artwork_id);
+  await removeArtworkFromFeatured(artwork_id);
   res.end();
 });
 
