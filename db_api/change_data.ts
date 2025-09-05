@@ -5,12 +5,13 @@ import {
 } from "./get_data.js";
 import { addToShoppingList, addArtworkTags } from "./add_data.js";
 import makeConnection from "../connection.js";
+import { RowDataPacket } from "mysql2/promise";
 
 export const incrementItemInShoppingList = async (
-  user_id,
-  artwork_id,
-  n = 1
-) => {
+  user_id: number,
+  artwork_id: number,
+  n: number = 1
+): Promise<void> => {
   const connection = await makeConnection();
 
   await connection.query(
@@ -27,12 +28,12 @@ export const incrementItemInShoppingList = async (
 };
 
 export const setShoppingCartItemQuantityToZero = async (
-  user_id,
-  artwork_id
-) => {
+  user_id: number,
+  artwork_id: number
+): Promise<void> => {
   const connection = await makeConnection();
 
-  const [quantity_results] = await connection.query(
+  const [quantity_results] = await connection.query<RowDataPacket[]>(
     `
         SELECT quantity FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `,
@@ -61,10 +62,13 @@ export const setShoppingCartItemQuantityToZero = async (
   connection.end();
 };
 
-export const decreaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
+export const decreaseShoppingCartItemQuantity = async (
+  user_id: number,
+  artwork_id: number
+): Promise<void> => {
   const connection = await makeConnection();
 
-  const [quantity_results] = await connection.query(
+  const [quantity_results] = await connection.query<RowDataPacket[]>(
     `
         SELECT quantity FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `,
@@ -95,10 +99,13 @@ export const decreaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
   connection.end();
 };
 
-export const increaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
+export const increaseShoppingCartItemQuantity = async (
+  user_id: number,
+  artwork_id: number
+): Promise<void> => {
   const connection = await makeConnection();
 
-  const [quantity_results] = await connection.query(
+  const [quantity_results] = await connection.query<RowDataPacket[]>(
     `
         SELECT quantity FROM artworks WHERE id = ? 
     `,
@@ -131,15 +138,22 @@ export const increaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
   connection.end();
 };
 
-export const resetPassword = async (new_password, email) => {
+export const resetPassword = async (
+  new_password: string,
+  email: string
+): Promise<void> => {
   const connection = await makeConnection();
   await connection.query(`UPDATE users SET passw = ? WHERE email = ?;`, [
     new_password,
     email,
   ]);
+  connection.end();
 };
 
-export const removeFromWishlisted = async (user_id, artwork_id) => {
+export const removeFromWishlisted = async (
+  user_id: number,
+  artwork_id: number
+): Promise<void> => {
   const connection = await makeConnection();
   const wishlisted = await checkIfWishlisted(user_id, artwork_id);
   if (wishlisted) {
@@ -154,7 +168,18 @@ export const removeFromWishlisted = async (user_id, artwork_id) => {
   connection.end();
 };
 
-export const updateUserData = async (user_id, field_name, value) => {
+type UserField =
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "address"
+  | "phone_number";
+
+export const updateUserData = async (
+  user_id: number,
+  field_name: UserField,
+  value: string
+): Promise<void> => {
   const connection = await makeConnection();
 
   if (
@@ -173,10 +198,13 @@ export const updateUserData = async (user_id, field_name, value) => {
   connection.end();
 };
 
-export const updateArtworkTags = async (artwork_id, tags) => {
+export const updateArtworkTags = async (
+  artwork_id: number,
+  tags: string[]
+): Promise<void> => {
   const connection = await makeConnection();
 
-  const [tags_of_artwork] = await connection.query(
+  const [tags_of_artwork] = await connection.query<RowDataPacket[]>(
     `
         SELECT 
           artwork_tags.id as artwork_tag_id, 
@@ -191,17 +219,19 @@ export const updateArtworkTags = async (artwork_id, tags) => {
   );
 
   const tagsToAdd = tags.filter(
-    (tag) => !tags_of_artwork.some((tg) => tg.tname === tag)
+    (tag) => !tags_of_artwork.some((tg: any) => tg.tname === tag)
   );
 
   console.log("tagsToAdd: ", JSON.stringify(tagsToAdd));
 
   await addArtworkTags(artwork_id, tagsToAdd);
 
-  const tagsToRemove = tags_of_artwork.filter((tg) => !tags.includes(tg.tname));
+  const tagsToRemove = tags_of_artwork.filter(
+    (tg: any) => !tags.includes(tg.tname)
+  );
 
   await Promise.all(
-    tagsToRemove.map(async (tag) => {
+    tagsToRemove.map(async (tag: any) => {
       await connection.query(
         `
         UPDATE artwork_tags SET removed = true WHERE id = ?
@@ -214,7 +244,24 @@ export const updateArtworkTags = async (artwork_id, tags) => {
   connection.end();
 };
 
-export const updateArtworkData = async (artwork_id, field_name, value) => {
+type ArtworkField =
+  | "title"
+  | "artist_name"
+  | "price"
+  | "quantity"
+  | "descript"
+  | "category_id"
+  | "tags";
+
+interface Tag {
+  tname: string;
+}
+
+export const updateArtworkData = async (
+  artwork_id: number,
+  field_name: ArtworkField,
+  value: string | number | Tag[]
+): Promise<void> => {
   if (
     [
       "title",
@@ -238,14 +285,14 @@ export const updateArtworkData = async (artwork_id, field_name, value) => {
   } else if ("tags" === field_name) {
     await updateArtworkTags(
       artwork_id,
-      value.map((tag) => {
+      (value as Tag[]).map((tag) => {
         return tag.tname;
       })
     );
   }
 };
 
-export const approveReview = async (id) => {
+export const approveReview = async (id: number): Promise<void> => {
   const connection = await makeConnection();
   await connection.query(
     `
@@ -257,7 +304,7 @@ export const approveReview = async (id) => {
   connection.end();
 };
 
-export const removeReview = async (id) => {
+export const removeReview = async (id: number): Promise<void> => {
   const connection = await makeConnection();
   await connection.query(
     `
@@ -269,7 +316,7 @@ export const removeReview = async (id) => {
   connection.end();
 };
 
-export const removeFromFeatured = async (artwork_id) => {
+export const removeFromFeatured = async (artwork_id: number): Promise<void> => {
   const connection = await makeConnection();
   const featured = await checkIfFeatured(artwork_id);
   if (featured) {
@@ -284,7 +331,7 @@ export const removeFromFeatured = async (artwork_id) => {
   connection.end();
 };
 
-export const removeArtwork = async (artwork_id) => {
+export const removeArtwork = async (artwork_id: number): Promise<void> => {
   const connection = await makeConnection();
   await connection.query(
     `
@@ -303,17 +350,25 @@ export const removeArtwork = async (artwork_id) => {
   connection.end();
 };
 
-export const replaceSavedShoppingCart = async (user_id, shopping_cart) => {
+interface ShoppingCartItem {
+  artwork_id: number;
+  quantity: number;
+}
+
+export const replaceSavedShoppingCart = async (
+  user_id: number,
+  shopping_cart: ShoppingCartItem[]
+): Promise<void> => {
   const connection = await makeConnection();
 
-  const [res] = await connection.query(
+  const [res] = await connection.query<RowDataPacket[]>(
     `
       SELECT artwork_id FROM artworks_in_shopping_list WHERE user_id = ? AND quantity > 0
     `,
     [user_id]
   );
 
-  const ids = [...new Set(res.map((obj) => obj.artwork_id))];
+  const ids = [...new Set(res.map((obj: any) => obj.artwork_id))];
 
   await Promise.all(
     ids.map(async (artw_id) => {

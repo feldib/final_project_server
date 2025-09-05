@@ -6,13 +6,13 @@ import makeConnection from "../connection.js";
 const client_host = config.server.clientHost;
 
 export const sendReplyToMessage = async (
-  message_id,
-  email,
-  reply_title,
-  reply_text
-) => {
+  message_id: number,
+  email: string,
+  reply_title: string,
+  reply_text: string
+): Promise<void> => {
   try {
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: config.email.service,
       auth: {
         user: config.email.auth.user,
@@ -31,31 +31,40 @@ export const sendReplyToMessage = async (
         `,
     };
 
-    transporter.sendMail(mailOptions, async function (error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-        const connection = await makeConnection();
+    transporter.sendMail(
+      mailOptions,
+      async function (error: Error | null, info: any) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+          const connection = await makeConnection();
 
-        connection.query(
-          `
+          connection.query(
+            `
                 UPDATE messages_to_administrator
                 SET answered = true
                 WHERE id = ?
                 `,
-          [message_id]
-        );
+            [message_id]
+          );
 
-        connection.end();
+          connection.end();
+        }
       }
-    });
+    );
   } catch (error) {
     console.log(error);
   }
 };
 
-export const sendLinkToResetPassword = async ({ email, id }) => {
+export const sendLinkToResetPassword = async ({
+  email,
+  id,
+}: {
+  email: string;
+  id: number;
+}): Promise<void> => {
   try {
     const transporter = nodemailer.createTransport({
       service: config.email.service,
@@ -82,13 +91,16 @@ export const sendLinkToResetPassword = async ({ email, id }) => {
         `,
     };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
+    transporter.sendMail(
+      mailOptions,
+      function (error: Error | null, info: any) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
       }
-    });
+    );
   } catch (error) {
     console.log(error);
   }
