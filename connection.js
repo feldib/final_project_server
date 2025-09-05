@@ -1,6 +1,6 @@
-import { createConnection } from "mysql2/promise"
-import dotenv from "dotenv"
-dotenv.config()
+import { createConnection } from "mysql2/promise";
+import dotenv from "dotenv";
+dotenv.config();
 
 const makeConnection = async () =>
   createConnection({
@@ -8,7 +8,8 @@ const makeConnection = async () =>
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-})
+    database: process.env.DB_NAME,
+    encoding: process.env.DB_CHARSET,
+  });
 
-export default makeConnection
+export default makeConnection;
