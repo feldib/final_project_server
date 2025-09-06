@@ -2,6 +2,7 @@ import { incrementItemInShoppingList } from "./change_data.js";
 import { getShoppingListItems } from "./get_data.js";
 import makeConnection from "../connection.js";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { InvoiceData } from "../types/index.js";
 
 export const registerUser = async (
   last_name: string,
@@ -90,11 +91,6 @@ export const addToShoppingList = async (
   }
   connection.end();
 };
-
-interface InvoiceData {
-  // Define the structure of invoice_data based on your requirements
-  [key: string]: any;
-}
 
 export const makeOrder = async (
   user_id: number,
