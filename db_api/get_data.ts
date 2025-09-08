@@ -97,7 +97,7 @@ export const searchArtworks = async (
   n?: string,
   offset?: string,
   only_featured?: string
-): Promise<any[]> => {
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   let sql_query = `
@@ -193,7 +193,7 @@ export const searchArtworks = async (
   connection.end();
 
   await Promise.all(
-    artworks.map(async (artwork: any) => {
+    artworks.map(async (artwork) => {
       const thumbnail = await getThumbnail(artwork.id);
       const cname = await getSpecificCategory(artwork.category_id);
       const tags = await getSpecificTags(artwork.id);
@@ -206,7 +206,9 @@ export const searchArtworks = async (
   return artworks;
 };
 
-export const findArtworkWithId = async (artwork_id: string): Promise<any> => {
+export const findArtworkWithId = async (
+  artwork_id: string
+): Promise<RowDataPacket> => {
   const connection = await makeConnection();
 
   const [result] = await connection.query<RowDataPacket[]>(
@@ -230,7 +232,7 @@ export const findArtworkWithId = async (artwork_id: string): Promise<any> => {
   return artwork;
 };
 
-export const getFeatured = async (n?: string): Promise<any[]> => {
+export const getFeatured = async (n?: string): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
   const [artwork_ids] = await connection.execute<RowDataPacket[]>(`
     SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC
@@ -241,12 +243,12 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
     `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false AND id IN (${artwork_ids
       .map(() => "?")
       .join(", ")})`,
-    artwork_ids.map((obj: any) => obj.artwork_id)
+    artwork_ids.map((obj) => obj.artwork_id)
   );
   let artworks = results;
   if (artworks.length) {
     artworks = await Promise.all(
-      results.map(async (artwork: any) => {
+      results.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
           return { ...artwork, thumbnail };
@@ -261,7 +263,9 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
   return artworks;
 };
 
-export const getNewestArtworks = async (n?: string): Promise<any[]> => {
+export const getNewestArtworks = async (
+  n?: string
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
@@ -273,7 +277,7 @@ export const getNewestArtworks = async (n?: string): Promise<any[]> => {
   let artworks = results;
   if (artworks.length) {
     artworks = await Promise.all(
-      results.map(async (artwork: any) => {
+      results.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
           return { ...artwork, thumbnail };
@@ -288,7 +292,9 @@ export const getNewestArtworks = async (n?: string): Promise<any[]> => {
   return artworks;
 };
 
-export const getWishlistedTheMost = async (n?: string): Promise<any[]> => {
+export const getWishlistedTheMost = async (
+  n?: string
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
@@ -307,7 +313,7 @@ export const getWishlistedTheMost = async (n?: string): Promise<any[]> => {
   let artworks = results;
   if (artworks.length) {
     artworks = await Promise.all(
-      results.map(async (artwork: any) => {
+      results.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
           return { ...artwork, thumbnail };
@@ -387,7 +393,7 @@ export const checkEmail = async (
 
 export const getReviewsOfArtwork = async (
   artwork_id: string
-): Promise<any[]> => {
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
   const [reviews] = await connection.query<RowDataPacket[]>(
     `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
@@ -401,7 +407,7 @@ export const getReviewsOfArtwork = async (
   return reviews;
 };
 
-export const getUnapprovedReviews = async (): Promise<any[]> => {
+export const getUnapprovedReviews = async (): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
   const [reviews] = await connection.execute<RowDataPacket[]>(
     `SELECT CONCAT(users.last_name, " ", users.first_name) 'name', reviews.id, 
@@ -417,7 +423,9 @@ export const getUnapprovedReviews = async (): Promise<any[]> => {
   return reviews;
 };
 
-export const getReviewsOfUser = async (user_id: number): Promise<any[]> => {
+export const getReviewsOfUser = async (
+  user_id: number
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
   const [reviews] = await connection.query<RowDataPacket[]>(
     `SELECT reviews.id, reviews.time_review_posted, reviews.title, 
@@ -433,7 +441,7 @@ export const getReviewsOfUser = async (user_id: number): Promise<any[]> => {
   return reviews;
 };
 
-export const getDataOfArtwork = async (id: string): Promise<any> => {
+export const getDataOfArtwork = async (id: string): Promise<RowDataPacket> => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query<RowDataPacket[]>(
@@ -480,7 +488,9 @@ export const checkIfArtworkInStock = async (
   }
 };
 
-export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
+export const getShoppingListItems = async (
+  user_id: number
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query<RowDataPacket[]>(
@@ -498,7 +508,7 @@ export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
     console.log("No items in shopping cart");
   } else {
     results = await Promise.all(
-      artworks.map(async (artwork: any) => {
+      artworks.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         const cname = await getSpecificCategory(artwork.category_id);
         const tags = await getSpecificTags(artwork.id);
@@ -508,7 +518,7 @@ export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
         return artwork;
       })
     );
-    results = results.filter((item: any) => {
+    results = results.filter((item) => {
       return item.quantity > 0;
     });
   }
@@ -540,7 +550,7 @@ export const checkIfWishlisted = async (
 export const getWishlisted = async (
   user_id: number,
   n?: string
-): Promise<any[]> => {
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [wishlisted] = await connection.query<RowDataPacket[]>(
@@ -561,7 +571,7 @@ export const getWishlisted = async (
     console.log("No wishlisted items");
   } else {
     results = await Promise.all(
-      wishlisted.map(async (artwork: any) => {
+      wishlisted.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         const cname = await getSpecificCategory(artwork.category_id);
         const tags = await getSpecificTags(artwork.id);
@@ -578,7 +588,9 @@ export const getWishlisted = async (
   return results;
 };
 
-export const getOrderData = async (order_id: number): Promise<any[]> => {
+export const getOrderData = async (
+  order_id: number
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.query<RowDataPacket[]>(
@@ -597,7 +609,7 @@ export const getOrderData = async (order_id: number): Promise<any[]> => {
   );
 
   await Promise.all(
-    results.map(async (artwork: any) => {
+    results.map(async (artwork) => {
       const thumbnail = await getThumbnail(artwork.id);
       const cname = await getSpecificCategory(artwork.category_id);
       const tags = await getSpecificTags(artwork.id);
@@ -613,7 +625,9 @@ export const getOrderData = async (order_id: number): Promise<any[]> => {
   return results;
 };
 
-export const getOrdersOfUser = async (user_id: number): Promise<any[]> => {
+export const getOrdersOfUser = async (
+  user_id: number
+): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.query<RowDataPacket[]>(
@@ -626,13 +640,13 @@ export const getOrdersOfUser = async (user_id: number): Promise<any[]> => {
   let orderDataCollection = results;
   if (results.length) {
     orderDataCollection = await Promise.all(
-      results.map(async (ord: any) => {
+      results.map(async (ord) => {
         const orderData: any = { time_ordered: ord.time_ordered };
         const res = await getOrderData(ord.id);
         orderData.totalCost = res
-          .map((item: any) => item.cost)
+          .map((item) => item.cost)
           .reduce((prev: number, item: number) => prev + item);
-        orderData.items = res.map((item: any) => {
+        orderData.items = res.map((item) => {
           const {
             thumbnail,
             cname,
@@ -660,9 +674,7 @@ export const getOrdersOfUser = async (user_id: number): Promise<any[]> => {
       })
     );
 
-    orderDataCollection.sort(
-      (a: any, b: any) => b.time_ordered - a.time_ordered
-    );
+    orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered);
   }
 
   connection.end();
@@ -670,7 +682,7 @@ export const getOrdersOfUser = async (user_id: number): Promise<any[]> => {
   return orderDataCollection;
 };
 
-export const getOrders = async (): Promise<any[]> => {
+export const getOrders = async (): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
@@ -680,13 +692,13 @@ export const getOrders = async (): Promise<any[]> => {
   let orderDataCollection = results;
   if (results.length) {
     orderDataCollection = await Promise.all(
-      results.map(async (ord: any) => {
+      results.map(async (ord) => {
         const orderData: any = { time_ordered: ord.time_ordered };
         const res = await getOrderData(ord.id);
         orderData.totalCost = res
-          .map((item: any) => item.cost)
+          .map((item) => item.cost)
           .reduce((prev: number, item: number) => prev + item);
-        orderData.items = res.map((item: any) => {
+        orderData.items = res.map((item) => {
           const {
             thumbnail,
             cname,
@@ -719,9 +731,7 @@ export const getOrders = async (): Promise<any[]> => {
       })
     );
 
-    orderDataCollection.sort(
-      (a: any, b: any) => b.time_ordered - a.time_ordered
-    );
+    orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered);
   }
 
   connection.end();
@@ -729,7 +739,7 @@ export const getOrders = async (): Promise<any[]> => {
   return orderDataCollection;
 };
 
-export const getUnansweredMessages = async (): Promise<any[]> => {
+export const getUnansweredMessages = async (): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
   const [messages] = await connection.execute<RowDataPacket[]>(
     `SELECT id, email, message_title, message_txt, message_time

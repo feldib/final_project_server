@@ -108,7 +108,7 @@ export const makeOrder = async (
     const order_id = insertedResults.insertId;
 
     await Promise.all(
-      shoppingListItems.map(async (item: any) => {
+      shoppingListItems.map(async (item) => {
         await connection.query(
           `
             INSERT INTO artworks_ordered(order_id, quantity, price, artwork_id) VALUES(?, ?, ?, ?)

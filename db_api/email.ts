@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import config from "../config.js";
 import makeConnection from "../connection.js";
+import SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
 
 const client_host = config.server.clientHost;
 
@@ -33,11 +34,14 @@ export const sendReplyToMessage = async (
 
     transporter.sendMail(
       mailOptions,
-      async function (error: Error | null, info: any) {
+      async function (
+        error: Error | null,
+        info: SMTPTransport.SentMessageInfo
+      ) {
         if (error) {
           console.log(error);
         } else {
-          console.log(`Email sent: ${  info.response}`);
+          console.log(`Email sent: ${info.response}`);
           const connection = await makeConnection();
 
           connection.query(
@@ -93,11 +97,11 @@ export const sendLinkToResetPassword = async ({
 
     transporter.sendMail(
       mailOptions,
-      function (error: Error | null, info: any) {
+      function (error: Error | null, info: SMTPTransport.SentMessageInfo) {
         if (error) {
           console.log(error);
         } else {
-          console.log(`Email sent: ${  info.response}`);
+          console.log(`Email sent: ${info.response}`);
         }
       }
     );
