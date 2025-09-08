@@ -16,7 +16,7 @@ const debug = dbg("final-project-server:server");
  */
 
 const port: number | string | false = normalizePort(
-  config.server.port.toString() || "3000",
+  config.server.port.toString() || "3000"
 );
 app.set("port", port);
 

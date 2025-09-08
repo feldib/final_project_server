@@ -41,7 +41,7 @@ router.post(
     } else {
       res.status(401).end();
     }
-  },
+  }
 );
 
 router.get(
@@ -50,7 +50,7 @@ router.get(
   async function (req: Request, res: Response) {
     const user = await getUserWithId(req.id!);
     res.json({ user });
-  },
+  }
 );
 
 router.get("/log_out", async function (req: Request, res: Response) {
@@ -74,7 +74,7 @@ router.post(
     }
 
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -84,7 +84,7 @@ router.post(
     const { new_password, email } = req.body;
     resetPassword(new_password, email);
     res.end();
-  },
+  }
 );
 
 router.get("/categories", async function (req: Request, res: Response) {
@@ -100,7 +100,7 @@ router.get(
   "/search_artworks",
   async function (
     req: Request<{}, any, any, SearchArtworksQuery>,
-    res: Response,
+    res: Response
   ) {
     const {
       min,
@@ -122,13 +122,13 @@ router.get(
       order,
       n,
       offset,
-      only_featured,
+      only_featured
     );
     if (!results.length) {
       console.log("No results for the search.");
     }
     res.json(results);
-  },
+  }
 );
 
 router.get("/find_artwork_by_id", async function (req: Request, res: Response) {

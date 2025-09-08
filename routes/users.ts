@@ -44,7 +44,7 @@ router.post(
     } catch {
       res.status(401).end();
     }
-  },
+  }
 );
 
 router.get(
@@ -53,7 +53,7 @@ router.get(
   async function (req: Request, res: Response) {
     const artworks = await getShoppingListItems(req.id!);
     res.json(artworks);
-  },
+  }
 );
 
 router.post(
@@ -71,7 +71,7 @@ router.post(
     }
 
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -81,7 +81,7 @@ router.post(
     const artwork_id = req.body.artwork_id;
     await setShoppingCartItemQuantityToZero(req.id!, artwork_id);
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -96,7 +96,7 @@ router.post(
       .catch(() => {
         res.status(400).end();
       });
-  },
+  }
 );
 
 router.post(
@@ -106,7 +106,7 @@ router.post(
     const artwork_id = req.body.artwork_id;
     await decreaseShoppingCartItemQuantity(req.id!, artwork_id);
     res.end();
-  },
+  }
 );
 
 router.get(
@@ -116,17 +116,17 @@ router.get(
     const n = req.query.n as string;
     const artworks = await getWishlisted(req.id!, n);
     res.json(artworks);
-  },
+  }
 );
 
 router.post(
   "/wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
+    // const artwork_id = req.body.artwork_id;
     // await addToWishlisted(req.id!, artwork_id);
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -136,7 +136,7 @@ router.post(
     const artwork_id = req.body.artwork_id;
     await removeFromWishlisted(req.id!, artwork_id);
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -146,7 +146,7 @@ router.post(
     const artwork_id = req.body.artwork_id;
     const is_wishlisted = await checkIfWishlisted(req.id!, artwork_id);
     res.json(is_wishlisted);
-  },
+  }
 );
 
 router.post("/update_data", verifyUser, async (req: Request, res: Response) => {
@@ -169,11 +169,14 @@ router.post(
       await registerUser(last_name, first_name, email, password);
       res.end();
     }
-  },
+  }
 );
 
 router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
-  await makeOrder(req.id!, req.body.invoice_data);
+  await makeOrder(
+    req.id!
+    // req.body.invoice_data
+  );
   res.end();
 });
 
@@ -188,7 +191,7 @@ router.post(
     //   req.body.review_text
     // );
     res.end();
-  },
+  }
 );
 
 router.get(
@@ -197,7 +200,7 @@ router.get(
   async function (req: Request, res: Response) {
     const orderData = await getOrdersOfUser(req.id!);
     res.json(orderData);
-  },
+  }
 );
 
 router.get(
@@ -206,7 +209,7 @@ router.get(
   async function (req: Request, res: Response) {
     const reviewData = await getReviewsOfUser(req.id!);
     res.json(reviewData);
-  },
+  }
 );
 
 router.post(
@@ -215,7 +218,7 @@ router.post(
   async (req: Request, res: Response) => {
     await replaceSavedShoppingCart(req.id!, req.body.shopping_cart);
     res.end();
-  },
+  }
 );
 
 export default router;

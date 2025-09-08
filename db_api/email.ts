@@ -9,7 +9,7 @@ export const sendReplyToMessage = async (
   message_id: number,
   email: string,
   reply_title: string,
-  reply_text: string,
+  reply_text: string
 ): Promise<void> => {
   try {
     const transporter = nodemailer.createTransport({
@@ -46,12 +46,12 @@ export const sendReplyToMessage = async (
                 SET answered = true
                 WHERE id = ?
                 `,
-            [message_id],
+            [message_id]
           );
 
           connection.end();
         }
-      },
+      }
     );
   } catch (error) {
     console.log(error);
@@ -99,7 +99,7 @@ export const sendLinkToResetPassword = async ({
         } else {
           console.log(`Email sent: ${  info.response}`);
         }
-      },
+      }
     );
   } catch (error) {
     console.log(error);

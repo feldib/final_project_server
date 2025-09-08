@@ -30,7 +30,7 @@ app.use(
     saveUninitialized: true,
     cookie: { maxAge: config.security.sessionMaxAge },
     resave: false,
-  }),
+  })
 );
 
 app.use(
@@ -38,7 +38,7 @@ app.use(
     origin: [config.server.clientHost],
     methods: ["POST", "GET"],
     credentials: true,
-  }),
+  })
 );
 app.use(cookieParser());
 app.use(logger("dev"));

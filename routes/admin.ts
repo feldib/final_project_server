@@ -33,7 +33,7 @@ const newTumbnailStorage = multer.diskStorage({
   destination(
     req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, destination: string) => void,
+    cb: (error: Error | null, destination: string) => void
   ) {
     cb(null, `public/images/${req.query.artwork_id}/thumbnail`);
   },
@@ -41,38 +41,38 @@ const newTumbnailStorage = multer.diskStorage({
   filename(
     req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void,
+    cb: (error: Error | null, filename: string) => void
   ) {
     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
   },
 });
 
-const newOtherImagesStorage = multer.diskStorage({
-  destination(
-    req: Request,
-    file: Express.Multer.File,
-    cb: (error: Error | null, destination: string) => void,
-  ) {
-    cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
-  },
+// const newOtherImagesStorage = multer.diskStorage({
+//   destination(
+//     req: Request,
+//     file: Express.Multer.File,
+//     cb: (error: Error | null, destination: string) => void
+//   ) {
+//     cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
+//   },
 
-  filename(
-    req: Request,
-    file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void,
-  ) {
-    cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
-  },
-});
+//   filename(
+//     req: Request,
+//     file: Express.Multer.File,
+//     cb: (error: Error | null, filename: string) => void
+//   ) {
+//     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
+//   },
+// });
 
 const uploadNewThumbnail = multer({ storage: newTumbnailStorage });
 
-const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
+// const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
 
 async function checkThumbnailPath(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) {
   const imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
 
@@ -85,21 +85,21 @@ async function checkThumbnailPath(
   next();
 }
 
-async function checkOtherPicturesPath(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  const imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
+// async function checkOtherPicturesPath(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
 
-  await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
-    if (err) {
-      await fs.mkdir(imagePath, { recursive: true });
-    }
-  });
+//   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
+//     if (err) {
+//       await fs.mkdir(imagePath, { recursive: true });
+//     }
+//   });
 
-  next();
-}
+//   next();
+// }
 
 router.post(
   "/thumbnail",
@@ -108,26 +108,26 @@ router.post(
   uploadNewThumbnail.single("thumbnail"),
   function (req: Request, res: Response) {
     res.end();
-  },
+  }
 );
 
-async function removePreviousThumbnail(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  const path = `public/images/${req.query.artwork_id}/thumbnail`;
+// async function removePreviousThumbnail(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const path = `public/images/${req.query.artwork_id}/thumbnail`;
 
-  const files = await fs.readdir(path);
+//   const files = await fs.readdir(path);
 
-  await Promise.all(
-    files.map((file) => {
-      fs.unlink(`${path}/${file}`);
-    }),
-  );
+//   await Promise.all(
+//     files.map((file) => {
+//       fs.unlink(`${path}/${file}`);
+//     })
+//   );
 
-  next();
-}
+//   next();
+// }
 
 router.get(
   "/unapproved_reviews",
@@ -135,7 +135,7 @@ router.get(
   async function (req: Request, res: Response) {
     const reviews = await getUnapprovedReviews();
     res.json(reviews);
-  },
+  }
 );
 
 router.post(
@@ -145,7 +145,7 @@ router.post(
     const { id } = req.body;
     await approveReview(id);
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -155,7 +155,7 @@ router.post(
     const { id } = req.body;
     await removeReview(id);
     res.end();
-  },
+  }
 );
 
 router.get(
@@ -164,7 +164,7 @@ router.get(
   async function (req: Request, res: Response) {
     const orders = await getOrders();
     res.json(orders);
-  },
+  }
 );
 
 router.get(
@@ -173,7 +173,7 @@ router.get(
   async function (req: Request, res: Response) {
     const messages = await getUnansweredMessages();
     res.json(messages);
-  },
+  }
 );
 
 router.post(
@@ -183,7 +183,7 @@ router.post(
     const { message_id, email, reply_title, reply_text } = req.body;
     await sendReplyToMessage(message_id, email, reply_title, reply_text);
     res.end();
-  },
+  }
 );
 
 router.get("/users", verifyAdmin, async function (req: Request, res: Response) {
@@ -198,7 +198,7 @@ router.get(
     const { user_id } = req.query;
     const orders = await getOrdersOfUser(parseInt(user_id as string));
     res.json(orders);
-  },
+  }
 );
 
 router.post(
@@ -208,7 +208,7 @@ router.post(
     const { artwork_id } = req.body;
     const featured = await checkIfFeatured(artwork_id);
     res.json(featured);
-  },
+  }
 );
 
 router.post(
@@ -218,7 +218,7 @@ router.post(
     const { artwork_id } = req.body;
     await removeArtwork(artwork_id);
     res.end();
-  },
+  }
 );
 
 router.post(
@@ -228,7 +228,7 @@ router.post(
     const { artwork_id, field_name, value } = req.body;
     await updateArtworkData(artwork_id, field_name, value);
     res.end();
-  },
+  }
 );
 
 export default router;

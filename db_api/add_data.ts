@@ -2,13 +2,12 @@ import { incrementItemInShoppingList } from "./change_data.js";
 import { getShoppingListItems } from "./get_data.js";
 import makeConnection from "../connection.js";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import { InvoiceData } from "../types/index.js";
 
 export const registerUser = async (
   last_name: string,
   first_name: string,
   email: string,
-  password: string,
+  password: string
 ): Promise<void> => {
   const connection = await makeConnection();
   const data = [last_name, first_name, email, password];
@@ -21,7 +20,7 @@ export const registerUser = async (
             ?,
             ?
           );`,
-    data,
+    data
   );
   connection.end();
 };
@@ -29,7 +28,7 @@ export const registerUser = async (
 export const saveMessgeToAdministrator = async (
   email: string,
   title: string,
-  message: string,
+  message: string
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -38,7 +37,7 @@ export const saveMessgeToAdministrator = async (
         INSERT INTO messages_to_administrator(email, message_title, message_txt)
         VALUES(?, ?, ?)
     `,
-    [email, title, message],
+    [email, title, message]
   );
 
   connection.end();
@@ -47,7 +46,7 @@ export const saveMessgeToAdministrator = async (
 export const addNewItemToShoppingList = async (
   user_id: number,
   artwork_id: number,
-  n: number = 1,
+  n: number = 1
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -57,7 +56,7 @@ export const addNewItemToShoppingList = async (
         artworks_in_shopping_list(user_id, quantity, artwork_id) 
         VALUES(?, ?, ?)
     `,
-    [user_id, n, artwork_id],
+    [user_id, n, artwork_id]
   );
 
   connection.end();
@@ -66,7 +65,7 @@ export const addNewItemToShoppingList = async (
 export const addToShoppingList = async (
   user_id: number,
   artwork_id: number,
-  n: number = 1,
+  n: number = 1
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -74,14 +73,14 @@ export const addToShoppingList = async (
     `
         UPDATE artworks SET quantity = quantity-? WHERE id = ?
     `,
-    [n, artwork_id],
+    [n, artwork_id]
   );
 
   const [prev] = await connection.query<RowDataPacket[]>(
     `
         SELECT * FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `,
-    [user_id, artwork_id],
+    [user_id, artwork_id]
   );
 
   if (prev[0]) {
@@ -93,8 +92,8 @@ export const addToShoppingList = async (
 };
 
 export const makeOrder = async (
-  user_id: number,
-  invoice_data: InvoiceData,
+  user_id: number
+  // invoice_data: InvoiceData,
 ): Promise<number> => {
   const connection = await makeConnection();
   const shoppingListItems = await getShoppingListItems(user_id);
@@ -103,7 +102,7 @@ export const makeOrder = async (
       `
       INSERT INTO orders(user_id) VALUES(?)
       `,
-      [user_id],
+      [user_id]
     );
 
     const order_id = insertedResults.insertId;
@@ -114,7 +113,7 @@ export const makeOrder = async (
           `
             INSERT INTO artworks_ordered(order_id, quantity, price, artwork_id) VALUES(?, ?, ?, ?)
           `,
-          [order_id, item.quantity, item.price, item.id],
+          [order_id, item.quantity, item.price, item.id]
         );
 
         await connection.query(
@@ -124,9 +123,9 @@ export const makeOrder = async (
             SET quantity = 0
             WHERE user_id = ? AND artwork_id = ?
           `,
-          [user_id, item.id],
+          [user_id, item.id]
         );
-      }),
+      })
     );
 
     connection.end();
@@ -144,7 +143,7 @@ export const addTag = async (tag_name: string): Promise<number> => {
     `
         SELECT id FROM tags WHERE tname = ?
     `,
-    [tag_name],
+    [tag_name]
   );
 
   let tag_id: number;
@@ -156,7 +155,7 @@ export const addTag = async (tag_name: string): Promise<number> => {
       `
         INSERT INTO tags(tname) VALUES(?)
       `,
-      [tag_name],
+      [tag_name]
     );
     tag_id = insertResult.insertId;
   }
@@ -167,7 +166,7 @@ export const addTag = async (tag_name: string): Promise<number> => {
 
 export const addArtworkTags = async (
   artwork_id: number,
-  tags: string[],
+  tags: string[]
 ): Promise<void> => {
   await Promise.all(
     tags.map(async (tag) => {
@@ -178,7 +177,7 @@ export const addArtworkTags = async (
         `
           SELECT * FROM artwork_tags WHERE artwork_id = ? AND tag_id = ?
         `,
-        [artwork_id, tag_id],
+        [artwork_id, tag_id]
       );
 
       if (prev.length) {
@@ -186,19 +185,19 @@ export const addArtworkTags = async (
           `
             UPDATE artwork_tags SET removed = false WHERE artwork_id = ? AND tag_id = ?
           `,
-          [artwork_id, tag_id],
+          [artwork_id, tag_id]
         );
       } else {
         await connection.query(
           `
             INSERT INTO artwork_tags(artwork_id, tag_id) VALUES(?, ?)
           `,
-          [artwork_id, tag_id],
+          [artwork_id, tag_id]
         );
       }
 
       connection.end();
-    }),
+    })
   );
 };
 

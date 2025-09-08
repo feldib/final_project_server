@@ -1,16 +1,16 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 import makeConnection from "../connection.js";
-import { User, Category, Artwork, Review } from "../types/index.js";
+import { User, Category } from "../types/index.js";
 
 export const getUser = async (
   email: string,
-  password: string,
+  password: string
 ): Promise<User | undefined> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
     "SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;",
-    [email, password],
+    [email, password]
   );
 
   connection.end();
@@ -23,7 +23,7 @@ export const getUserWithId = async (id: number): Promise<User | undefined> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
     "SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;",
-    [id],
+    [id]
   );
 
   connection.end();
@@ -37,7 +37,7 @@ export const getRegisteredUsers = async (): Promise<User[]> => {
   const connection = await makeConnection();
   const [users] = await connection.execute<RowDataPacket[]>(
     `SELECT id, last_name, first_name, email, address, phone_number FROM users
-        WHERE is_admin = false;`,
+        WHERE is_admin = false;`
   );
 
   connection.end();
@@ -47,19 +47,19 @@ export const getRegisteredUsers = async (): Promise<User[]> => {
 export const getCategories = async (): Promise<Category[]> => {
   const connection = await makeConnection();
   const [results] = await connection.execute<RowDataPacket[]>(
-    "SELECT id, cname FROM categories WHERE removed = false;",
+    "SELECT id, cname FROM categories WHERE removed = false;"
   );
   connection.end();
   return results as Category[];
 };
 
 export const getSpecificCategory = async (
-  category_id: number,
+  category_id: number
 ): Promise<string> => {
   const connection = await makeConnection();
   const [result] = await connection.query<RowDataPacket[]>(
     "SELECT cname FROM categories WHERE id=? AND removed = false;",
-    [category_id],
+    [category_id]
   );
   connection.end();
   const cname = result[0]?.cname;
@@ -80,7 +80,7 @@ export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
     WHERE artwork_id=? 
     AND artwork_tags.removed = false 
     AND tags.removed = false;`,
-    [artwork_id],
+    [artwork_id]
   );
 
   connection.end();
@@ -96,7 +96,7 @@ export const searchArtworks = async (
   order?: string,
   n?: string,
   offset?: string,
-  only_featured?: string,
+  only_featured?: string
 ): Promise<any[]> => {
   const connection = await makeConnection();
 
@@ -187,8 +187,8 @@ export const searchArtworks = async (
   console.log(sql_query);
 
   const [artworks] = await connection.query<RowDataPacket[]>(
-    `${sql_query  };`,
-    data,
+    `${sql_query};`,
+    data
   );
   connection.end();
 
@@ -200,7 +200,7 @@ export const searchArtworks = async (
       artwork.thumbnail = thumbnail;
       artwork.cname = cname;
       artwork.tags = tags;
-    }),
+    })
   );
 
   return artworks;
@@ -213,7 +213,7 @@ export const findArtworkWithId = async (artwork_id: string): Promise<any> => {
     `
   SELECT id, title, artist_name, price, quantity, category_id, date_added FROM artworks WHERE removed=false AND id = ?
   `,
-    [artwork_id],
+    [artwork_id]
   );
 
   const artwork = result[0];
@@ -239,9 +239,9 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
 
   const [results] = await connection.query<RowDataPacket[]>(
     `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false AND id IN (${artwork_ids
-      .map((obj) => "?")
+      .map(() => "?")
       .join(", ")})`,
-    artwork_ids.map((obj: any) => obj.artwork_id),
+    artwork_ids.map((obj: any) => obj.artwork_id)
   );
   let artworks = results;
   if (artworks.length) {
@@ -253,7 +253,7 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
         } else {
           return artwork;
         }
-      }),
+      })
     );
   }
 
@@ -267,7 +267,7 @@ export const getNewestArtworks = async (n?: string): Promise<any[]> => {
   const [results] = await connection.execute<RowDataPacket[]>(
     `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false ORDER BY date_added DESC ${
       n ? ` LIMIT ${n}` : ""
-    }`,
+    }`
   );
 
   let artworks = results;
@@ -280,7 +280,7 @@ export const getNewestArtworks = async (n?: string): Promise<any[]> => {
         } else {
           return artwork;
         }
-      }),
+      })
     );
   }
 
@@ -301,7 +301,7 @@ export const getWishlistedTheMost = async (n?: string): Promise<any[]> => {
     ON artworks.id = wishlisted.artwork_id
     WHERE artworks.removed = false
     ORDER BY wishlisted.times_wishlisted DESC 
-    ${n ? ` LIMIT ${n}` : ""}`,
+    ${n ? ` LIMIT ${n}` : ""}`
   );
 
   let artworks = results;
@@ -314,7 +314,7 @@ export const getWishlistedTheMost = async (n?: string): Promise<any[]> => {
         } else {
           return artwork;
         }
-      }),
+      })
     );
   }
 
@@ -335,7 +335,7 @@ export const getThumbnail = async (artwork_id: number): Promise<string> => {
 };
 
 export const getOtherPictures = async (
-  artwork_id: number,
+  artwork_id: number
 ): Promise<string[]> => {
   const path = `images/${artwork_id}/other_pictures`;
 
@@ -358,19 +358,19 @@ export const checkIfRegistered = async (email: string): Promise<boolean> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
     "SELECT id, is_admin FROM users WHERE email = ?;",
-    [email],
+    [email]
   );
   connection.end();
   return results.length !== 0;
 };
 
 export const checkEmail = async (
-  email: string,
+  email: string
 ): Promise<{ registered: boolean; id?: number }> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
     "SELECT id FROM users WHERE email = ?;",
-    [email],
+    [email]
   );
   connection.end();
   if (results.length !== 0) {
@@ -386,7 +386,7 @@ export const checkEmail = async (
 };
 
 export const getReviewsOfArtwork = async (
-  artwork_id: string,
+  artwork_id: string
 ): Promise<any[]> => {
   const connection = await makeConnection();
   const [reviews] = await connection.query<RowDataPacket[]>(
@@ -394,7 +394,7 @@ export const getReviewsOfArtwork = async (
       reviews.user_id, reviews.time_review_posted, reviews.title, reviews.review_text
       FROM reviews LEFT JOIN users ON reviews.user_id = users.id
       WHERE reviews.artwork_id = ? AND reviews.approved = true AND reviews.removed = false`,
-    [artwork_id],
+    [artwork_id]
   );
   connection.end();
 
@@ -410,7 +410,7 @@ export const getUnapprovedReviews = async (): Promise<any[]> => {
       artworks.artist_name
       FROM reviews LEFT JOIN users ON reviews.user_id = users.id
       LEFT JOIN artworks ON reviews.artwork_id = artworks.id
-      WHERE reviews.approved = false AND reviews.removed = false`,
+      WHERE reviews.approved = false AND reviews.removed = false`
   );
   connection.end();
 
@@ -426,7 +426,7 @@ export const getReviewsOfUser = async (user_id: number): Promise<any[]> => {
       FROM reviews LEFT JOIN users ON reviews.user_id = users.id
       LEFT JOIN artworks ON reviews.artwork_id = artworks.id
       WHERE reviews.user_id = ? AND reviews.removed = false`,
-    [user_id],
+    [user_id]
   );
   connection.end();
 
@@ -445,7 +445,7 @@ export const getDataOfArtwork = async (id: string): Promise<any> => {
     LEFT JOIN categories ON artworks.category_id = categories.id
     WHERE artworks.id=? 
     AND categories.removed = false`,
-    [id],
+    [id]
   );
 
   const artwork = artworks[0];
@@ -460,7 +460,7 @@ export const getDataOfArtwork = async (id: string): Promise<any> => {
 };
 
 export const checkIfArtworkInStock = async (
-  id: number,
+  id: number
 ): Promise<boolean | Error> => {
   const connection = await makeConnection();
 
@@ -468,7 +468,7 @@ export const checkIfArtworkInStock = async (
     `
       SELECT quantity FROM artworks WHERE id = ?
   `,
-    [id],
+    [id]
   );
 
   connection.end();
@@ -490,7 +490,7 @@ export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
     ON artworks.id = artworks_in_shopping_list.artwork_id
     WHERE artworks_in_shopping_list.user_id = ? 
   `,
-    [user_id],
+    [user_id]
   );
 
   let results = artworks;
@@ -506,7 +506,7 @@ export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
         artwork.cname = cname;
         artwork.tags = tags;
         return artwork;
-      }),
+      })
     );
     results = results.filter((item: any) => {
       return item.quantity > 0;
@@ -519,7 +519,7 @@ export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
 
 export const checkIfWishlisted = async (
   user_id: number,
-  artwork_id: number,
+  artwork_id: number
 ): Promise<boolean> => {
   const connection = await makeConnection();
 
@@ -527,7 +527,7 @@ export const checkIfWishlisted = async (
     `
       SELECT removed FROM wishlisted WHERE user_id = ? AND artwork_id = ?
   `,
-    [user_id, artwork_id],
+    [user_id, artwork_id]
   );
   connection.end();
   if (prev.length) {
@@ -539,7 +539,7 @@ export const checkIfWishlisted = async (
 
 export const getWishlisted = async (
   user_id: number,
-  n?: string,
+  n?: string
 ): Promise<any[]> => {
   const connection = await makeConnection();
 
@@ -553,7 +553,7 @@ export const getWishlisted = async (
       AND artworks.removed = false
       ${n ? ` LIMIT ${n}` : ""}
   `,
-    [user_id],
+    [user_id]
   );
 
   let results = wishlisted;
@@ -569,7 +569,7 @@ export const getWishlisted = async (
         artwork.cname = cname;
         artwork.tags = tags;
         return artwork;
-      }),
+      })
     );
   }
 
@@ -593,7 +593,7 @@ export const getOrderData = async (order_id: number): Promise<any[]> => {
     LEFT JOIN users ON users.id = orders.user_id
     WHERE artworks_ordered.order_id = ?
   `,
-    [order_id],
+    [order_id]
   );
 
   await Promise.all(
@@ -605,7 +605,7 @@ export const getOrderData = async (order_id: number): Promise<any[]> => {
       artwork.cname = cname;
       artwork.tags = tags;
       return artwork;
-    }),
+    })
   );
 
   connection.end();
@@ -620,7 +620,7 @@ export const getOrdersOfUser = async (user_id: number): Promise<any[]> => {
     `
     SELECT id, time_ordered FROM orders WHERE user_id = ?
   `,
-    [user_id],
+    [user_id]
   );
 
   let orderDataCollection = results;
@@ -657,11 +657,11 @@ export const getOrdersOfUser = async (user_id: number): Promise<any[]> => {
           };
         });
         return orderData;
-      }),
+      })
     );
 
     orderDataCollection.sort(
-      (a: any, b: any) => b.time_ordered - a.time_ordered,
+      (a: any, b: any) => b.time_ordered - a.time_ordered
     );
   }
 
@@ -674,7 +674,7 @@ export const getOrders = async (): Promise<any[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
-    "SELECT id, time_ordered FROM orders",
+    "SELECT id, time_ordered FROM orders"
   );
 
   let orderDataCollection = results;
@@ -716,11 +716,11 @@ export const getOrders = async (): Promise<any[]> => {
         };
 
         return orderData;
-      }),
+      })
     );
 
     orderDataCollection.sort(
-      (a: any, b: any) => b.time_ordered - a.time_ordered,
+      (a: any, b: any) => b.time_ordered - a.time_ordered
     );
   }
 
@@ -735,7 +735,7 @@ export const getUnansweredMessages = async (): Promise<any[]> => {
     `SELECT id, email, message_title, message_txt, message_time
       FROM messages_to_administrator
       WHERE answered = false AND removed = false
-      `,
+      `
   );
   connection.end();
 
@@ -749,7 +749,7 @@ export const checkIfFeatured = async (artwork_id: number): Promise<boolean> => {
     `
       SELECT removed FROM featured WHERE artwork_id = ?
   `,
-    [artwork_id],
+    [artwork_id]
   );
   connection.end();
   if (prev.length) {
@@ -760,7 +760,7 @@ export const checkIfFeatured = async (artwork_id: number): Promise<boolean> => {
 };
 
 export const getQuantityOfArtworkInStock = async (
-  artwork_id: number,
+  artwork_id: number
 ): Promise<number> => {
   const connection = await makeConnection();
 
@@ -768,7 +768,7 @@ export const getQuantityOfArtworkInStock = async (
     `
     SELECT quantity FROM artworks WHERE id = ?
   `,
-    [artwork_id],
+    [artwork_id]
   );
 
   connection.end();
