@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
-import config from '../config.js';
+import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
+import config from "../config.js";
 
 export const verifyPaswordToken = (
   req: Request,
@@ -9,7 +9,7 @@ export const verifyPaswordToken = (
 ): void => {
   const { token } = req.body;
   if (!token) {
-    res.end('You are not authenticated');
+    res.end("You are not authenticated");
   } else {
     jwt.verify(
       token,
@@ -17,7 +17,7 @@ export const verifyPaswordToken = (
       (err: jwt.VerifyErrors | null, decoded: any) => {
         if (err) {
           console.log(err);
-          res.status(401).end('Tokens do not match');
+          res.status(401).end("Tokens do not match");
         } else {
           next();
         }
@@ -33,7 +33,7 @@ export const verifyUser = (
 ): void => {
   console.log(req.session.userid);
   if (!req.session.userid) {
-    res.status(401).end('You are not authenticated');
+    res.status(401).end("You are not authenticated");
   } else {
     req.id = req.session.userid;
     next();
@@ -46,7 +46,7 @@ export const verifyAdmin = (
   next: NextFunction,
 ): void => {
   if (!req.session.isadmin) {
-    res.status(401).end('You are not authenticated');
+    res.status(401).end("You are not authenticated");
   } else {
     req.isadmin = req.session.isadmin;
     next();

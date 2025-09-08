@@ -2,10 +2,10 @@ import {
   checkIfWishlisted,
   checkIfFeatured,
   getQuantityOfArtworkInStock,
-} from './get_data.js';
-import { addToShoppingList, addArtworkTags } from './add_data.js';
-import makeConnection from '../connection.js';
-import { RowDataPacket } from 'mysql2/promise';
+} from "./get_data.js";
+import { addToShoppingList, addArtworkTags } from "./add_data.js";
+import makeConnection from "../connection.js";
+import { RowDataPacket } from "mysql2/promise";
 
 export const incrementItemInShoppingList = async (
   user_id: number,
@@ -132,7 +132,7 @@ export const increaseShoppingCartItemQuantity = async (
       [user_id, artwork_id],
     );
   } else {
-    throw new Error('Item out of stock');
+    throw new Error("Item out of stock");
   }
 
   connection.end();
@@ -143,7 +143,7 @@ export const resetPassword = async (
   email: string,
 ): Promise<void> => {
   const connection = await makeConnection();
-  await connection.query('UPDATE users SET passw = ? WHERE email = ?;', [
+  await connection.query("UPDATE users SET passw = ? WHERE email = ?;", [
     new_password,
     email,
   ]);
@@ -169,11 +169,11 @@ export const removeFromWishlisted = async (
 };
 
 type UserField =
-  | 'first_name'
-  | 'last_name'
-  | 'email'
-  | 'address'
-  | 'phone_number';
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "address"
+  | "phone_number";
 
 export const updateUserData = async (
   user_id: number,
@@ -183,7 +183,7 @@ export const updateUserData = async (
   const connection = await makeConnection();
 
   if (
-    ['first_name', 'last_name', 'email', 'address', 'phone_number'].includes(
+    ["first_name", "last_name", "email", "address", "phone_number"].includes(
       field_name,
     )
   ) {
@@ -222,7 +222,7 @@ export const updateArtworkTags = async (
     (tag) => !tags_of_artwork.some((tg) => tg.tname === tag),
   );
 
-  console.log('tagsToAdd: ', JSON.stringify(tagsToAdd));
+  console.log("tagsToAdd: ", JSON.stringify(tagsToAdd));
 
   await addArtworkTags(artwork_id, tagsToAdd);
 
@@ -245,13 +245,13 @@ export const updateArtworkTags = async (
 };
 
 type ArtworkField =
-  | 'title'
-  | 'artist_name'
-  | 'price'
-  | 'quantity'
-  | 'descript'
-  | 'category_id'
-  | 'tags';
+  | "title"
+  | "artist_name"
+  | "price"
+  | "quantity"
+  | "descript"
+  | "category_id"
+  | "tags";
 
 interface Tag {
   tname: string;
@@ -264,12 +264,12 @@ export const updateArtworkData = async (
 ): Promise<void> => {
   if (
     [
-      'title',
-      'artist_name',
-      'price',
-      'quantity',
-      'descript',
-      'category_id',
+      "title",
+      "artist_name",
+      "price",
+      "quantity",
+      "descript",
+      "category_id",
     ].includes(field_name)
   ) {
     const connection = await makeConnection();
@@ -282,7 +282,7 @@ export const updateArtworkData = async (
     );
 
     connection.end();
-  } else if ('tags' === field_name) {
+  } else if ("tags" === field_name) {
     await updateArtworkTags(
       artwork_id,
       (value as Tag[]).map((tag) => {

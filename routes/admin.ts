@@ -1,8 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response, NextFunction } from "express";
 const router = Router();
-import fs from 'fs/promises';
+import fs from "fs/promises";
 
-import { verifyAdmin } from '../db_api/verify.js';
+import { verifyAdmin } from "../db_api/verify.js";
 
 import {
   getUnapprovedReviews,
@@ -11,7 +11,7 @@ import {
   getRegisteredUsers,
   getOrdersOfUser,
   checkIfFeatured,
-} from '../db_api/get_data.js';
+} from "../db_api/get_data.js";
 
 // import { addToFeatured, addNewArtwork } from "../db_api/add_data.js";
 
@@ -21,16 +21,16 @@ import {
   // removeArtworkFromFeatured,
   removeArtwork,
   updateArtworkData,
-} from '../db_api/change_data.js';
+} from "../db_api/change_data.js";
 
-import { sendReplyToMessage } from '../db_api/email.js';
+import { sendReplyToMessage } from "../db_api/email.js";
 
 const now = new Date();
 
-import multer from 'multer';
+import multer from "multer";
 
 const newTumbnailStorage = multer.diskStorage({
-  destination (
+  destination(
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void,
@@ -38,7 +38,7 @@ const newTumbnailStorage = multer.diskStorage({
     cb(null, `public/images/${req.query.artwork_id}/thumbnail`);
   },
 
-  filename (
+  filename(
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void,
@@ -48,7 +48,7 @@ const newTumbnailStorage = multer.diskStorage({
 });
 
 const newOtherImagesStorage = multer.diskStorage({
-  destination (
+  destination(
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void,
@@ -56,7 +56,7 @@ const newOtherImagesStorage = multer.diskStorage({
     cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
   },
 
-  filename (
+  filename(
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void,
@@ -102,10 +102,10 @@ async function checkOtherPicturesPath(
 }
 
 router.post(
-  '/thumbnail',
+  "/thumbnail",
   verifyAdmin,
   checkThumbnailPath,
-  uploadNewThumbnail.single('thumbnail'),
+  uploadNewThumbnail.single("thumbnail"),
   function (req: Request, res: Response) {
     res.end();
   },
@@ -130,7 +130,7 @@ async function removePreviousThumbnail(
 }
 
 router.get(
-  '/unapproved_reviews',
+  "/unapproved_reviews",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const reviews = await getUnapprovedReviews();
@@ -139,7 +139,7 @@ router.get(
 );
 
 router.post(
-  '/approve_review',
+  "/approve_review",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { id } = req.body;
@@ -149,7 +149,7 @@ router.post(
 );
 
 router.post(
-  '/remove_review',
+  "/remove_review",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { id } = req.body;
@@ -159,7 +159,7 @@ router.post(
 );
 
 router.get(
-  '/orders',
+  "/orders",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const orders = await getOrders();
@@ -168,7 +168,7 @@ router.get(
 );
 
 router.get(
-  '/unanswered_messages',
+  "/unanswered_messages",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const messages = await getUnansweredMessages();
@@ -177,7 +177,7 @@ router.get(
 );
 
 router.post(
-  '/reply_to_message',
+  "/reply_to_message",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { message_id, email, reply_title, reply_text } = req.body;
@@ -186,13 +186,13 @@ router.post(
   },
 );
 
-router.get('/users', verifyAdmin, async function (req: Request, res: Response) {
+router.get("/users", verifyAdmin, async function (req: Request, res: Response) {
   const users = await getRegisteredUsers();
   res.json(users);
 });
 
 router.get(
-  '/orders_of_user',
+  "/orders_of_user",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { user_id } = req.query;
@@ -202,7 +202,7 @@ router.get(
 );
 
 router.post(
-  '/is_featured',
+  "/is_featured",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id } = req.body;
@@ -212,7 +212,7 @@ router.post(
 );
 
 router.post(
-  '/remove_artwork',
+  "/remove_artwork",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id } = req.body;
@@ -222,7 +222,7 @@ router.post(
 );
 
 router.post(
-  '/update_artwork_data',
+  "/update_artwork_data",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id, field_name, value } = req.body;

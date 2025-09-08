@@ -10,7 +10,8 @@
     "start:prod": "npm run build && npm start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:check": "eslint . --max-warnings 0"
+    "lint:check": "eslint . --max-warnings 0",
+    "lint:errors-only": "eslint . --quiet"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

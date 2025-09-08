@@ -1,7 +1,7 @@
-import nodemailer from 'nodemailer';
-import jwt from 'jsonwebtoken';
-import config from '../config.js';
-import makeConnection from '../connection.js';
+import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
+import config from "../config.js";
+import makeConnection from "../connection.js";
 
 const client_host = config.server.clientHost;
 
@@ -78,13 +78,13 @@ export const sendLinkToResetPassword = async ({
     });
 
     const token = jwt.sign({ id }, config.security.secretKey, {
-      expiresIn: '1d',
+      expiresIn: "1d",
     });
 
     const mailOptions = {
       from: config.email.auth.user,
       to: `${email}`,
-      subject: 'Reset password',
+      subject: "Reset password",
       html: `
             <p>Click here to reset your password: </p>
             <a href = "${client_host}/reset_password?token=${token}&email=${email}">Link</a>

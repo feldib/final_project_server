@@ -1,8 +1,8 @@
-import { incrementItemInShoppingList } from './change_data.js';
-import { getShoppingListItems } from './get_data.js';
-import makeConnection from '../connection.js';
-import { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import { InvoiceData } from '../types/index.js';
+import { incrementItemInShoppingList } from "./change_data.js";
+import { getShoppingListItems } from "./get_data.js";
+import makeConnection from "../connection.js";
+import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { InvoiceData } from "../types/index.js";
 
 export const registerUser = async (
   last_name: string,
@@ -133,7 +133,7 @@ export const makeOrder = async (
     return order_id;
   } else {
     connection.end();
-    throw new Error('No items in shopping cart');
+    throw new Error("No items in shopping cart");
   }
 };
 

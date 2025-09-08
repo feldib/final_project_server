@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from "express";
 const router = Router();
 
-import { verifyUser } from '../db_api/verify.js';
+import { verifyUser } from "../db_api/verify.js";
 
 import {
   checkIfRegistered,
@@ -11,7 +11,7 @@ import {
   checkIfWishlisted,
   getOrdersOfUser,
   getReviewsOfUser,
-} from '../db_api/get_data.js';
+} from "../db_api/get_data.js";
 
 import {
   registerUser,
@@ -20,21 +20,21 @@ import {
   makeOrder,
   // leaveReview,
   // addToWishlisted,
-} from '../db_api/add_data.js';
+} from "../db_api/add_data.js";
 
 import {
   setShoppingCartItemQuantityToZero,
   increaseShoppingCartItemQuantity,
   decreaseShoppingCartItemQuantity,
   replaceSavedShoppingCart,
-} from '../db_api/change_data.js';
+} from "../db_api/change_data.js";
 
-import { removeFromWishlisted, updateUserData } from '../db_api/change_data.js';
+import { removeFromWishlisted, updateUserData } from "../db_api/change_data.js";
 
-import { RegisterRequest } from '../types/index.js';
+import { RegisterRequest } from "../types/index.js";
 
 router.post(
-  '/message_to_administrator',
+  "/message_to_administrator",
   function (req: Request, res: Response) {
     const { email, title, message } = req.body;
     try {
@@ -48,7 +48,7 @@ router.post(
 );
 
 router.get(
-  '/shopping_cart',
+  "/shopping_cart",
   verifyUser,
   async function (req: Request, res: Response) {
     const artworks = await getShoppingListItems(req.id!);
@@ -57,7 +57,7 @@ router.get(
 );
 
 router.post(
-  '/shopping_cart',
+  "/shopping_cart",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -75,7 +75,7 @@ router.post(
 );
 
 router.post(
-  '/remove_item_from_shopping_cart',
+  "/remove_item_from_shopping_cart",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -85,7 +85,7 @@ router.post(
 );
 
 router.post(
-  '/increase_shopping_cart_item_quantity',
+  "/increase_shopping_cart_item_quantity",
   verifyUser,
   function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -100,7 +100,7 @@ router.post(
 );
 
 router.post(
-  '/decrease_shopping_cart_item_quantity',
+  "/decrease_shopping_cart_item_quantity",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -110,7 +110,7 @@ router.post(
 );
 
 router.get(
-  '/wishlisted',
+  "/wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
     const n = req.query.n as string;
@@ -120,7 +120,7 @@ router.get(
 );
 
 router.post(
-  '/wishlisted',
+  "/wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -130,7 +130,7 @@ router.post(
 );
 
 router.post(
-  '/remove_from_wishlisted',
+  "/remove_from_wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -140,7 +140,7 @@ router.post(
 );
 
 router.post(
-  '/is_wishlisted',
+  "/is_wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -149,20 +149,20 @@ router.post(
   },
 );
 
-router.post('/update_data', verifyUser, async (req: Request, res: Response) => {
+router.post("/update_data", verifyUser, async (req: Request, res: Response) => {
   await updateUserData(req.id!, req.body.field_name, req.body.value);
   res.end();
 });
 
 router.post(
-  '/new_user',
+  "/new_user",
   async function (req: Request<{}, any, RegisterRequest>, res: Response) {
     const { last_name, first_name, email, password } = req.body;
 
     const registered = await checkIfRegistered(email);
     console.log(registered);
     if (registered) {
-      res.end('There is a user with this email already');
+      res.end("There is a user with this email already");
     } else if (!last_name || !first_name || !email || !password) {
       res.status(400).end();
     } else {
@@ -172,13 +172,13 @@ router.post(
   },
 );
 
-router.post('/make_order', verifyUser, async (req: Request, res: Response) => {
+router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
   await makeOrder(req.id!, req.body.invoice_data);
   res.end();
 });
 
 router.post(
-  '/leave_review',
+  "/leave_review",
   verifyUser,
   async (req: Request, res: Response) => {
     // await leaveReview(
@@ -192,7 +192,7 @@ router.post(
 );
 
 router.get(
-  '/get_orders_of_user',
+  "/get_orders_of_user",
   verifyUser,
   async function (req: Request, res: Response) {
     const orderData = await getOrdersOfUser(req.id!);
@@ -201,7 +201,7 @@ router.get(
 );
 
 router.get(
-  '/get_reviews_of_user',
+  "/get_reviews_of_user",
   verifyUser,
   async function (req: Request, res: Response) {
     const reviewData = await getReviewsOfUser(req.id!);
@@ -210,7 +210,7 @@ router.get(
 );
 
 router.post(
-  '/replace_saved_shopping_cart',
+  "/replace_saved_shopping_cart",
   verifyUser,
   async (req: Request, res: Response) => {
     await replaceSavedShoppingCart(req.id!, req.body.shopping_cart);

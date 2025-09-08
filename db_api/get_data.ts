@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
-import { RowDataPacket } from 'mysql2/promise';
-import makeConnection from '../connection.js';
-import { User, Category, Artwork, Review } from '../types/index.js';
+import fs from "fs/promises";
+import { RowDataPacket } from "mysql2/promise";
+import makeConnection from "../connection.js";
+import { User, Category, Artwork, Review } from "../types/index.js";
 
 export const getUser = async (
   email: string,
@@ -9,7 +9,7 @@ export const getUser = async (
 ): Promise<User | undefined> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    'SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;',
+    "SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;",
     [email, password],
   );
 
@@ -22,7 +22,7 @@ export const getUser = async (
 export const getUserWithId = async (id: number): Promise<User | undefined> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    'SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;',
+    "SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;",
     [id],
   );
 
@@ -47,7 +47,7 @@ export const getRegisteredUsers = async (): Promise<User[]> => {
 export const getCategories = async (): Promise<Category[]> => {
   const connection = await makeConnection();
   const [results] = await connection.execute<RowDataPacket[]>(
-    'SELECT id, cname FROM categories WHERE removed = false;',
+    "SELECT id, cname FROM categories WHERE removed = false;",
   );
   connection.end();
   return results as Category[];
@@ -58,7 +58,7 @@ export const getSpecificCategory = async (
 ): Promise<string> => {
   const connection = await makeConnection();
   const [result] = await connection.query<RowDataPacket[]>(
-    'SELECT cname FROM categories WHERE id=? AND removed = false;',
+    "SELECT cname FROM categories WHERE id=? AND removed = false;",
     [category_id],
   );
   connection.end();
@@ -103,17 +103,17 @@ export const searchArtworks = async (
   let sql_query = `
     SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
   `;
-  if (only_featured === 'true') {
+  if (only_featured === "true") {
     sql_query += `
      RIGHT JOIN featured
      ON featured.artwork_id = artworks.id
      WHERE featured.removed=false
      AND `;
   } else {
-    sql_query += ' WHERE ';
+    sql_query += " WHERE ";
   }
 
-  sql_query += ' artworks.removed=false ';
+  sql_query += " artworks.removed=false ";
 
   console.log(`only_featured = ${only_featured}`);
 
@@ -121,66 +121,66 @@ export const searchArtworks = async (
 
   let needs_and = false;
   if (min || max || title || artist_name || category_id) {
-    sql_query += ' AND ';
+    sql_query += " AND ";
 
     if (min && max) {
-      sql_query += ' price BETWEEN ? AND ? ';
+      sql_query += " price BETWEEN ? AND ? ";
       data.push(min, max);
       needs_and = true;
     } else if (min) {
-      sql_query += ' price > ? ';
+      sql_query += " price > ? ";
       data.push(parseInt(min));
       needs_and = true;
     } else if (max) {
-      sql_query += ' price < ? ';
+      sql_query += " price < ? ";
       data.push(parseInt(max));
       needs_and = true;
     }
 
     if (title) {
       if (needs_and) {
-        sql_query += ' AND ';
+        sql_query += " AND ";
       } else {
         needs_and = true;
       }
-      sql_query += ' LOWER(title) LIKE ? ';
+      sql_query += " LOWER(title) LIKE ? ";
       data.push(`%${title.toLowerCase()}%`);
       needs_and = true;
     }
 
     if (artist_name) {
       if (needs_and) {
-        sql_query += ' AND ';
+        sql_query += " AND ";
       } else {
         needs_and = true;
       }
-      sql_query += ' LOWER(artist_name) LIKE ? ';
+      sql_query += " LOWER(artist_name) LIKE ? ";
       data.push(`%${artist_name.toLowerCase()}%`);
     }
 
     if (category_id) {
       if (needs_and) {
-        sql_query += ' AND ';
+        sql_query += " AND ";
       } else {
         needs_and = true;
       }
-      sql_query += ' category_id = ? ';
+      sql_query += " category_id = ? ";
       data.push(parseInt(category_id));
     }
   }
 
-  sql_query += ' ORDER BY date_added';
-  if (order === 'asc') {
-    sql_query += ' ASC ';
-  } else if (order === 'desc') {
-    sql_query += ' DESC ';
+  sql_query += " ORDER BY date_added";
+  if (order === "asc") {
+    sql_query += " ASC ";
+  } else if (order === "desc") {
+    sql_query += " DESC ";
   }
 
-  sql_query += ' LIMIT ? ';
-  data.push(parseInt(n || '10'));
+  sql_query += " LIMIT ? ";
+  data.push(parseInt(n || "10"));
 
   if (offset) {
-    sql_query += ' OFFSET ? ';
+    sql_query += " OFFSET ? ";
     data.push(parseInt(offset));
   }
 
@@ -234,13 +234,13 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
   const connection = await makeConnection();
   const [artwork_ids] = await connection.execute<RowDataPacket[]>(`
     SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC
-    ${n ? ` LIMIT ${n}` : ''}
+    ${n ? ` LIMIT ${n}` : ""}
   `);
 
   const [results] = await connection.query<RowDataPacket[]>(
     `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false AND id IN (${artwork_ids
-      .map((obj) => '?')
-      .join(', ')})`,
+      .map((obj) => "?")
+      .join(", ")})`,
     artwork_ids.map((obj: any) => obj.artwork_id),
   );
   let artworks = results;
@@ -266,7 +266,7 @@ export const getNewestArtworks = async (n?: string): Promise<any[]> => {
 
   const [results] = await connection.execute<RowDataPacket[]>(
     `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false ORDER BY date_added DESC ${
-      n ? ` LIMIT ${n}` : ''
+      n ? ` LIMIT ${n}` : ""
     }`,
   );
 
@@ -301,7 +301,7 @@ export const getWishlistedTheMost = async (n?: string): Promise<any[]> => {
     ON artworks.id = wishlisted.artwork_id
     WHERE artworks.removed = false
     ORDER BY wishlisted.times_wishlisted DESC 
-    ${n ? ` LIMIT ${n}` : ''}`,
+    ${n ? ` LIMIT ${n}` : ""}`,
   );
 
   let artworks = results;
@@ -329,7 +329,7 @@ export const getThumbnail = async (artwork_id: number): Promise<string> => {
     return undefined;
   });
 
-  const file_name = files ? files[0] : '';
+  const file_name = files ? files[0] : "";
 
   return `${path}/${file_name}`;
 };
@@ -357,7 +357,7 @@ export const getOtherPictures = async (
 export const checkIfRegistered = async (email: string): Promise<boolean> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    'SELECT id, is_admin FROM users WHERE email = ?;',
+    "SELECT id, is_admin FROM users WHERE email = ?;",
     [email],
   );
   connection.end();
@@ -369,7 +369,7 @@ export const checkEmail = async (
 ): Promise<{ registered: boolean; id?: number }> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    'SELECT id FROM users WHERE email = ?;',
+    "SELECT id FROM users WHERE email = ?;",
     [email],
   );
   connection.end();
@@ -474,7 +474,7 @@ export const checkIfArtworkInStock = async (
   connection.end();
 
   if (!result.length) {
-    return new Error('artwork not in database');
+    return new Error("artwork not in database");
   } else {
     return result[0].quantity > 0;
   }
@@ -495,7 +495,7 @@ export const getShoppingListItems = async (user_id: number): Promise<any[]> => {
 
   let results = artworks;
   if (!artworks.length) {
-    console.log('No items in shopping cart');
+    console.log("No items in shopping cart");
   } else {
     results = await Promise.all(
       artworks.map(async (artwork: any) => {
@@ -551,14 +551,14 @@ export const getWishlisted = async (
       WHERE wishlisted.user_id = ? 
       AND wishlisted.removed = false 
       AND artworks.removed = false
-      ${n ? ` LIMIT ${n}` : ''}
+      ${n ? ` LIMIT ${n}` : ""}
   `,
     [user_id],
   );
 
   let results = wishlisted;
   if (!wishlisted.length) {
-    console.log('No wishlisted items');
+    console.log("No wishlisted items");
   } else {
     results = await Promise.all(
       wishlisted.map(async (artwork: any) => {
@@ -674,7 +674,7 @@ export const getOrders = async (): Promise<any[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
-    'SELECT id, time_ordered FROM orders',
+    "SELECT id, time_ordered FROM orders",
   );
 
   let orderDataCollection = results;
