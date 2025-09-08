@@ -1,7 +1,13 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 import makeConnection from "../connection.js";
-import { User, Category } from "../types/index.js";
+import {
+  User,
+  Category,
+  Tag,
+  ArtworkWithDetails,
+  OrderDataCollection,
+} from "../types/index.js";
 
 export const getUser = async (
   email: string,
@@ -66,11 +72,6 @@ export const getSpecificCategory = async (
   return cname;
 };
 
-interface Tag {
-  id: number;
-  tname: string;
-}
-
 export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
   const connection = await makeConnection();
   const [tags] = await connection.query<RowDataPacket[]>(
@@ -97,7 +98,7 @@ export const searchArtworks = async (
   n?: string,
   offset?: string,
   only_featured?: string
-): Promise<RowDataPacket[]> => {
+): Promise<ArtworkWithDetails[]> => {
   const connection = await makeConnection();
 
   let sql_query = `
@@ -117,7 +118,7 @@ export const searchArtworks = async (
 
   console.log(`only_featured = ${only_featured}`);
 
-  const data: any[] = [];
+  const data: (string | number)[] = [];
 
   let needs_and = false;
   if (min || max || title || artist_name || category_id) {
@@ -203,12 +204,12 @@ export const searchArtworks = async (
     })
   );
 
-  return artworks;
+  return artworks as ArtworkWithDetails[];
 };
 
 export const findArtworkWithId = async (
   artwork_id: string
-): Promise<RowDataPacket> => {
+): Promise<ArtworkWithDetails> => {
   const connection = await makeConnection();
 
   const [result] = await connection.query<RowDataPacket[]>(
@@ -218,7 +219,7 @@ export const findArtworkWithId = async (
     [artwork_id]
   );
 
-  const artwork = result[0];
+  const artwork = result[0] as ArtworkWithDetails;
 
   connection.end();
 
@@ -232,7 +233,9 @@ export const findArtworkWithId = async (
   return artwork;
 };
 
-export const getFeatured = async (n?: string): Promise<RowDataPacket[]> => {
+export const getFeatured = async (
+  n?: string
+): Promise<ArtworkWithDetails[]> => {
   const connection = await makeConnection();
   const [artwork_ids] = await connection.execute<RowDataPacket[]>(`
     SELECT artwork_id FROM featured WHERE removed=false ORDER BY date_featured DESC
@@ -245,15 +248,15 @@ export const getFeatured = async (n?: string): Promise<RowDataPacket[]> => {
       .join(", ")})`,
     artwork_ids.map((obj) => obj.artwork_id)
   );
-  let artworks = results;
+  let artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
   if (artworks.length) {
     artworks = await Promise.all(
       results.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
-          return { ...artwork, thumbnail };
+          return { ...artwork, thumbnail } as ArtworkWithDetails;
         } else {
-          return artwork;
+          return artwork as ArtworkWithDetails;
         }
       })
     );
@@ -265,7 +268,7 @@ export const getFeatured = async (n?: string): Promise<RowDataPacket[]> => {
 
 export const getNewestArtworks = async (
   n?: string
-): Promise<RowDataPacket[]> => {
+): Promise<ArtworkWithDetails[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
@@ -274,15 +277,15 @@ export const getNewestArtworks = async (
     }`
   );
 
-  let artworks = results;
+  let artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
   if (artworks.length) {
     artworks = await Promise.all(
       results.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
-          return { ...artwork, thumbnail };
+          return { ...artwork, thumbnail } as ArtworkWithDetails;
         } else {
-          return artwork;
+          return artwork as ArtworkWithDetails;
         }
       })
     );
@@ -294,7 +297,7 @@ export const getNewestArtworks = async (
 
 export const getWishlistedTheMost = async (
   n?: string
-): Promise<RowDataPacket[]> => {
+): Promise<ArtworkWithDetails[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
@@ -310,15 +313,15 @@ export const getWishlistedTheMost = async (
     ${n ? ` LIMIT ${n}` : ""}`
   );
 
-  let artworks = results;
+  let artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
   if (artworks.length) {
     artworks = await Promise.all(
       results.map(async (artwork) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
-          return { ...artwork, thumbnail };
+          return { ...artwork, thumbnail } as ArtworkWithDetails;
         } else {
-          return artwork;
+          return artwork as ArtworkWithDetails;
         }
       })
     );
@@ -627,7 +630,7 @@ export const getOrderData = async (
 
 export const getOrdersOfUser = async (
   user_id: number
-): Promise<RowDataPacket[]> => {
+): Promise<OrderDataCollection[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.query<RowDataPacket[]>(
@@ -637,11 +640,15 @@ export const getOrdersOfUser = async (
     [user_id]
   );
 
-  let orderDataCollection = results;
+  let orderDataCollection: OrderDataCollection[] = [];
   if (results.length) {
     orderDataCollection = await Promise.all(
       results.map(async (ord) => {
-        const orderData: any = { time_ordered: ord.time_ordered };
+        const orderData: OrderDataCollection = {
+          time_ordered: ord.time_ordered,
+          totalCost: 0,
+          items: [],
+        };
         const res = await getOrderData(ord.id);
         orderData.totalCost = res
           .map((item) => item.cost)
@@ -657,6 +664,9 @@ export const getOrdersOfUser = async (
             cost,
             title,
             artist_name,
+            category_id,
+            user_name,
+            user_id,
           } = item;
           return {
             thumbnail,
@@ -668,6 +678,9 @@ export const getOrdersOfUser = async (
             cost,
             title,
             artist_name,
+            category_id,
+            user_name,
+            user_id,
           };
         });
         return orderData;
@@ -682,18 +695,22 @@ export const getOrdersOfUser = async (
   return orderDataCollection;
 };
 
-export const getOrders = async (): Promise<RowDataPacket[]> => {
+export const getOrders = async (): Promise<OrderDataCollection[]> => {
   const connection = await makeConnection();
 
   const [results] = await connection.execute<RowDataPacket[]>(
     "SELECT id, time_ordered FROM orders"
   );
 
-  let orderDataCollection = results;
+  let orderDataCollection: OrderDataCollection[] = [];
   if (results.length) {
     orderDataCollection = await Promise.all(
       results.map(async (ord) => {
-        const orderData: any = { time_ordered: ord.time_ordered };
+        const orderData: OrderDataCollection = {
+          time_ordered: ord.time_ordered,
+          totalCost: 0,
+          items: [],
+        };
         const res = await getOrderData(ord.id);
         orderData.totalCost = res
           .map((item) => item.cost)
@@ -709,6 +726,9 @@ export const getOrders = async (): Promise<RowDataPacket[]> => {
             cost,
             title,
             artist_name,
+            category_id,
+            user_name,
+            user_id,
           } = item;
           return {
             thumbnail,
@@ -720,6 +740,9 @@ export const getOrders = async (): Promise<RowDataPacket[]> => {
             cost,
             title,
             artist_name,
+            category_id,
+            user_name,
+            user_id,
           };
         });
         orderData.user = {
@@ -785,6 +808,3 @@ export const getQuantityOfArtworkInStock = async (
 
   return res[0].quantity;
 };
-
-// Note: This is a partial conversion. The remaining functions from the original file need to be added.
-// For brevity, I'm showing the main structure. The complete conversion would include all remaining functions.

@@ -73,7 +73,7 @@ async function checkThumbnailPath(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<void> {
   const imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
 
   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {

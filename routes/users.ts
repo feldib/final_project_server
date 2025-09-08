@@ -31,7 +31,7 @@ import {
 
 import { removeFromWishlisted, updateUserData } from "../db_api/change_data.js";
 
-import { RegisterRequest } from "../types/index.js";
+import { RegisterRequest, StandardResponse } from "../types/index.js";
 
 router.post(
   "/message_to_administrator",
@@ -156,7 +156,10 @@ router.post("/update_data", verifyUser, async (req: Request, res: Response) => {
 
 router.post(
   "/new_user",
-  async function (req: Request<{}, any, RegisterRequest>, res: Response) {
+  async function (
+    req: Request<object, StandardResponse, RegisterRequest>,
+    res: Response<StandardResponse>
+  ) {
     const { last_name, first_name, email, password } = req.body;
 
     const registered = await checkIfRegistered(email);

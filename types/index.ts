@@ -1,3 +1,45 @@
+export interface Tag {
+  id: number;
+  tname: string;
+}
+
+export interface ArtworkWithDetails extends Artwork {
+  thumbnail?: string;
+  cname?: string;
+  tags?: Tag[];
+  other_pictures?: string[];
+}
+
+export interface OrderDataItem {
+  cost: number;
+  category_id: number;
+  price: number;
+  quantity: number;
+  id: number;
+  title: string;
+  artist_name: string;
+  user_name: string;
+  user_id: number;
+  thumbnail?: string;
+  cname?: string;
+  tags?: Tag[];
+}
+
+export interface OrderDataCollection {
+  time_ordered: number;
+  totalCost: number;
+  items: OrderDataItem[];
+  user?: {
+    user_name: string;
+    user_id: number;
+  };
+}
+
+// API Response types
+export interface StandardResponse {
+  message: string;
+}
+
 // Database types
 export interface User {
   id: number;
@@ -170,11 +212,9 @@ declare module "express-session" {
 }
 
 // Express Request extension
-declare global {
-  namespace Express {
-    interface Request {
-      id?: number;
-      isadmin?: boolean;
-    }
+declare module "express-serve-static-core" {
+  interface Request {
+    id?: number;
+    isadmin?: boolean;
   }
 }
