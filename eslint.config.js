@@ -36,7 +36,13 @@ export default tseslint.config(
       "@typescript-eslint/explicit-function-return-type": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-empty-object-type": "warn",
-      "@typescript-eslint/no-namespace": "warn",
+      "@typescript-eslint/no-namespace": [
+        "warn",
+        {
+          allowDeclarations: true,
+          allowDefinitionFiles: true,
+        },
+      ],
 
       // General JavaScript/Node.js rules
       "no-console": "off", // Allow console in Node.js server
@@ -65,6 +71,20 @@ export default tseslint.config(
       indent: ["error", 2],
       "eol-last": "error",
       "no-trailing-spaces": "error",
+    },
+  },
+  // Allow Express module augmentation in types directory
+  {
+    files: ["types/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-namespace": "off",
+    },
+  },
+  // Allow process.exit in server startup files
+  {
+    files: ["bin/**/*.ts"],
+    rules: {
+      "no-process-exit": "off",
     },
   }
 );

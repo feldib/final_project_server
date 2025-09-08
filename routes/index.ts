@@ -26,11 +26,17 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   SearchArtworksQuery,
+  StandardResponse,
+  User,
+  ArtworkWithDetails,
 } from "../types/index.js";
 
 router.post(
   "/login",
-  async function (req: Request<{}, any, LoginRequest>, res: Response) {
+  async function (
+    req: Request<object, User, LoginRequest>,
+    res: Response<User>
+  ) {
     const { email, password } = req.body;
     const user = await getUser(email, password);
     if (user !== undefined) {
@@ -64,7 +70,10 @@ router.get("/log_out", async function (req: Request, res: Response) {
 
 router.post(
   "/forgot_password",
-  async function (req: Request<{}, any, ForgotPasswordRequest>, res: Response) {
+  async function (
+    req: Request<object, StandardResponse, ForgotPasswordRequest>,
+    res: Response<StandardResponse>
+  ) {
     const { email } = req.body;
 
     const { registered, id } = await checkEmail(email);
@@ -80,7 +89,10 @@ router.post(
 router.post(
   "/reset_password",
   verifyPaswordToken,
-  async function (req: Request<{}, any, ResetPasswordRequest>, res: Response) {
+  async function (
+    req: Request<object, StandardResponse, ResetPasswordRequest>,
+    res: Response<StandardResponse>
+  ) {
     const { new_password, email } = req.body;
     resetPassword(new_password, email);
     res.end();
@@ -99,8 +111,8 @@ router.get("/categories", async function (req: Request, res: Response) {
 router.get(
   "/search_artworks",
   async function (
-    req: Request<{}, any, any, SearchArtworksQuery>,
-    res: Response
+    req: Request<object, ArtworkWithDetails[], object, SearchArtworksQuery>,
+    res: Response<ArtworkWithDetails[]>
   ) {
     const {
       min,

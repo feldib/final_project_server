@@ -10,7 +10,7 @@ import { RowDataPacket } from "mysql2/promise";
 export const incrementItemInShoppingList = async (
   user_id: number,
   artwork_id: number,
-  n: number = 1
+  n: number = 5
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -231,7 +231,7 @@ export const updateArtworkTags = async (
   );
 
   await Promise.all(
-    tagsToRemove.map(async (tag: any) => {
+    tagsToRemove.map(async (tag) => {
       await connection.query(
         `
         UPDATE artwork_tags SET removed = true WHERE id = ?
