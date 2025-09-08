@@ -7,7 +7,10 @@
     "dev": "tsx watch ./bin/www.ts",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "start:prod": "npm run build && npm start"
+    "start:prod": "npm run build && npm start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -26,6 +29,7 @@
     "nodemailer": "^6.9.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.35.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
@@ -38,10 +42,14 @@
     "@types/multer": "^2.0.0",
     "@types/node": "^24.3.1",
     "@types/nodemailer": "^7.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.35.0",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0"
   },
   "type": "module"
 }

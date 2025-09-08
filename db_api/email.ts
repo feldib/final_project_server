@@ -1,7 +1,7 @@
-import nodemailer from "nodemailer";
-import jwt from "jsonwebtoken";
-import config from "../config.js";
-import makeConnection from "../connection.js";
+import nodemailer from 'nodemailer';
+import jwt from 'jsonwebtoken';
+import config from '../config.js';
+import makeConnection from '../connection.js';
 
 const client_host = config.server.clientHost;
 
@@ -9,7 +9,7 @@ export const sendReplyToMessage = async (
   message_id: number,
   email: string,
   reply_title: string,
-  reply_text: string
+  reply_text: string,
 ): Promise<void> => {
   try {
     const transporter = nodemailer.createTransport({
@@ -37,7 +37,7 @@ export const sendReplyToMessage = async (
         if (error) {
           console.log(error);
         } else {
-          console.log("Email sent: " + info.response);
+          console.log(`Email sent: ${  info.response}`);
           const connection = await makeConnection();
 
           connection.query(
@@ -46,12 +46,12 @@ export const sendReplyToMessage = async (
                 SET answered = true
                 WHERE id = ?
                 `,
-            [message_id]
+            [message_id],
           );
 
           connection.end();
         }
-      }
+      },
     );
   } catch (error) {
     console.log(error);
@@ -78,13 +78,13 @@ export const sendLinkToResetPassword = async ({
     });
 
     const token = jwt.sign({ id }, config.security.secretKey, {
-      expiresIn: "1d",
+      expiresIn: '1d',
     });
 
     const mailOptions = {
       from: config.email.auth.user,
       to: `${email}`,
-      subject: "Reset password",
+      subject: 'Reset password',
       html: `
             <p>Click here to reset your password: </p>
             <a href = "${client_host}/reset_password?token=${token}&email=${email}">Link</a>
@@ -97,9 +97,9 @@ export const sendLinkToResetPassword = async ({
         if (error) {
           console.log(error);
         } else {
-          console.log("Email sent: " + info.response);
+          console.log(`Email sent: ${  info.response}`);
         }
-      }
+      },
     );
   } catch (error) {
     console.log(error);

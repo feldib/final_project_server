@@ -1,8 +1,8 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router, Request, Response, NextFunction } from 'express';
 const router = Router();
-import fs from "fs/promises";
+import fs from 'fs/promises';
 
-import { verifyAdmin } from "../db_api/verify.js";
+import { verifyAdmin } from '../db_api/verify.js';
 
 import {
   getUnapprovedReviews,
@@ -11,7 +11,7 @@ import {
   getRegisteredUsers,
   getOrdersOfUser,
   checkIfFeatured,
-} from "../db_api/get_data.js";
+} from '../db_api/get_data.js';
 
 // import { addToFeatured, addNewArtwork } from "../db_api/add_data.js";
 
@@ -21,45 +21,45 @@ import {
   // removeArtworkFromFeatured,
   removeArtwork,
   updateArtworkData,
-} from "../db_api/change_data.js";
+} from '../db_api/change_data.js';
 
-import { sendReplyToMessage } from "../db_api/email.js";
+import { sendReplyToMessage } from '../db_api/email.js';
 
 const now = new Date();
 
-import multer from "multer";
+import multer from 'multer';
 
 const newTumbnailStorage = multer.diskStorage({
-  destination: function (
+  destination (
     req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, destination: string) => void
+    cb: (error: Error | null, destination: string) => void,
   ) {
     cb(null, `public/images/${req.query.artwork_id}/thumbnail`);
   },
 
-  filename: function (
+  filename (
     req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void
+    cb: (error: Error | null, filename: string) => void,
   ) {
     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
   },
 });
 
 const newOtherImagesStorage = multer.diskStorage({
-  destination: function (
+  destination (
     req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, destination: string) => void
+    cb: (error: Error | null, destination: string) => void,
   ) {
     cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
   },
 
-  filename: function (
+  filename (
     req: Request,
     file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void
+    cb: (error: Error | null, filename: string) => void,
   ) {
     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
   },
@@ -72,9 +72,9 @@ const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
 async function checkThumbnailPath(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
-  let imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
+  const imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
 
   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
     if (err) {
@@ -88,9 +88,9 @@ async function checkThumbnailPath(
 async function checkOtherPicturesPath(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
-  let imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
+  const imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
 
   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
     if (err) {
@@ -102,19 +102,19 @@ async function checkOtherPicturesPath(
 }
 
 router.post(
-  "/thumbnail",
+  '/thumbnail',
   verifyAdmin,
   checkThumbnailPath,
-  uploadNewThumbnail.single("thumbnail"),
+  uploadNewThumbnail.single('thumbnail'),
   function (req: Request, res: Response) {
     res.end();
-  }
+  },
 );
 
 async function removePreviousThumbnail(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const path = `public/images/${req.query.artwork_id}/thumbnail`;
 
@@ -123,112 +123,112 @@ async function removePreviousThumbnail(
   await Promise.all(
     files.map((file) => {
       fs.unlink(`${path}/${file}`);
-    })
+    }),
   );
 
   next();
 }
 
 router.get(
-  "/unapproved_reviews",
+  '/unapproved_reviews',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const reviews = await getUnapprovedReviews();
     res.json(reviews);
-  }
+  },
 );
 
 router.post(
-  "/approve_review",
+  '/approve_review',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { id } = req.body;
     await approveReview(id);
     res.end();
-  }
+  },
 );
 
 router.post(
-  "/remove_review",
+  '/remove_review',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { id } = req.body;
     await removeReview(id);
     res.end();
-  }
+  },
 );
 
 router.get(
-  "/orders",
+  '/orders',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const orders = await getOrders();
     res.json(orders);
-  }
+  },
 );
 
 router.get(
-  "/unanswered_messages",
+  '/unanswered_messages',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const messages = await getUnansweredMessages();
     res.json(messages);
-  }
+  },
 );
 
 router.post(
-  "/reply_to_message",
+  '/reply_to_message',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { message_id, email, reply_title, reply_text } = req.body;
     await sendReplyToMessage(message_id, email, reply_title, reply_text);
     res.end();
-  }
+  },
 );
 
-router.get("/users", verifyAdmin, async function (req: Request, res: Response) {
+router.get('/users', verifyAdmin, async function (req: Request, res: Response) {
   const users = await getRegisteredUsers();
   res.json(users);
 });
 
 router.get(
-  "/orders_of_user",
+  '/orders_of_user',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { user_id } = req.query;
     const orders = await getOrdersOfUser(parseInt(user_id as string));
     res.json(orders);
-  }
+  },
 );
 
 router.post(
-  "/is_featured",
+  '/is_featured',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id } = req.body;
     const featured = await checkIfFeatured(artwork_id);
     res.json(featured);
-  }
+  },
 );
 
 router.post(
-  "/remove_artwork",
+  '/remove_artwork',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id } = req.body;
     await removeArtwork(artwork_id);
     res.end();
-  }
+  },
 );
 
 router.post(
-  "/update_artwork_data",
+  '/update_artwork_data',
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id, field_name, value } = req.body;
     await updateArtworkData(artwork_id, field_name, value);
     res.end();
-  }
+  },
 );
 
 export default router;

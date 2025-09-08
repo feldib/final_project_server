@@ -2,15 +2,15 @@ import {
   checkIfWishlisted,
   checkIfFeatured,
   getQuantityOfArtworkInStock,
-} from "./get_data.js";
-import { addToShoppingList, addArtworkTags } from "./add_data.js";
-import makeConnection from "../connection.js";
-import { RowDataPacket } from "mysql2/promise";
+} from './get_data.js';
+import { addToShoppingList, addArtworkTags } from './add_data.js';
+import makeConnection from '../connection.js';
+import { RowDataPacket } from 'mysql2/promise';
 
 export const incrementItemInShoppingList = async (
   user_id: number,
   artwork_id: number,
-  n: number = 1
+  n: number = 1,
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -21,7 +21,7 @@ export const incrementItemInShoppingList = async (
         SET quantity = quantity + ?
         WHERE user_id = ? AND artwork_id = ? 
     `,
-    [n, user_id, artwork_id]
+    [n, user_id, artwork_id],
   );
 
   connection.end();
@@ -29,7 +29,7 @@ export const incrementItemInShoppingList = async (
 
 export const setShoppingCartItemQuantityToZero = async (
   user_id: number,
-  artwork_id: number
+  artwork_id: number,
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -37,7 +37,7 @@ export const setShoppingCartItemQuantityToZero = async (
     `
         SELECT quantity FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `,
-    [user_id, artwork_id]
+    [user_id, artwork_id],
   );
 
   const quantity = quantity_results[0].quantity;
@@ -46,7 +46,7 @@ export const setShoppingCartItemQuantityToZero = async (
     `
         UPDATE artworks SET quantity = quantity + ? WHERE id = ?
     `,
-    [quantity, artwork_id]
+    [quantity, artwork_id],
   );
 
   await connection.query(
@@ -56,7 +56,7 @@ export const setShoppingCartItemQuantityToZero = async (
         SET quantity = 0
         WHERE user_id = ? AND artwork_id = ? 
     `,
-    [user_id, artwork_id]
+    [user_id, artwork_id],
   );
 
   connection.end();
@@ -64,7 +64,7 @@ export const setShoppingCartItemQuantityToZero = async (
 
 export const decreaseShoppingCartItemQuantity = async (
   user_id: number,
-  artwork_id: number
+  artwork_id: number,
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -72,7 +72,7 @@ export const decreaseShoppingCartItemQuantity = async (
     `
         SELECT quantity FROM artworks_in_shopping_list WHERE user_id = ? AND artwork_id = ? 
     `,
-    [user_id, artwork_id]
+    [user_id, artwork_id],
   );
 
   const quantity = quantity_results[0].quantity;
@@ -82,7 +82,7 @@ export const decreaseShoppingCartItemQuantity = async (
       `
           UPDATE artworks SET quantity = quantity+1 WHERE id = ?
         `,
-      [artwork_id]
+      [artwork_id],
     );
 
     await connection.query(
@@ -92,7 +92,7 @@ export const decreaseShoppingCartItemQuantity = async (
           SET quantity = quantity-1
           WHERE user_id = ? AND artwork_id = ? 
           `,
-      [user_id, artwork_id]
+      [user_id, artwork_id],
     );
   }
 
@@ -101,7 +101,7 @@ export const decreaseShoppingCartItemQuantity = async (
 
 export const increaseShoppingCartItemQuantity = async (
   user_id: number,
-  artwork_id: number
+  artwork_id: number,
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -109,7 +109,7 @@ export const increaseShoppingCartItemQuantity = async (
     `
         SELECT quantity FROM artworks WHERE id = ? 
     `,
-    [artwork_id]
+    [artwork_id],
   );
 
   const quantity = quantity_results[0].quantity;
@@ -119,7 +119,7 @@ export const increaseShoppingCartItemQuantity = async (
       `
           UPDATE artworks SET quantity = quantity-1 WHERE id = ?
       `,
-      [artwork_id]
+      [artwork_id],
     );
 
     await connection.query(
@@ -129,10 +129,10 @@ export const increaseShoppingCartItemQuantity = async (
           SET quantity = quantity+1
           WHERE user_id = ? AND artwork_id = ? 
       `,
-      [user_id, artwork_id]
+      [user_id, artwork_id],
     );
   } else {
-    throw new Error("Item out of stock");
+    throw new Error('Item out of stock');
   }
 
   connection.end();
@@ -140,10 +140,10 @@ export const increaseShoppingCartItemQuantity = async (
 
 export const resetPassword = async (
   new_password: string,
-  email: string
+  email: string,
 ): Promise<void> => {
   const connection = await makeConnection();
-  await connection.query(`UPDATE users SET passw = ? WHERE email = ?;`, [
+  await connection.query('UPDATE users SET passw = ? WHERE email = ?;', [
     new_password,
     email,
   ]);
@@ -152,7 +152,7 @@ export const resetPassword = async (
 
 export const removeFromWishlisted = async (
   user_id: number,
-  artwork_id: number
+  artwork_id: number,
 ): Promise<void> => {
   const connection = await makeConnection();
   const wishlisted = await checkIfWishlisted(user_id, artwork_id);
@@ -161,7 +161,7 @@ export const removeFromWishlisted = async (
       `
         UPDATE wishlisted SET removed = true WHERE user_id = ? AND artwork_id = ?
       `,
-      [user_id, artwork_id]
+      [user_id, artwork_id],
     );
   }
 
@@ -169,29 +169,29 @@ export const removeFromWishlisted = async (
 };
 
 type UserField =
-  | "first_name"
-  | "last_name"
-  | "email"
-  | "address"
-  | "phone_number";
+  | 'first_name'
+  | 'last_name'
+  | 'email'
+  | 'address'
+  | 'phone_number';
 
 export const updateUserData = async (
   user_id: number,
   field_name: UserField,
-  value: string
+  value: string,
 ): Promise<void> => {
   const connection = await makeConnection();
 
   if (
-    ["first_name", "last_name", "email", "address", "phone_number"].includes(
-      field_name
+    ['first_name', 'last_name', 'email', 'address', 'phone_number'].includes(
+      field_name,
     )
   ) {
     await connection.query(
       `
         UPDATE users SET ${field_name} = ? WHERE id = ?
       `,
-      [value, user_id]
+      [value, user_id],
     );
   }
 
@@ -200,7 +200,7 @@ export const updateUserData = async (
 
 export const updateArtworkTags = async (
   artwork_id: number,
-  tags: string[]
+  tags: string[],
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -215,19 +215,19 @@ export const updateArtworkTags = async (
         ON tags.id = artwork_tags.tag_id
         WHERE artwork_id = ? AND artwork_tags.removed = false
       `,
-    [artwork_id]
+    [artwork_id],
   );
 
   const tagsToAdd = tags.filter(
-    (tag) => !tags_of_artwork.some((tg: any) => tg.tname === tag)
+    (tag) => !tags_of_artwork.some((tg) => tg.tname === tag),
   );
 
-  console.log("tagsToAdd: ", JSON.stringify(tagsToAdd));
+  console.log('tagsToAdd: ', JSON.stringify(tagsToAdd));
 
   await addArtworkTags(artwork_id, tagsToAdd);
 
   const tagsToRemove = tags_of_artwork.filter(
-    (tg: any) => !tags.includes(tg.tname)
+    (tg: RowDataPacket) => !tags.includes(tg.tname),
   );
 
   await Promise.all(
@@ -236,22 +236,22 @@ export const updateArtworkTags = async (
         `
         UPDATE artwork_tags SET removed = true WHERE id = ?
       `,
-        [tag.artwork_tag_id]
+        [tag.artwork_tag_id],
       );
-    })
+    }),
   );
 
   connection.end();
 };
 
 type ArtworkField =
-  | "title"
-  | "artist_name"
-  | "price"
-  | "quantity"
-  | "descript"
-  | "category_id"
-  | "tags";
+  | 'title'
+  | 'artist_name'
+  | 'price'
+  | 'quantity'
+  | 'descript'
+  | 'category_id'
+  | 'tags';
 
 interface Tag {
   tname: string;
@@ -260,16 +260,16 @@ interface Tag {
 export const updateArtworkData = async (
   artwork_id: number,
   field_name: ArtworkField,
-  value: string | number | Tag[]
+  value: string | number | Tag[],
 ): Promise<void> => {
   if (
     [
-      "title",
-      "artist_name",
-      "price",
-      "quantity",
-      "descript",
-      "category_id",
+      'title',
+      'artist_name',
+      'price',
+      'quantity',
+      'descript',
+      'category_id',
     ].includes(field_name)
   ) {
     const connection = await makeConnection();
@@ -278,16 +278,16 @@ export const updateArtworkData = async (
       `
         UPDATE artworks SET ${field_name} = ? WHERE id = ?
       `,
-      [value, artwork_id]
+      [value, artwork_id],
     );
 
     connection.end();
-  } else if ("tags" === field_name) {
+  } else if ('tags' === field_name) {
     await updateArtworkTags(
       artwork_id,
       (value as Tag[]).map((tag) => {
         return tag.tname;
-      })
+      }),
     );
   }
 };
@@ -298,7 +298,7 @@ export const approveReview = async (id: number): Promise<void> => {
     `
         UPDATE reviews SET approved = true where id = ?
     `,
-    [id]
+    [id],
   );
 
   connection.end();
@@ -310,7 +310,7 @@ export const removeReview = async (id: number): Promise<void> => {
     `
         UPDATE reviews SET removed = true where id = ?
     `,
-    [id]
+    [id],
   );
 
   connection.end();
@@ -324,7 +324,7 @@ export const removeFromFeatured = async (artwork_id: number): Promise<void> => {
       `
         UPDATE featured SET removed = true WHERE artwork_id = ?
       `,
-      [artwork_id]
+      [artwork_id],
     );
   }
 
@@ -337,14 +337,14 @@ export const removeArtwork = async (artwork_id: number): Promise<void> => {
     `
         UPDATE artworks SET removed = true where id = ?
     `,
-    [artwork_id]
+    [artwork_id],
   );
 
   await connection.query(
     `
         UPDATE artwork_tags SET removed = true where artwork_id = ?
     `,
-    [artwork_id]
+    [artwork_id],
   );
 
   connection.end();
@@ -357,7 +357,7 @@ interface ShoppingCartItem {
 
 export const replaceSavedShoppingCart = async (
   user_id: number,
-  shopping_cart: ShoppingCartItem[]
+  shopping_cart: ShoppingCartItem[],
 ): Promise<void> => {
   const connection = await makeConnection();
 
@@ -365,28 +365,28 @@ export const replaceSavedShoppingCart = async (
     `
       SELECT artwork_id FROM artworks_in_shopping_list WHERE user_id = ? AND quantity > 0
     `,
-    [user_id]
+    [user_id],
   );
 
-  const ids = [...new Set(res.map((obj: any) => obj.artwork_id))];
+  const ids = [...new Set(res.map((obj) => obj.artwork_id))];
 
   await Promise.all(
     ids.map(async (artw_id) => {
       await setShoppingCartItemQuantityToZero(user_id, artw_id);
-    })
+    }),
   );
 
   await Promise.all(
     shopping_cart.map(async (item) => {
       const quantity_in_stock = await getQuantityOfArtworkInStock(
-        item.artwork_id
+        item.artwork_id,
       );
 
       const quantity =
         item.quantity > quantity_in_stock ? quantity_in_stock : item.quantity;
 
       addToShoppingList(user_id, item.artwork_id, quantity);
-    })
+    }),
   );
 
   connection.end();

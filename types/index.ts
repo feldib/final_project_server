@@ -102,7 +102,7 @@ export interface SearchArtworksQuery {
   title?: string;
   artist_name?: string;
   category_id?: string;
-  order?: "price_asc" | "price_desc" | "newest" | "oldest";
+  order?: 'price_asc' | 'price_desc' | 'newest' | 'oldest';
   n?: string;
   offset?: string;
   only_featured?: string;
@@ -162,7 +162,7 @@ export interface Config {
 }
 
 // Express session extension
-declare module "express-session" {
+declare module 'express-session' {
   interface SessionData {
     userid?: number;
     isadmin?: boolean;
