@@ -7,6 +7,7 @@ import {
   Tag,
   ArtworkWithDetails,
   OrderDataCollection,
+  OrderDataItem,
 } from "../types/index.js";
 
 export const getUser = async (
@@ -88,7 +89,27 @@ export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
   return tags as Tag[];
 };
 
-export const searchArtworks = async (
+// Helper function to enhance artwork with thumbnail, category name, and tags
+const completeArtwork = async (
+  artwork: RowDataPacket | ArtworkWithDetails
+): Promise<void> => {
+  const thumbnail = await getThumbnail(artwork.id);
+  const cname = await getSpecificCategory(artwork.category_id);
+  const tags = await getSpecificTags(artwork.id);
+  artwork.thumbnail = thumbnail;
+  artwork.cname = cname;
+  artwork.tags = tags;
+};
+
+// Helper function to add only thumbnail (for functions without category_id)
+const addThumbnail = async (
+  artwork: RowDataPacket | ArtworkWithDetails
+): Promise<void> => {
+  const thumbnail = await getThumbnail(artwork.id);
+  artwork.thumbnail = thumbnail;
+};
+
+const getSearchQueryData = (
   min?: string,
   max?: string,
   title?: string,
@@ -98,9 +119,7 @@ export const searchArtworks = async (
   n?: string,
   offset?: string,
   only_featured?: string
-): Promise<ArtworkWithDetails[]> => {
-  const connection = await makeConnection();
-
+): { sql_query: string; data: (string | number)[] } => {
   let sql_query = `
     SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
   `;
@@ -185,6 +204,34 @@ export const searchArtworks = async (
     data.push(parseInt(offset));
   }
 
+  return { sql_query, data };
+};
+
+export const searchArtworks = async (
+  min?: string,
+  max?: string,
+  title?: string,
+  artist_name?: string,
+  category_id?: string,
+  order?: string,
+  n?: string,
+  offset?: string,
+  only_featured?: string
+): Promise<ArtworkWithDetails[]> => {
+  const connection = await makeConnection();
+
+  const { sql_query, data } = getSearchQueryData(
+    min,
+    max,
+    title,
+    artist_name,
+    category_id,
+    order,
+    n,
+    offset,
+    only_featured
+  );
+
   console.log(sql_query);
 
   const [artworks] = await connection.query<RowDataPacket[]>(
@@ -193,16 +240,7 @@ export const searchArtworks = async (
   );
   connection.end();
 
-  await Promise.all(
-    artworks.map(async (artwork) => {
-      const thumbnail = await getThumbnail(artwork.id);
-      const cname = await getSpecificCategory(artwork.category_id);
-      const tags = await getSpecificTags(artwork.id);
-      artwork.thumbnail = thumbnail;
-      artwork.cname = cname;
-      artwork.tags = tags;
-    })
-  );
+  await Promise.all(artworks.map(completeArtwork));
 
   return artworks as ArtworkWithDetails[];
 };
@@ -223,12 +261,7 @@ export const findArtworkWithId = async (
 
   connection.end();
 
-  const thumbnail = await getThumbnail(parseInt(artwork_id));
-  const cname = await getSpecificCategory(artwork.category_id);
-  const tags = await getSpecificTags(parseInt(artwork_id));
-  artwork.thumbnail = thumbnail;
-  artwork.cname = cname;
-  artwork.tags = tags;
+  await completeArtwork(artwork);
 
   return artwork;
 };
@@ -248,18 +281,9 @@ export const getFeatured = async (
       .join(", ")})`,
     artwork_ids.map((obj) => obj.artwork_id)
   );
-  let artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
+  const artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
   if (artworks.length) {
-    artworks = await Promise.all(
-      results.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        if (thumbnail) {
-          return { ...artwork, thumbnail } as ArtworkWithDetails;
-        } else {
-          return artwork as ArtworkWithDetails;
-        }
-      })
-    );
+    await Promise.all(artworks.map(addThumbnail));
   }
 
   connection.end();
@@ -277,18 +301,9 @@ export const getNewestArtworks = async (
     }`
   );
 
-  let artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
+  const artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
   if (artworks.length) {
-    artworks = await Promise.all(
-      results.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        if (thumbnail) {
-          return { ...artwork, thumbnail } as ArtworkWithDetails;
-        } else {
-          return artwork as ArtworkWithDetails;
-        }
-      })
-    );
+    await Promise.all(artworks.map(addThumbnail));
   }
 
   connection.end();
@@ -313,18 +328,9 @@ export const getWishlistedTheMost = async (
     ${n ? ` LIMIT ${n}` : ""}`
   );
 
-  let artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
+  const artworks: ArtworkWithDetails[] = results as ArtworkWithDetails[];
   if (artworks.length) {
-    artworks = await Promise.all(
-      results.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        if (thumbnail) {
-          return { ...artwork, thumbnail } as ArtworkWithDetails;
-        } else {
-          return artwork as ArtworkWithDetails;
-        }
-      })
-    );
+    await Promise.all(artworks.map(addThumbnail));
   }
 
   connection.end();
@@ -510,18 +516,8 @@ export const getShoppingListItems = async (
   if (!artworks.length) {
     console.log("No items in shopping cart");
   } else {
-    results = await Promise.all(
-      artworks.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        const cname = await getSpecificCategory(artwork.category_id);
-        const tags = await getSpecificTags(artwork.id);
-        artwork.thumbnail = thumbnail;
-        artwork.cname = cname;
-        artwork.tags = tags;
-        return artwork;
-      })
-    );
-    results = results.filter((item) => {
+    await Promise.all(artworks.map(completeArtwork));
+    results = artworks.filter((item) => {
       return item.quantity > 0;
     });
   }
@@ -573,17 +569,8 @@ export const getWishlisted = async (
   if (!wishlisted.length) {
     console.log("No wishlisted items");
   } else {
-    results = await Promise.all(
-      wishlisted.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        const cname = await getSpecificCategory(artwork.category_id);
-        const tags = await getSpecificTags(artwork.id);
-        artwork.thumbnail = thumbnail;
-        artwork.cname = cname;
-        artwork.tags = tags;
-        return artwork;
-      })
-    );
+    await Promise.all(wishlisted.map(completeArtwork));
+    results = wishlisted;
   }
 
   connection.end();
@@ -611,17 +598,7 @@ export const getOrderData = async (
     [order_id]
   );
 
-  await Promise.all(
-    results.map(async (artwork) => {
-      const thumbnail = await getThumbnail(artwork.id);
-      const cname = await getSpecificCategory(artwork.category_id);
-      const tags = await getSpecificTags(artwork.id);
-      artwork.thumbnail = thumbnail;
-      artwork.cname = cname;
-      artwork.tags = tags;
-      return artwork;
-    })
-  );
+  await Promise.all(results.map(completeArtwork));
 
   connection.end();
 
@@ -653,36 +630,7 @@ export const getOrdersOfUser = async (
         orderData.totalCost = res
           .map((item) => item.cost)
           .reduce((prev: number, item: number) => prev + item);
-        orderData.items = res.map((item) => {
-          const {
-            thumbnail,
-            cname,
-            tags,
-            price,
-            quantity,
-            id,
-            cost,
-            title,
-            artist_name,
-            category_id,
-            user_name,
-            user_id,
-          } = item;
-          return {
-            thumbnail,
-            cname,
-            tags,
-            price,
-            quantity,
-            id,
-            cost,
-            title,
-            artist_name,
-            category_id,
-            user_name,
-            user_id,
-          };
-        });
+        orderData.items = res as OrderDataItem[];
         return orderData;
       })
     );
@@ -715,36 +663,7 @@ export const getOrders = async (): Promise<OrderDataCollection[]> => {
         orderData.totalCost = res
           .map((item) => item.cost)
           .reduce((prev: number, item: number) => prev + item);
-        orderData.items = res.map((item) => {
-          const {
-            thumbnail,
-            cname,
-            tags,
-            price,
-            quantity,
-            id,
-            cost,
-            title,
-            artist_name,
-            category_id,
-            user_name,
-            user_id,
-          } = item;
-          return {
-            thumbnail,
-            cname,
-            tags,
-            price,
-            quantity,
-            id,
-            cost,
-            title,
-            artist_name,
-            category_id,
-            user_name,
-            user_id,
-          };
-        });
+        orderData.items = res as OrderDataItem[];
         orderData.user = {
           user_name: res[0].user_name,
           user_id: res[0].user_id,
