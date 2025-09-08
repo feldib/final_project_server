@@ -108,6 +108,14 @@ export interface SearchArtworksQuery {
   only_featured?: string;
 }
 
+export interface InvoiceData {
+  email: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  phone_number: string;
+}
+
 export interface ForgotPasswordRequest {
   email: string;
 }

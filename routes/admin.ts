@@ -30,7 +30,7 @@ const now = new Date();
 import multer from "multer";
 
 const newTumbnailStorage = multer.diskStorage({
-  destination: function (
+  destination(
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
@@ -38,7 +38,7 @@ const newTumbnailStorage = multer.diskStorage({
     cb(null, `public/images/${req.query.artwork_id}/thumbnail`);
   },
 
-  filename: function (
+  filename(
     req: Request,
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
@@ -47,34 +47,34 @@ const newTumbnailStorage = multer.diskStorage({
   },
 });
 
-const newOtherImagesStorage = multer.diskStorage({
-  destination: function (
-    req: Request,
-    file: Express.Multer.File,
-    cb: (error: Error | null, destination: string) => void
-  ) {
-    cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
-  },
+// const newOtherImagesStorage = multer.diskStorage({
+//   destination(
+//     req: Request,
+//     file: Express.Multer.File,
+//     cb: (error: Error | null, destination: string) => void
+//   ) {
+//     cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
+//   },
 
-  filename: function (
-    req: Request,
-    file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void
-  ) {
-    cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
-  },
-});
+//   filename(
+//     req: Request,
+//     file: Express.Multer.File,
+//     cb: (error: Error | null, filename: string) => void
+//   ) {
+//     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
+//   },
+// });
 
 const uploadNewThumbnail = multer({ storage: newTumbnailStorage });
 
-const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
+// const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
 
 async function checkThumbnailPath(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  let imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
+  const imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
 
   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
     if (err) {
@@ -85,21 +85,21 @@ async function checkThumbnailPath(
   next();
 }
 
-async function checkOtherPicturesPath(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  let imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
+// async function checkOtherPicturesPath(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
 
-  await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
-    if (err) {
-      await fs.mkdir(imagePath, { recursive: true });
-    }
-  });
+//   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
+//     if (err) {
+//       await fs.mkdir(imagePath, { recursive: true });
+//     }
+//   });
 
-  next();
-}
+//   next();
+// }
 
 router.post(
   "/thumbnail",
@@ -111,23 +111,23 @@ router.post(
   }
 );
 
-async function removePreviousThumbnail(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const path = `public/images/${req.query.artwork_id}/thumbnail`;
+// async function removePreviousThumbnail(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   const path = `public/images/${req.query.artwork_id}/thumbnail`;
 
-  const files = await fs.readdir(path);
+//   const files = await fs.readdir(path);
 
-  await Promise.all(
-    files.map((file) => {
-      fs.unlink(`${path}/${file}`);
-    })
-  );
+//   await Promise.all(
+//     files.map((file) => {
+//       fs.unlink(`${path}/${file}`);
+//     })
+//   );
 
-  next();
-}
+//   next();
+// }
 
 router.get(
   "/unapproved_reviews",

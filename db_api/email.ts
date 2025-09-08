@@ -37,7 +37,7 @@ export const sendReplyToMessage = async (
         if (error) {
           console.log(error);
         } else {
-          console.log("Email sent: " + info.response);
+          console.log(`Email sent: ${  info.response}`);
           const connection = await makeConnection();
 
           connection.query(
@@ -97,7 +97,7 @@ export const sendLinkToResetPassword = async ({
         if (error) {
           console.log(error);
         } else {
-          console.log("Email sent: " + info.response);
+          console.log(`Email sent: ${  info.response}`);
         }
       }
     );

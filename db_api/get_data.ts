@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 import makeConnection from "../connection.js";
-import { User, Category, Artwork, Review } from "../types/index.js";
+import { User, Category } from "../types/index.js";
 
 export const getUser = async (
   email: string,
@@ -9,7 +9,7 @@ export const getUser = async (
 ): Promise<User | undefined> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    `SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;`,
+    "SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;",
     [email, password]
   );
 
@@ -22,7 +22,7 @@ export const getUser = async (
 export const getUserWithId = async (id: number): Promise<User | undefined> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    `SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;`,
+    "SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;",
     [id]
   );
 
@@ -58,7 +58,7 @@ export const getSpecificCategory = async (
 ): Promise<string> => {
   const connection = await makeConnection();
   const [result] = await connection.query<RowDataPacket[]>(
-    `SELECT cname FROM categories WHERE id=? AND removed = false;`,
+    "SELECT cname FROM categories WHERE id=? AND removed = false;",
     [category_id]
   );
   connection.end();
@@ -124,15 +124,15 @@ export const searchArtworks = async (
     sql_query += " AND ";
 
     if (min && max) {
-      sql_query += ` price BETWEEN ? AND ? `;
+      sql_query += " price BETWEEN ? AND ? ";
       data.push(min, max);
       needs_and = true;
     } else if (min) {
-      sql_query += ` price > ? `;
+      sql_query += " price > ? ";
       data.push(parseInt(min));
       needs_and = true;
     } else if (max) {
-      sql_query += ` price < ? `;
+      sql_query += " price < ? ";
       data.push(parseInt(max));
       needs_and = true;
     }
@@ -143,7 +143,7 @@ export const searchArtworks = async (
       } else {
         needs_and = true;
       }
-      sql_query += ` LOWER(title) LIKE ? `;
+      sql_query += " LOWER(title) LIKE ? ";
       data.push(`%${title.toLowerCase()}%`);
       needs_and = true;
     }
@@ -154,7 +154,7 @@ export const searchArtworks = async (
       } else {
         needs_and = true;
       }
-      sql_query += ` LOWER(artist_name) LIKE ? `;
+      sql_query += " LOWER(artist_name) LIKE ? ";
       data.push(`%${artist_name.toLowerCase()}%`);
     }
 
@@ -164,7 +164,7 @@ export const searchArtworks = async (
       } else {
         needs_and = true;
       }
-      sql_query += ` category_id = ? `;
+      sql_query += " category_id = ? ";
       data.push(parseInt(category_id));
     }
   }
@@ -176,18 +176,18 @@ export const searchArtworks = async (
     sql_query += " DESC ";
   }
 
-  sql_query += ` LIMIT ? `;
+  sql_query += " LIMIT ? ";
   data.push(parseInt(n || "10"));
 
   if (offset) {
-    sql_query += ` OFFSET ? `;
+    sql_query += " OFFSET ? ";
     data.push(parseInt(offset));
   }
 
   console.log(sql_query);
 
   const [artworks] = await connection.query<RowDataPacket[]>(
-    sql_query + ";",
+    `${sql_query};`,
     data
   );
   connection.end();
@@ -239,7 +239,7 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
 
   const [results] = await connection.query<RowDataPacket[]>(
     `SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false AND id IN (${artwork_ids
-      .map((obj) => "?")
+      .map(() => "?")
       .join(", ")})`,
     artwork_ids.map((obj: any) => obj.artwork_id)
   );
@@ -249,7 +249,7 @@ export const getFeatured = async (n?: string): Promise<any[]> => {
       results.map(async (artwork: any) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
-          return { ...artwork, thumbnail: thumbnail };
+          return { ...artwork, thumbnail };
         } else {
           return artwork;
         }
@@ -276,7 +276,7 @@ export const getNewestArtworks = async (n?: string): Promise<any[]> => {
       results.map(async (artwork: any) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
-          return { ...artwork, thumbnail: thumbnail };
+          return { ...artwork, thumbnail };
         } else {
           return artwork;
         }
@@ -310,7 +310,7 @@ export const getWishlistedTheMost = async (n?: string): Promise<any[]> => {
       results.map(async (artwork: any) => {
         const thumbnail = await getThumbnail(artwork.id);
         if (thumbnail) {
-          return { ...artwork, thumbnail: thumbnail };
+          return { ...artwork, thumbnail };
         } else {
           return artwork;
         }
@@ -357,7 +357,7 @@ export const getOtherPictures = async (
 export const checkIfRegistered = async (email: string): Promise<boolean> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    `SELECT id, is_admin FROM users WHERE email = ?;`,
+    "SELECT id, is_admin FROM users WHERE email = ?;",
     [email]
   );
   connection.end();
@@ -369,7 +369,7 @@ export const checkEmail = async (
 ): Promise<{ registered: boolean; id?: number }> => {
   const connection = await makeConnection();
   const [results] = await connection.query<RowDataPacket[]>(
-    `SELECT id FROM users WHERE email = ?;`,
+    "SELECT id FROM users WHERE email = ?;",
     [email]
   );
   connection.end();

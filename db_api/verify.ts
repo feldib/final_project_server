@@ -14,7 +14,7 @@ export const verifyPaswordToken = (
     jwt.verify(
       token,
       config.security.secretKey,
-      (err: jwt.VerifyErrors | null, decoded: any) => {
+      (err: jwt.VerifyErrors | null, _: unknown) => {
         if (err) {
           console.log(err);
           res.status(401).end("Tokens do not match");

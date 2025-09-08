@@ -143,7 +143,7 @@ export const resetPassword = async (
   email: string
 ): Promise<void> => {
   const connection = await makeConnection();
-  await connection.query(`UPDATE users SET passw = ? WHERE email = ?;`, [
+  await connection.query("UPDATE users SET passw = ? WHERE email = ?;", [
     new_password,
     email,
   ]);
@@ -219,7 +219,7 @@ export const updateArtworkTags = async (
   );
 
   const tagsToAdd = tags.filter(
-    (tag) => !tags_of_artwork.some((tg: any) => tg.tname === tag)
+    (tag) => !tags_of_artwork.some((tg) => tg.tname === tag)
   );
 
   console.log("tagsToAdd: ", JSON.stringify(tagsToAdd));
@@ -227,7 +227,7 @@ export const updateArtworkTags = async (
   await addArtworkTags(artwork_id, tagsToAdd);
 
   const tagsToRemove = tags_of_artwork.filter(
-    (tg: any) => !tags.includes(tg.tname)
+    (tg: RowDataPacket) => !tags.includes(tg.tname)
   );
 
   await Promise.all(
@@ -368,7 +368,7 @@ export const replaceSavedShoppingCart = async (
     [user_id]
   );
 
-  const ids = [...new Set(res.map((obj: any) => obj.artwork_id))];
+  const ids = [...new Set(res.map((obj) => obj.artwork_id))];
 
   await Promise.all(
     ids.map(async (artw_id) => {

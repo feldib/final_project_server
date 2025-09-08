@@ -85,7 +85,7 @@ router.post(
 );
 
 router.post(
-  "/increase_shopping_sart_item_quantity",
+  "/increase_shopping_cart_item_quantity",
   verifyUser,
   function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -100,7 +100,7 @@ router.post(
 );
 
 router.post(
-  "/decrease_shopping_sart_item_quantity",
+  "/decrease_shopping_cart_item_quantity",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -123,7 +123,7 @@ router.post(
   "/wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
+    // const artwork_id = req.body.artwork_id;
     // await addToWishlisted(req.id!, artwork_id);
     res.end();
   }
@@ -173,7 +173,10 @@ router.post(
 );
 
 router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
-  await makeOrder(req.id!, req.body.invoice_data);
+  await makeOrder(
+    req.id!
+    // req.body.invoice_data
+  );
   res.end();
 });
 

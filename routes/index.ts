@@ -159,7 +159,7 @@ router.get("/reviews", async function (req: Request, res: Response) {
 router.get("/featured", async function (req: Request, res: Response) {
   const n = req.query.n as string;
   const artworks = await getFeatured(n);
-  let results = artworks;
+  const results = artworks;
   if (!artworks.length) {
     console.log("No featured artworks");
   }
@@ -169,7 +169,7 @@ router.get("/featured", async function (req: Request, res: Response) {
 router.get("/newest", async function (req: Request, res: Response) {
   const n = req.query.n as string;
   const artworks = await getNewestArtworks(n);
-  let results = artworks;
+  const results = artworks;
   if (!artworks.length) {
     console.log("No artworks");
   }
@@ -179,7 +179,7 @@ router.get("/newest", async function (req: Request, res: Response) {
 router.get("/most_wishlisted", async function (req: Request, res: Response) {
   const n = req.query.n as string;
   const artworks = await getWishlistedTheMost(n);
-  let results = artworks;
+  const results = artworks;
   if (!artworks.length) {
     console.log("No artworks");
   }

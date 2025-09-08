@@ -91,14 +91,9 @@ export const addToShoppingList = async (
   connection.end();
 };
 
-interface InvoiceData {
-  // Define the structure of invoice_data based on your requirements
-  [key: string]: any;
-}
-
 export const makeOrder = async (
-  user_id: number,
-  invoice_data: InvoiceData
+  user_id: number
+  // invoice_data: InvoiceData,
 ): Promise<number> => {
   const connection = await makeConnection();
   const shoppingListItems = await getShoppingListItems(user_id);
