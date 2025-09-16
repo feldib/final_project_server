@@ -471,6 +471,9 @@ export const getDataOfArtwork = async (id: string): Promise<RowDataPacket> => {
     artwork.thumbnail = await getThumbnail(parseInt(id));
     artwork.tags = tags;
     artwork.other_pictures = await getOtherPictures(parseInt(id));
+    // Save descript value to description and delete descript
+    artwork.description = artwork.descript;
+    delete artwork.descript;
   }
   connection.end();
   return artwork;

@@ -249,7 +249,7 @@ type ArtworkField =
   | "artist_name"
   | "price"
   | "quantity"
-  | "descript"
+  | "description"
   | "category_id"
   | "tags";
 
@@ -268,15 +268,18 @@ export const updateArtworkData = async (
       "artist_name",
       "price",
       "quantity",
-      "descript",
+      "description",
       "category_id",
     ].includes(field_name)
   ) {
     const connection = await makeConnection();
 
+    const field_name_corrected =
+      field_name === "description" ? "descript" : field_name;
+
     await connection.query(
       `
-        UPDATE artworks SET ${field_name} = ? WHERE id = ?
+        UPDATE artworks SET ${field_name_corrected} = ? WHERE id = ?
       `,
       [value, artwork_id]
     );
