@@ -29,6 +29,11 @@ const now = new Date();
 
 import multer from "multer";
 
+// Admin authentication check endpoint
+router.get("/is_admin", verifyAdmin, function (req: Request, res: Response) {
+  res.json({ is_admin: true });
+});
+
 const newTumbnailStorage = multer.diskStorage({
   destination(
     req: Request,
