@@ -1,3 +1,39 @@
+export interface Tag {
+    id: number;
+    tname: string;
+}
+export interface ArtworkWithDetails extends Artwork {
+    thumbnail?: string;
+    cname?: string;
+    tags?: Tag[];
+    other_pictures?: string[];
+}
+export interface OrderDataItem {
+    cost: number;
+    category_id: number;
+    price: number;
+    quantity: number;
+    id: number;
+    title: string;
+    artist_name: string;
+    user_name: string;
+    user_id: number;
+    thumbnail?: string;
+    cname?: string;
+    tags?: Tag[];
+}
+export interface OrderDataCollection {
+    time_ordered: number;
+    totalCost: number;
+    items: OrderDataItem[];
+    user?: {
+        user_name: string;
+        user_id: number;
+    };
+}
+export interface StandardResponse {
+    message: string;
+}
 export interface User {
     id: number;
     last_name: string;
@@ -94,6 +130,13 @@ export interface SearchArtworksQuery {
     offset?: string;
     only_featured?: string;
 }
+export interface InvoiceData {
+    email: string;
+    first_name: string;
+    last_name: string;
+    address: string;
+    phone_number: string;
+}
 export interface ForgotPasswordRequest {
     email: string;
 }
@@ -137,12 +180,10 @@ declare module "express-session" {
         isadmin?: boolean;
     }
 }
-declare global {
-    namespace Express {
-        interface Request {
-            id?: number;
-            isadmin?: boolean;
-        }
+declare module "express-serve-static-core" {
+    interface Request {
+        id?: number;
+        isadmin?: boolean;
     }
 }
 //# sourceMappingURL=index.d.ts.map

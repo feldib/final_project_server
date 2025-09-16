@@ -6,7 +6,7 @@ export const verifyPaswordToken = (req, res, next) => {
         res.end("You are not authenticated");
     }
     else {
-        jwt.verify(token, config.security.secretKey, (err, decoded) => {
+        jwt.verify(token, config.security.secretKey, (err, _) => {
             if (err) {
                 console.log(err);
                 res.status(401).end("Tokens do not match");

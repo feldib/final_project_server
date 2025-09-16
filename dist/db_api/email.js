@@ -28,7 +28,7 @@ export const sendReplyToMessage = async (message_id, email, reply_title, reply_t
                 console.log(error);
             }
             else {
-                console.log("Email sent: " + info.response);
+                console.log(`Email sent: ${info.response}`);
                 const connection = await makeConnection();
                 connection.query(`
                 UPDATE messages_to_administrator
@@ -72,7 +72,7 @@ export const sendLinkToResetPassword = async ({ email, id, }) => {
                 console.log(error);
             }
             else {
-                console.log("Email sent: " + info.response);
+                console.log(`Email sent: ${info.response}`);
             }
         });
     }

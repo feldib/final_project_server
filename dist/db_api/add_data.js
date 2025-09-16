@@ -47,7 +47,7 @@ export const addToShoppingList = async (user_id, artwork_id, n = 1) => {
     }
     connection.end();
 };
-export const makeOrder = async (user_id, invoice_data) => {
+export const makeOrder = async (user_id) => {
     const connection = await makeConnection();
     const shoppingListItems = await getShoppingListItems(user_id);
     if (shoppingListItems.length) {
@@ -111,5 +111,80 @@ export const addArtworkTags = async (artwork_id, tags) => {
         }
         connection.end();
     }));
+};
+export const addToWishlisted = async (user_id, artwork_id) => {
+    const connection = await makeConnection();
+    const [prev] = await connection.query(`
+      SELECT id FROM wishlisted WHERE user_id = ? AND artwork_id = ?
+    `, [user_id, artwork_id]);
+    if (prev.length) {
+        await connection.query(`
+        UPDATE wishlisted SET removed = false, time_wishlisted = now() WHERE id = ?
+      `, [prev[0].id]);
+    }
+    else {
+        await connection.query(`
+        INSERT INTO wishlisted(user_id, artwork_id) VALUES(?, ?)
+      `, [user_id, artwork_id]);
+    }
+    connection.end();
+};
+export const addToFeatured = async (artwork_id) => {
+    const connection = await makeConnection();
+    const [prev] = await connection.query(`
+      SELECT id FROM featured WHERE artwork_id = ?
+    `, [artwork_id]);
+    if (prev.length) {
+        await connection.query(`
+        UPDATE featured SET removed = false, date_featured = now() WHERE id = ?
+      `, [prev[0].id]);
+    }
+    else {
+        await connection.query(`
+        INSERT INTO featured(artwork_id) VALUES(?)
+      `, [artwork_id]);
+    }
+    connection.end();
+};
+export const leaveReview = async (user_id, artwork_id, title, review_text) => {
+    const connection = await makeConnection();
+    await connection.query(`
+      INSERT INTO reviews(user_id, artwork_id, title, review_text)
+      VALUES(?, ?, ?, ?)
+    `, [user_id, artwork_id, title, review_text]);
+    connection.end();
+};
+export const addPictures = async (artwork_id, picture_paths) => {
+    const connection = await makeConnection();
+    await Promise.all(picture_paths.map(async (picture_path) => {
+        await connection.query(`
+          INSERT INTO artwork_pictures(artwork_id, picture_path)
+          VALUES (?, ?)
+        `, [artwork_id, picture_path]);
+    }));
+    connection.end();
+};
+export const addNewArtwork = async (artwork) => {
+    const connection = await makeConnection();
+    console.log(artwork);
+    const [insertResults] = await connection.query(`
+      INSERT INTO artworks(title, artist_name, price, quantity, descript, category_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [
+        artwork.title,
+        artwork.artist_name,
+        artwork.price,
+        artwork.quantity,
+        artwork.description,
+        artwork.category_id,
+    ]);
+    const artwork_id = insertResults.insertId;
+    await addArtworkTags(artwork_id, artwork.tags);
+    await connection.query(`
+      INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail)
+      VALUES (?, ?, ?)
+    `, [artwork_id, artwork.thumbnail, true]);
+    connection.end();
+    await addPictures(artwork_id, artwork.other_pictures);
 };
 //# sourceMappingURL=add_data.js.map

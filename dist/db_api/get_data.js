@@ -2,14 +2,14 @@ import fs from "fs/promises";
 import makeConnection from "../connection.js";
 export const getUser = async (email, password) => {
     const connection = await makeConnection();
-    const [results] = await connection.query(`SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;`, [email, password]);
+    const [results] = await connection.query("SELECT id, last_name, first_name, email, address, phone_number, is_admin FROM users WHERE email = ? AND passw = ?;", [email, password]);
     connection.end();
     const user = results[0];
     return user;
 };
 export const getUserWithId = async (id) => {
     const connection = await makeConnection();
-    const [results] = await connection.query(`SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;`, [id]);
+    const [results] = await connection.query("SELECT last_name, first_name, email, address, phone_number, is_admin FROM users WHERE id = ?;", [id]);
     connection.end();
     const user = results[0];
     return user;
@@ -29,7 +29,7 @@ export const getCategories = async () => {
 };
 export const getSpecificCategory = async (category_id) => {
     const connection = await makeConnection();
-    const [result] = await connection.query(`SELECT cname FROM categories WHERE id=? AND removed = false;`, [category_id]);
+    const [result] = await connection.query("SELECT cname FROM categories WHERE id=? AND removed = false;", [category_id]);
     connection.end();
     const cname = result[0]?.cname;
     return cname;
@@ -45,8 +45,19 @@ export const getSpecificTags = async (artwork_id) => {
     connection.end();
     return tags;
 };
-export const searchArtworks = async (min, max, title, artist_name, category_id, order, n, offset, only_featured) => {
-    const connection = await makeConnection();
+const completeArtwork = async (artwork) => {
+    const thumbnail = await getThumbnail(artwork.id);
+    const cname = await getSpecificCategory(artwork.category_id);
+    const tags = await getSpecificTags(artwork.id);
+    artwork.thumbnail = thumbnail;
+    artwork.cname = cname;
+    artwork.tags = tags;
+};
+const addThumbnail = async (artwork) => {
+    const thumbnail = await getThumbnail(artwork.id);
+    artwork.thumbnail = thumbnail;
+};
+const getSearchQueryData = (min, max, title, artist_name, category_id, order, n, offset, only_featured) => {
     let sql_query = `
     SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
   `;
@@ -67,17 +78,17 @@ export const searchArtworks = async (min, max, title, artist_name, category_id, 
     if (min || max || title || artist_name || category_id) {
         sql_query += " AND ";
         if (min && max) {
-            sql_query += ` price BETWEEN ? AND ? `;
+            sql_query += " price BETWEEN ? AND ? ";
             data.push(min, max);
             needs_and = true;
         }
         else if (min) {
-            sql_query += ` price > ? `;
+            sql_query += " price > ? ";
             data.push(parseInt(min));
             needs_and = true;
         }
         else if (max) {
-            sql_query += ` price < ? `;
+            sql_query += " price < ? ";
             data.push(parseInt(max));
             needs_and = true;
         }
@@ -88,7 +99,7 @@ export const searchArtworks = async (min, max, title, artist_name, category_id, 
             else {
                 needs_and = true;
             }
-            sql_query += ` LOWER(title) LIKE ? `;
+            sql_query += " LOWER(title) LIKE ? ";
             data.push(`%${title.toLowerCase()}%`);
             needs_and = true;
         }
@@ -99,7 +110,7 @@ export const searchArtworks = async (min, max, title, artist_name, category_id, 
             else {
                 needs_and = true;
             }
-            sql_query += ` LOWER(artist_name) LIKE ? `;
+            sql_query += " LOWER(artist_name) LIKE ? ";
             data.push(`%${artist_name.toLowerCase()}%`);
         }
         if (category_id) {
@@ -109,7 +120,7 @@ export const searchArtworks = async (min, max, title, artist_name, category_id, 
             else {
                 needs_and = true;
             }
-            sql_query += ` category_id = ? `;
+            sql_query += " category_id = ? ";
             data.push(parseInt(category_id));
         }
     }
@@ -120,23 +131,21 @@ export const searchArtworks = async (min, max, title, artist_name, category_id, 
     else if (order === "desc") {
         sql_query += " DESC ";
     }
-    sql_query += ` LIMIT ? `;
+    sql_query += " LIMIT ? ";
     data.push(parseInt(n || "10"));
     if (offset) {
-        sql_query += ` OFFSET ? `;
+        sql_query += " OFFSET ? ";
         data.push(parseInt(offset));
     }
+    return { sql_query, data };
+};
+export const searchArtworks = async (min, max, title, artist_name, category_id, order, n, offset, only_featured) => {
+    const connection = await makeConnection();
+    const { sql_query, data } = getSearchQueryData(min, max, title, artist_name, category_id, order, n, offset, only_featured);
     console.log(sql_query);
-    const [artworks] = await connection.query(sql_query + ";", data);
+    const [artworks] = await connection.query(`${sql_query};`, data);
     connection.end();
-    await Promise.all(artworks.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        const cname = await getSpecificCategory(artwork.category_id);
-        const tags = await getSpecificTags(artwork.id);
-        artwork.thumbnail = thumbnail;
-        artwork.cname = cname;
-        artwork.tags = tags;
-    }));
+    await Promise.all(artworks.map(completeArtwork));
     return artworks;
 };
 export const findArtworkWithId = async (artwork_id) => {
@@ -146,12 +155,7 @@ export const findArtworkWithId = async (artwork_id) => {
   `, [artwork_id]);
     const artwork = result[0];
     connection.end();
-    const thumbnail = await getThumbnail(parseInt(artwork_id));
-    const cname = await getSpecificCategory(artwork.category_id);
-    const tags = await getSpecificTags(parseInt(artwork_id));
-    artwork.thumbnail = thumbnail;
-    artwork.cname = cname;
-    artwork.tags = tags;
+    await completeArtwork(artwork);
     return artwork;
 };
 export const getFeatured = async (n) => {
@@ -161,19 +165,11 @@ export const getFeatured = async (n) => {
     ${n ? ` LIMIT ${n}` : ""}
   `);
     const [results] = await connection.query(`SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false AND id IN (${artwork_ids
-        .map((obj) => "?")
+        .map(() => "?")
         .join(", ")})`, artwork_ids.map((obj) => obj.artwork_id));
-    let artworks = results;
+    const artworks = results;
     if (artworks.length) {
-        artworks = await Promise.all(results.map(async (artwork) => {
-            const thumbnail = await getThumbnail(artwork.id);
-            if (thumbnail) {
-                return { ...artwork, thumbnail: thumbnail };
-            }
-            else {
-                return artwork;
-            }
-        }));
+        await Promise.all(artworks.map(addThumbnail));
     }
     connection.end();
     return artworks;
@@ -181,17 +177,9 @@ export const getFeatured = async (n) => {
 export const getNewestArtworks = async (n) => {
     const connection = await makeConnection();
     const [results] = await connection.execute(`SELECT id, title, price, quantity, artist_name FROM artworks WHERE removed = false ORDER BY date_added DESC ${n ? ` LIMIT ${n}` : ""}`);
-    let artworks = results;
+    const artworks = results;
     if (artworks.length) {
-        artworks = await Promise.all(results.map(async (artwork) => {
-            const thumbnail = await getThumbnail(artwork.id);
-            if (thumbnail) {
-                return { ...artwork, thumbnail: thumbnail };
-            }
-            else {
-                return artwork;
-            }
-        }));
+        await Promise.all(artworks.map(addThumbnail));
     }
     connection.end();
     return artworks;
@@ -208,17 +196,9 @@ export const getWishlistedTheMost = async (n) => {
     WHERE artworks.removed = false
     ORDER BY wishlisted.times_wishlisted DESC 
     ${n ? ` LIMIT ${n}` : ""}`);
-    let artworks = results;
+    const artworks = results;
     if (artworks.length) {
-        artworks = await Promise.all(results.map(async (artwork) => {
-            const thumbnail = await getThumbnail(artwork.id);
-            if (thumbnail) {
-                return { ...artwork, thumbnail: thumbnail };
-            }
-            else {
-                return artwork;
-            }
-        }));
+        await Promise.all(artworks.map(addThumbnail));
     }
     connection.end();
     return artworks;
@@ -248,13 +228,13 @@ export const getOtherPictures = async (artwork_id) => {
 };
 export const checkIfRegistered = async (email) => {
     const connection = await makeConnection();
-    const [results] = await connection.query(`SELECT id, is_admin FROM users WHERE email = ?;`, [email]);
+    const [results] = await connection.query("SELECT id, is_admin FROM users WHERE email = ?;", [email]);
     connection.end();
     return results.length !== 0;
 };
 export const checkEmail = async (email) => {
     const connection = await makeConnection();
-    const [results] = await connection.query(`SELECT id FROM users WHERE email = ?;`, [email]);
+    const [results] = await connection.query("SELECT id FROM users WHERE email = ?;", [email]);
     connection.end();
     if (results.length !== 0) {
         return {
@@ -316,6 +296,8 @@ export const getDataOfArtwork = async (id) => {
         artwork.thumbnail = await getThumbnail(parseInt(id));
         artwork.tags = tags;
         artwork.other_pictures = await getOtherPictures(parseInt(id));
+        artwork.description = artwork.descript;
+        delete artwork.descript;
     }
     connection.end();
     return artwork;
@@ -346,16 +328,8 @@ export const getShoppingListItems = async (user_id) => {
         console.log("No items in shopping cart");
     }
     else {
-        results = await Promise.all(artworks.map(async (artwork) => {
-            const thumbnail = await getThumbnail(artwork.id);
-            const cname = await getSpecificCategory(artwork.category_id);
-            const tags = await getSpecificTags(artwork.id);
-            artwork.thumbnail = thumbnail;
-            artwork.cname = cname;
-            artwork.tags = tags;
-            return artwork;
-        }));
-        results = results.filter((item) => {
+        await Promise.all(artworks.map(completeArtwork));
+        results = artworks.filter((item) => {
             return item.quantity > 0;
         });
     }
@@ -391,15 +365,8 @@ export const getWishlisted = async (user_id, n) => {
         console.log("No wishlisted items");
     }
     else {
-        results = await Promise.all(wishlisted.map(async (artwork) => {
-            const thumbnail = await getThumbnail(artwork.id);
-            const cname = await getSpecificCategory(artwork.category_id);
-            const tags = await getSpecificTags(artwork.id);
-            artwork.thumbnail = thumbnail;
-            artwork.cname = cname;
-            artwork.tags = tags;
-            return artwork;
-        }));
+        await Promise.all(wishlisted.map(completeArtwork));
+        results = wishlisted;
     }
     connection.end();
     return results;
@@ -417,15 +384,7 @@ export const getOrderData = async (order_id) => {
     LEFT JOIN users ON users.id = orders.user_id
     WHERE artworks_ordered.order_id = ?
   `, [order_id]);
-    await Promise.all(results.map(async (artwork) => {
-        const thumbnail = await getThumbnail(artwork.id);
-        const cname = await getSpecificCategory(artwork.category_id);
-        const tags = await getSpecificTags(artwork.id);
-        artwork.thumbnail = thumbnail;
-        artwork.cname = cname;
-        artwork.tags = tags;
-        return artwork;
-    }));
+    await Promise.all(results.map(completeArtwork));
     connection.end();
     return results;
 };
@@ -434,28 +393,19 @@ export const getOrdersOfUser = async (user_id) => {
     const [results] = await connection.query(`
     SELECT id, time_ordered FROM orders WHERE user_id = ?
   `, [user_id]);
-    let orderDataCollection = results;
+    let orderDataCollection = [];
     if (results.length) {
         orderDataCollection = await Promise.all(results.map(async (ord) => {
-            const orderData = { time_ordered: ord.time_ordered };
+            const orderData = {
+                time_ordered: ord.time_ordered,
+                totalCost: 0,
+                items: [],
+            };
             const res = await getOrderData(ord.id);
             orderData.totalCost = res
                 .map((item) => item.cost)
                 .reduce((prev, item) => prev + item);
-            orderData.items = res.map((item) => {
-                const { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name, } = item;
-                return {
-                    thumbnail,
-                    cname,
-                    tags,
-                    price,
-                    quantity,
-                    id,
-                    cost,
-                    title,
-                    artist_name,
-                };
-            });
+            orderData.items = res;
             return orderData;
         }));
         orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered);
@@ -466,28 +416,19 @@ export const getOrdersOfUser = async (user_id) => {
 export const getOrders = async () => {
     const connection = await makeConnection();
     const [results] = await connection.execute("SELECT id, time_ordered FROM orders");
-    let orderDataCollection = results;
+    let orderDataCollection = [];
     if (results.length) {
         orderDataCollection = await Promise.all(results.map(async (ord) => {
-            const orderData = { time_ordered: ord.time_ordered };
+            const orderData = {
+                time_ordered: ord.time_ordered,
+                totalCost: 0,
+                items: [],
+            };
             const res = await getOrderData(ord.id);
             orderData.totalCost = res
                 .map((item) => item.cost)
                 .reduce((prev, item) => prev + item);
-            orderData.items = res.map((item) => {
-                const { thumbnail, cname, tags, price, quantity, id, cost, title, artist_name, } = item;
-                return {
-                    thumbnail,
-                    cname,
-                    tags,
-                    price,
-                    quantity,
-                    id,
-                    cost,
-                    title,
-                    artist_name,
-                };
-            });
+            orderData.items = res;
             orderData.user = {
                 user_name: res[0].user_name,
                 user_id: res[0].user_id,

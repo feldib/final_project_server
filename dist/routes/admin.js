@@ -7,35 +7,20 @@ import { approveReview, removeReview, removeArtwork, updateArtworkData, } from "
 import { sendReplyToMessage } from "../db_api/email.js";
 const now = new Date();
 import multer from "multer";
+router.get("/is_admin", verifyAdmin, function (req, res) {
+    res.json({ is_admin: true });
+});
 const newTumbnailStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination(req, file, cb) {
         cb(null, `public/images/${req.query.artwork_id}/thumbnail`);
     },
-    filename: function (req, file, cb) {
-        cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
-    },
-});
-const newOtherImagesStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
-    },
-    filename: function (req, file, cb) {
+    filename(req, file, cb) {
         cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
     },
 });
 const uploadNewThumbnail = multer({ storage: newTumbnailStorage });
-const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
 async function checkThumbnailPath(req, res, next) {
-    let imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
-    await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
-        if (err) {
-            await fs.mkdir(imagePath, { recursive: true });
-        }
-    });
-    next();
-}
-async function checkOtherPicturesPath(req, res, next) {
-    let imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
+    const imagePath = `public/images/${req.query.artwork_id}/thumbnail`;
     await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
         if (err) {
             await fs.mkdir(imagePath, { recursive: true });
@@ -46,14 +31,6 @@ async function checkOtherPicturesPath(req, res, next) {
 router.post("/thumbnail", verifyAdmin, checkThumbnailPath, uploadNewThumbnail.single("thumbnail"), function (req, res) {
     res.end();
 });
-async function removePreviousThumbnail(req, res, next) {
-    const path = `public/images/${req.query.artwork_id}/thumbnail`;
-    const files = await fs.readdir(path);
-    await Promise.all(files.map((file) => {
-        fs.unlink(`${path}/${file}`);
-    }));
-    next();
-}
 router.get("/unapproved_reviews", verifyAdmin, async function (req, res) {
     const reviews = await getUnapprovedReviews();
     res.json(reviews);

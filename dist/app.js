@@ -29,7 +29,7 @@ app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(join(__dirname, "public")));
+app.use(express.static(join(__dirname, "../public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
@@ -40,7 +40,10 @@ app.use(function (err, req, res, _) {
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};
     res.status(err.status || 500);
-    res.render("error");
+    res.json({
+        message: err.message,
+        error: req.app.get("env") === "development" ? err : {},
+    });
 });
 export default app;
 //# sourceMappingURL=app.js.map

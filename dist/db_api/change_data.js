@@ -1,7 +1,7 @@
 import { checkIfWishlisted, checkIfFeatured, getQuantityOfArtworkInStock, } from "./get_data.js";
 import { addToShoppingList, addArtworkTags } from "./add_data.js";
 import makeConnection from "../connection.js";
-export const incrementItemInShoppingList = async (user_id, artwork_id, n = 1) => {
+export const incrementItemInShoppingList = async (user_id, artwork_id, n = 5) => {
     const connection = await makeConnection();
     await connection.query(`
         UPDATE 
@@ -71,7 +71,7 @@ export const increaseShoppingCartItemQuantity = async (user_id, artwork_id) => {
 };
 export const resetPassword = async (new_password, email) => {
     const connection = await makeConnection();
-    await connection.query(`UPDATE users SET passw = ? WHERE email = ?;`, [
+    await connection.query("UPDATE users SET passw = ? WHERE email = ?;", [
         new_password,
         email,
     ]);
@@ -125,12 +125,13 @@ export const updateArtworkData = async (artwork_id, field_name, value) => {
         "artist_name",
         "price",
         "quantity",
-        "descript",
+        "description",
         "category_id",
     ].includes(field_name)) {
         const connection = await makeConnection();
+        const field_name_corrected = field_name === "description" ? "descript" : field_name;
         await connection.query(`
-        UPDATE artworks SET ${field_name} = ? WHERE id = ?
+        UPDATE artworks SET ${field_name_corrected} = ? WHERE id = ?
       `, [value, artwork_id]);
         connection.end();
     }
@@ -163,6 +164,9 @@ export const removeFromFeatured = async (artwork_id) => {
       `, [artwork_id]);
     }
     connection.end();
+};
+export const removeArtworkFromFeatured = async (artwork_id) => {
+    return removeFromFeatured(artwork_id);
 };
 export const removeArtwork = async (artwork_id) => {
     const connection = await makeConnection();

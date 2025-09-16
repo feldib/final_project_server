@@ -2,7 +2,7 @@ import { Router } from "express";
 const router = Router();
 import { verifyUser } from "../db_api/verify.js";
 import { checkIfRegistered, checkIfArtworkInStock, getShoppingListItems, getWishlisted, checkIfWishlisted, getOrdersOfUser, getReviewsOfUser, } from "../db_api/get_data.js";
-import { registerUser, saveMessgeToAdministrator, addToShoppingList, makeOrder, } from "../db_api/add_data.js";
+import { registerUser, saveMessgeToAdministrator, addToShoppingList, makeOrder, addToWishlisted, } from "../db_api/add_data.js";
 import { setShoppingCartItemQuantityToZero, increaseShoppingCartItemQuantity, decreaseShoppingCartItemQuantity, replaceSavedShoppingCart, } from "../db_api/change_data.js";
 import { removeFromWishlisted, updateUserData } from "../db_api/change_data.js";
 router.post("/message_to_administrator", function (req, res) {
@@ -36,7 +36,7 @@ router.post("/remove_item_from_shopping_cart", verifyUser, async function (req, 
     await setShoppingCartItemQuantityToZero(req.id, artwork_id);
     res.end();
 });
-router.post("/increase_shopping_sart_item_quantity", verifyUser, function (req, res) {
+router.post("/increase_shopping_cart_item_quantity", verifyUser, function (req, res) {
     const artwork_id = req.body.artwork_id;
     increaseShoppingCartItemQuantity(req.id, artwork_id)
         .then(() => {
@@ -46,7 +46,7 @@ router.post("/increase_shopping_sart_item_quantity", verifyUser, function (req, 
         res.status(400).end();
     });
 });
-router.post("/decrease_shopping_sart_item_quantity", verifyUser, async function (req, res) {
+router.post("/decrease_shopping_cart_item_quantity", verifyUser, async function (req, res) {
     const artwork_id = req.body.artwork_id;
     await decreaseShoppingCartItemQuantity(req.id, artwork_id);
     res.end();
@@ -58,6 +58,7 @@ router.get("/wishlisted", verifyUser, async function (req, res) {
 });
 router.post("/wishlisted", verifyUser, async function (req, res) {
     const artwork_id = req.body.artwork_id;
+    await addToWishlisted(req.id, artwork_id);
     res.end();
 });
 router.post("/remove_from_wishlisted", verifyUser, async function (req, res) {
@@ -90,7 +91,7 @@ router.post("/new_user", async function (req, res) {
     }
 });
 router.post("/make_order", verifyUser, async (req, res) => {
-    await makeOrder(req.id, req.body.invoice_data);
+    await makeOrder(req.id);
     res.end();
 });
 router.post("/leave_review", verifyUser, async (req, res) => {
