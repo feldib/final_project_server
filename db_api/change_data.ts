@@ -286,9 +286,11 @@ export const updateArtworkData = async (
 
     connection.end();
   } else if ("tags" === field_name) {
+    const tags = value as Tag[];
+
     await updateArtworkTags(
       artwork_id,
-      (value as Tag[]).map((tag) => {
+      tags.map((tag) => {
         return tag.tname;
       })
     );
