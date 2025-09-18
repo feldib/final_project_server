@@ -21,6 +21,7 @@ const __dirname = dirname(__filename);
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import adminRouter from "./routes/admin.js";
+import graphqSearchRouter from "./routes/graphql.js";
 
 const app: Application = express();
 
@@ -50,6 +51,7 @@ app.use(express.static(join(__dirname, "../public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
+app.use("/graphql-search", graphqSearchRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req: Request, res: Response, next: NextFunction) {
