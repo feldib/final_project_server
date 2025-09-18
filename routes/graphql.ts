@@ -69,7 +69,7 @@ const rootValue = {
       offset?: number;
       only_featured?: boolean;
     };
-  }) => {
+  }): Promise<unknown[]> => {
     const {
       min,
       max,
