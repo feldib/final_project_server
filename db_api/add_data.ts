@@ -201,5 +201,152 @@ export const addArtworkTags = async (
   );
 };
 
-// Additional functions would be added here based on the complete original file
-// This shows the main pattern for TypeScript conversion
+export const addToWishlisted = async (
+  user_id: number,
+  artwork_id: number
+): Promise<void> => {
+  const connection = await makeConnection();
+
+  const [prev] = await connection.query<RowDataPacket[]>(
+    `
+      SELECT id FROM wishlisted WHERE user_id = ? AND artwork_id = ?
+    `,
+    [user_id, artwork_id]
+  );
+
+  if (prev.length) {
+    await connection.query(
+      `
+        UPDATE wishlisted SET removed = false, time_wishlisted = now() WHERE id = ?
+      `,
+      [prev[0].id]
+    );
+  } else {
+    await connection.query(
+      `
+        INSERT INTO wishlisted(user_id, artwork_id) VALUES(?, ?)
+      `,
+      [user_id, artwork_id]
+    );
+  }
+
+  connection.end();
+};
+
+export const addToFeatured = async (artwork_id: number): Promise<void> => {
+  const connection = await makeConnection();
+
+  const [prev] = await connection.query<RowDataPacket[]>(
+    `
+      SELECT id FROM featured WHERE artwork_id = ?
+    `,
+    [artwork_id]
+  );
+
+  if (prev.length) {
+    await connection.query(
+      `
+        UPDATE featured SET removed = false, date_featured = now() WHERE id = ?
+      `,
+      [prev[0].id]
+    );
+  } else {
+    await connection.query(
+      `
+        INSERT INTO featured(artwork_id) VALUES(?)
+      `,
+      [artwork_id]
+    );
+  }
+
+  connection.end();
+};
+
+export const leaveReview = async (
+  user_id: number,
+  artwork_id: number,
+  title: string,
+  review_text: string
+): Promise<void> => {
+  const connection = await makeConnection();
+
+  await connection.query(
+    `
+      INSERT INTO reviews(user_id, artwork_id, title, review_text)
+      VALUES(?, ?, ?, ?)
+    `,
+    [user_id, artwork_id, title, review_text]
+  );
+
+  connection.end();
+};
+
+export const addPictures = async (
+  artwork_id: number,
+  picture_paths: string[]
+): Promise<void> => {
+  const connection = await makeConnection();
+
+  await Promise.all(
+    picture_paths.map(async (picture_path) => {
+      await connection.query(
+        `
+          INSERT INTO artwork_pictures(artwork_id, picture_path)
+          VALUES (?, ?)
+        `,
+        [artwork_id, picture_path]
+      );
+    })
+  );
+
+  connection.end();
+};
+
+interface NewArtwork {
+  title: string;
+  artist_name: string;
+  price: number;
+  quantity: number;
+  description: string;
+  category_id: number;
+  tags: string[];
+  thumbnail: string;
+  other_pictures: string[];
+}
+
+export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
+  const connection = await makeConnection();
+
+  console.log(artwork);
+
+  const [insertResults] = await connection.query<ResultSetHeader>(
+    `
+      INSERT INTO artworks(title, artist_name, price, quantity, descript, category_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [
+      artwork.title,
+      artwork.artist_name,
+      artwork.price,
+      artwork.quantity,
+      artwork.description,
+      artwork.category_id,
+    ]
+  );
+
+  const artwork_id = insertResults.insertId;
+
+  await addArtworkTags(artwork_id, artwork.tags);
+
+  await connection.query(
+    `
+      INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail)
+      VALUES (?, ?, ?)
+    `,
+    [artwork_id, artwork.thumbnail, true]
+  );
+
+  connection.end();
+
+  await addPictures(artwork_id, artwork.other_pictures);
+};

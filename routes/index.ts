@@ -8,7 +8,6 @@ import {
   getUser,
   getUserWithId,
   getCategories,
-  searchArtworks,
   checkEmail,
   getReviewsOfArtwork,
   getFeatured,
@@ -25,10 +24,8 @@ import {
   LoginRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  SearchArtworksQuery,
   StandardResponse,
   User,
-  ArtworkWithDetails,
 } from "../types/index.js";
 
 router.post(
@@ -107,41 +104,6 @@ router.get("/categories", async function (req: Request, res: Response) {
   }
   res.json(categories);
 });
-
-router.get(
-  "/search_artworks",
-  async function (
-    req: Request<object, ArtworkWithDetails[], object, SearchArtworksQuery>,
-    res: Response<ArtworkWithDetails[]>
-  ) {
-    const {
-      min,
-      max,
-      title,
-      artist_name,
-      category_id,
-      order,
-      n,
-      offset,
-      only_featured,
-    } = req.query;
-    const results = await searchArtworks(
-      min,
-      max,
-      title,
-      artist_name,
-      category_id,
-      order,
-      n,
-      offset,
-      only_featured
-    );
-    if (!results.length) {
-      console.log("No results for the search.");
-    }
-    res.json(results);
-  }
-);
 
 router.get("/find_artwork_by_id", async function (req: Request, res: Response) {
   const { artwork_id } = req.query;

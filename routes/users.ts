@@ -19,7 +19,7 @@ import {
   addToShoppingList,
   makeOrder,
   // leaveReview,
-  // addToWishlisted,
+  addToWishlisted,
 } from "../db_api/add_data.js";
 
 import {
@@ -123,8 +123,8 @@ router.post(
   "/wishlisted",
   verifyUser,
   async function (req: Request, res: Response) {
-    // const artwork_id = req.body.artwork_id;
-    // await addToWishlisted(req.id!, artwork_id);
+    const artwork_id = req.body.artwork_id;
+    await addToWishlisted(req.id!, artwork_id);
     res.end();
   }
 );

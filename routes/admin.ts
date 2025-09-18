@@ -18,7 +18,7 @@ import {
 import {
   approveReview,
   removeReview,
-  // removeArtworkFromFeatured,
+  // removeFromFeatured,
   removeArtwork,
   updateArtworkData,
 } from "../db_api/change_data.js";
