@@ -13,7 +13,10 @@ import logger from "morgan";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import config from "./config.js";
-import sessions from "express-session";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const sessions = require("express-session");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

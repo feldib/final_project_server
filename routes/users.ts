@@ -11,7 +11,7 @@ import {
 import { removeFromWishlisted } from "../db_api/wishlist.js";
 import { updateUserData } from "../db_api/user.js";
 
-import { RegisterRequest, StandardResponse } from "../types/index.js";
+import { RegisterRequest, StandardResponse } from "../types/api.js";
 import { saveMessgeToAdministrator } from "../db_api/messages.js";
 import { verifyUser } from "../db_api/verify.js";
 import {

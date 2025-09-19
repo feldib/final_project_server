@@ -8,8 +8,8 @@ import {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   StandardResponse,
-  User,
-} from "../types/index.js";
+} from "../types/api.js";
+import { User } from "../types/database.js";
 import {
   checkEmail,
   getUser,

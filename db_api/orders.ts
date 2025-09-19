@@ -1,6 +1,6 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import makeConnection from "../connection.js";
-import { OrderDataCollection, OrderDataItem } from "../types/index.js";
+import { OrderDataCollection, OrderDataItem } from "../types/db-helpers.js";
 import { getShoppingListItems } from "./shopping_list.js";
 import { completeArtwork } from "./helpers.js";
 

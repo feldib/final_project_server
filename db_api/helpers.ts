@@ -1,7 +1,8 @@
 import { RowDataPacket } from "mysql2/promise";
 import fs from "fs/promises";
 import makeConnection from "../connection.js";
-import { ArtworkWithDetails, Tag } from "../types/index.js";
+import { ArtworkWithDetails } from "../types/db-helpers.js";
+import { Tag } from "../types/database.js";
 
 // Helper functions used by multiple files
 
