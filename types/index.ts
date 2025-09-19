@@ -203,24 +203,7 @@ export interface Config {
   email: EmailConfig;
 }
 
-// Express session extension
-declare module "express-session" {
-  interface SessionData {
-    userid?: number;
-    isadmin?: boolean;
-  }
-}
-
-// Express Request extension
-declare module "express-serve-static-core" {
-  interface Request {
-    id?: number;
-    isadmin?: boolean;
-  }
-}
-
-// DB API types
-// Shared types and interfaces used across multiple database API files
+// DB API types - shared types and interfaces used across multiple database API files
 export type UserField =
   | "first_name"
   | "last_name"
@@ -237,15 +220,6 @@ export type ArtworkField =
   | "category_id"
   | "tags";
 
-export interface Tag {
-  tname: string;
-}
-
-export interface ShoppingCartItem {
-  artwork_id: number;
-  quantity: number;
-}
-
 export interface NewArtwork {
   title: string;
   artist_name: string;
@@ -256,4 +230,20 @@ export interface NewArtwork {
   tags: string[];
   thumbnail: string;
   other_pictures: string[];
+}
+
+// Express session extension
+declare module "express-session" {
+  interface SessionData {
+    userid?: number;
+    isadmin?: boolean;
+  }
+}
+
+// Express Request extension
+declare module "express-serve-static-core" {
+  interface Request {
+    id?: number;
+    isadmin?: boolean;
+  }
 }

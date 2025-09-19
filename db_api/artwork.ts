@@ -1,11 +1,13 @@
 import fs from "fs/promises";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import makeConnection from "../connection.js";
-import { ArtworkWithDetails } from "../types/index.js";
 import {
+  ArtworkWithDetails,
   ArtworkField,
-  Tag as TagHelper,
+  Tag,
   NewArtwork,
+} from "../types/index.js";
+import {
   completeArtwork,
   addThumbnail,
   getThumbnail,
@@ -368,7 +370,7 @@ export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
 export const updateArtworkData = async (
   artwork_id: number,
   field_name: ArtworkField,
-  value: string | number | TagHelper[]
+  value: string | number | Tag[]
 ): Promise<void> => {
   if (
     [
@@ -394,7 +396,7 @@ export const updateArtworkData = async (
 
     connection.end();
   } else if ("tags" === field_name) {
-    const tags = value as TagHelper[];
+    const tags = value as Tag[];
 
     await updateArtworkTags(
       artwork_id,
