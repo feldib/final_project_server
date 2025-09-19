@@ -1,37 +1,32 @@
 import { Router, Request, Response } from "express";
 const router = Router();
 
-import { verifyUser } from "../db_api/verify.js";
-
-import {
-  checkIfRegistered,
-  checkIfArtworkInStock,
-  getShoppingListItems,
-  getWishlisted,
-  checkIfWishlisted,
-  getOrdersOfUser,
-  getReviewsOfUser,
-} from "../db_api/get_data.js";
-
-import {
-  registerUser,
-  saveMessgeToAdministrator,
-  addToShoppingList,
-  makeOrder,
-  // leaveReview,
-  addToWishlisted,
-} from "../db_api/add_data.js";
-
 import {
   setShoppingCartItemQuantityToZero,
   increaseShoppingCartItemQuantity,
   decreaseShoppingCartItemQuantity,
   replaceSavedShoppingCart,
-} from "../db_api/change_data.js";
+} from "../db_api/shopping_list.js";
 
-import { removeFromWishlisted, updateUserData } from "../db_api/change_data.js";
+import { removeFromWishlisted } from "../db_api/wishlist.js";
+import { updateUserData } from "../db_api/user.js";
 
 import { RegisterRequest, StandardResponse } from "../types/index.js";
+import { saveMessgeToAdministrator } from "../db_api/messages.js";
+import { verifyUser } from "../db_api/verify.js";
+import {
+  addToShoppingList,
+  getShoppingListItems,
+} from "../db_api/shopping_list.js";
+import { checkIfArtworkInStock } from "../db_api/artwork.js";
+import {
+  addToWishlisted,
+  checkIfWishlisted,
+  getWishlisted,
+} from "../db_api/wishlist.js";
+import { checkIfRegistered, registerUser } from "../db_api/user.js";
+import { getOrdersOfUser, makeOrder } from "../db_api/orders.js";
+import { getReviewsOfUser } from "../db_api/reviews.js";
 
 router.post(
   "/message_to_administrator",

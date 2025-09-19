@@ -218,3 +218,42 @@ declare module "express-serve-static-core" {
     isadmin?: boolean;
   }
 }
+
+// DB API types
+// Shared types and interfaces used across multiple database API files
+export type UserField =
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "address"
+  | "phone_number";
+
+export type ArtworkField =
+  | "title"
+  | "artist_name"
+  | "price"
+  | "quantity"
+  | "description"
+  | "category_id"
+  | "tags";
+
+export interface Tag {
+  tname: string;
+}
+
+export interface ShoppingCartItem {
+  artwork_id: number;
+  quantity: number;
+}
+
+export interface NewArtwork {
+  title: string;
+  artist_name: string;
+  price: number;
+  quantity: number;
+  description: string;
+  category_id: number;
+  tags: string[];
+  thumbnail: string;
+  other_pictures: string[];
+}
