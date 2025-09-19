@@ -2,32 +2,25 @@ import { Router, Request, Response, NextFunction } from "express";
 const router = Router();
 import fs from "fs/promises";
 
-import { verifyAdmin } from "../db_api/verify.js";
-
-import {
-  getUnapprovedReviews,
-  getOrders,
-  getUnansweredMessages,
-  getRegisteredUsers,
-  getOrdersOfUser,
-  checkIfFeatured,
-} from "../db_api/get_data.js";
-
-// import { addToFeatured, addNewArtwork } from "../db_api/add_data.js";
-
-import {
-  approveReview,
-  removeReview,
-  // removeFromFeatured,
-  removeArtwork,
-  updateArtworkData,
-} from "../db_api/change_data.js";
-
 import { sendReplyToMessage } from "../db_api/email.js";
 
 const now = new Date();
 
 import multer from "multer";
+import { verifyAdmin } from "../db_api/verify.js";
+import {
+  approveReview,
+  getUnapprovedReviews,
+  removeReview,
+} from "../db_api/reviews.js";
+import { getOrders, getOrdersOfUser } from "../db_api/orders.js";
+import { getUnansweredMessages } from "../db_api/messages.js";
+import { getRegisteredUsers } from "../db_api/user.js";
+import {
+  checkIfFeatured,
+  removeArtwork,
+  updateArtworkData,
+} from "../db_api/artwork.js";
 
 // Admin authentication check endpoint
 router.get("/is_admin", verifyAdmin, function (req: Request, res: Response) {
@@ -137,7 +130,7 @@ router.post(
 router.get(
   "/unapproved_reviews",
   verifyAdmin,
-  async function (req: Request, res: Response) {
+  async function (_: Request, res: Response) {
     const reviews = await getUnapprovedReviews();
     res.json(reviews);
   }
@@ -163,19 +156,15 @@ router.post(
   }
 );
 
-router.get(
-  "/orders",
-  verifyAdmin,
-  async function (req: Request, res: Response) {
-    const orders = await getOrders();
-    res.json(orders);
-  }
-);
+router.get("/orders", verifyAdmin, async function (_: Request, res: Response) {
+  const orders = await getOrders();
+  res.json(orders);
+});
 
 router.get(
   "/unanswered_messages",
   verifyAdmin,
-  async function (req: Request, res: Response) {
+  async function (_: Request, res: Response) {
     const messages = await getUnansweredMessages();
     res.json(messages);
   }

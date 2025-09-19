@@ -4,29 +4,28 @@ const router = Router();
 import { verifyUser, verifyPaswordToken } from "../db_api/verify.js";
 
 import {
-  getDataOfArtwork,
-  getUser,
-  getUserWithId,
-  getCategories,
-  checkEmail,
-  getReviewsOfArtwork,
-  getFeatured,
-  getNewestArtworks,
-  getWishlistedTheMost,
-  findArtworkWithId,
-} from "../db_api/get_data.js";
-
-import { sendLinkToResetPassword } from "../db_api/email.js";
-
-import { resetPassword } from "../db_api/change_data.js";
-
-import {
   LoginRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   StandardResponse,
   User,
 } from "../types/index.js";
+import {
+  checkEmail,
+  getUser,
+  getUserWithId,
+  resetPassword,
+} from "../db_api/user.js";
+import { sendLinkToResetPassword } from "../db_api/email.js";
+import { getCategories } from "../db_api/categories.js";
+import {
+  findArtworkWithId,
+  getDataOfArtwork,
+  getFeatured,
+  getNewestArtworks,
+  getWishlistedTheMost,
+} from "../db_api/artwork.js";
+import { getReviewsOfArtwork } from "../db_api/reviews.js";
 
 router.post(
   "/login",

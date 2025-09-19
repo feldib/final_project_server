@@ -1,4 +1,4 @@
-import { searchArtworks, checkIfFeatured } from "../db_api/get_data.js";
+import { checkIfFeatured, searchArtworks } from "../db_api/artwork.js";
 
 // GraphQL resolvers
 const rootValue = {
