@@ -1,8 +1,4 @@
-import {
-  searchArtworks,
-  getCategories,
-  checkIfFeatured,
-} from "../db_api/get_data.js";
+import { searchArtworks, checkIfFeatured } from "../db_api/get_data.js";
 
 // GraphQL resolvers
 const rootValue = {
@@ -59,11 +55,6 @@ const rootValue = {
     );
 
     return artworksWithFeatured;
-  },
-
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  categories: async () => {
-    return await getCategories();
   },
 };
 
