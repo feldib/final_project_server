@@ -46,7 +46,7 @@ const getSearchQueryData = (
   const data: (string | number)[] = [];
 
   let needs_and = false;
-  if (min || max || title || artist_name || category_id) {
+  if (min || max || title || artist_name || (category_id && category_id.trim() !== "")) {
     sql_query += " AND ";
 
     if (min && max) {
@@ -84,7 +84,7 @@ const getSearchQueryData = (
       data.push(`%${artist_name.toLowerCase()}%`);
     }
 
-    if (category_id) {
+    if (category_id && category_id.trim() !== "") {
       if (needs_and) {
         sql_query += " AND ";
       } else {
@@ -97,9 +97,9 @@ const getSearchQueryData = (
 
   sql_query += " ORDER BY date_added";
   if (order === "asc") {
-    sql_query += " ASC ";
+    sql_query += " ASC, id ASC ";
   } else if (order === "desc") {
-    sql_query += " DESC ";
+    sql_query += " DESC, id DESC ";
   }
 
   sql_query += " LIMIT ? ";
