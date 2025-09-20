@@ -17,8 +17,10 @@ import { getOrders, getOrdersOfUser } from "../db_api/orders.js";
 import { getUnansweredMessages } from "../db_api/messages.js";
 import { getRegisteredUsers } from "../db_api/user.js";
 import {
+  addToFeatured,
   checkIfFeatured,
   removeArtwork,
+  removeFromFeatured,
   updateArtworkData,
 } from "../db_api/artwork.js";
 
@@ -202,6 +204,26 @@ router.post(
     const { artwork_id } = req.body;
     const featured = await checkIfFeatured(artwork_id);
     res.json(featured);
+  }
+);
+
+router.post(
+  "/featured",
+  verifyAdmin,
+  async function (req: Request, res: Response) {
+    const { artwork_id } = req.body;
+    await addToFeatured(artwork_id);
+    res.end();
+  }
+);
+
+router.post(
+  "/remove_from_featured",
+  verifyAdmin,
+  async function (req: Request, res: Response) {
+    const { artwork_id } = req.body;
+    await removeFromFeatured(artwork_id);
+    res.end();
   }
 );
 
