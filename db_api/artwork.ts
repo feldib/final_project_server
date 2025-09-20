@@ -46,7 +46,13 @@ const getSearchQueryData = (
   const data: (string | number)[] = [];
 
   let needs_and = false;
-  if (min || max || title || artist_name || (category_id && category_id.trim() !== "")) {
+  if (
+    min ||
+    max ||
+    title ||
+    artist_name ||
+    (category_id && category_id.trim() !== "")
+  ) {
     sql_query += " AND ";
 
     if (min && max) {
