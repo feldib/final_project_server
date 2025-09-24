@@ -12,7 +12,7 @@ import { removeFromWishlisted } from "../db_api/wishlist.js";
 import { updateUserData } from "../db_api/user.js";
 
 import { RegisterRequest, StandardResponse } from "../types/api.js";
-import { saveMessgeToAdministrator } from "../db_api/messages.js";
+import { saveMessageToAdministrator } from "../db_api/messages.js";
 import { verifyUser } from "../db_api/verify.js";
 import {
   addToShoppingList,
@@ -34,7 +34,7 @@ router.post(
     const { email, title, message } = req.body;
     try {
       console.log(req.body);
-      saveMessgeToAdministrator(email, title, message);
+      saveMessageToAdministrator(email, title, message);
       res.end();
     } catch {
       res.status(401).end();

@@ -1,7 +1,7 @@
 import { RowDataPacket } from "mysql2/promise";
 import makeConnection from "../connection.js";
 
-export const saveMessgeToAdministrator = async (
+export const saveMessageToAdministrator = async (
   email: string,
   title: string,
   message: string
