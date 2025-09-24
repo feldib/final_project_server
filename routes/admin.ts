@@ -29,7 +29,7 @@ router.get("/is_admin", verifyAdmin, function (req: Request, res: Response) {
   res.json({ is_admin: true });
 });
 
-const newTumbnailStorage = multer.diskStorage({
+const newThumbnailStorage = multer.diskStorage({
   destination(
     req: Request,
     file: Express.Multer.File,
@@ -65,7 +65,7 @@ const newTumbnailStorage = multer.diskStorage({
 //   },
 // });
 
-const uploadNewThumbnail = multer({ storage: newTumbnailStorage });
+const uploadNewThumbnail = multer({ storage: newThumbnailStorage });
 
 // const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
 
