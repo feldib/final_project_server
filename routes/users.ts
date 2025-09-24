@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 const router = Router();
+import { HTTP } from "../utils/constants.js";
 
 import {
   setShoppingCartItemQuantityToZero,
@@ -37,7 +38,7 @@ router.post(
       saveMessageToAdministrator(email, title, message);
       res.end();
     } catch {
-      res.status(401).end();
+      res.status(HTTP.UNAUTHORIZED).end();
     }
   }
 );
@@ -62,7 +63,7 @@ router.post(
     if (artworkInStock) {
       await addToShoppingList(req.id!, artwork_id);
     } else {
-      res.status(400);
+      res.status(HTTP.BAD_REQUEST);
     }
 
     res.end();
@@ -89,7 +90,7 @@ router.post(
         res.end();
       })
       .catch(() => {
-        res.status(400).end();
+        res.status(HTTP.BAD_REQUEST).end();
       });
   }
 );
@@ -162,7 +163,7 @@ router.post(
     if (registered) {
       res.end("There is a user with this email already");
     } else if (!last_name || !first_name || !email || !password) {
-      res.status(400).end();
+      res.status(HTTP.BAD_REQUEST).end();
     } else {
       await registerUser(last_name, first_name, email, password);
       res.end();

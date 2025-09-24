@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 const router = Router();
+import { HTTP } from "../utils/constants.js";
 
 import { verifyUser, verifyPaswordToken } from "../db_api/verify.js";
 
@@ -41,7 +42,7 @@ router.post(
       req.session.isadmin = user.is_admin;
       res.json(user);
     } else {
-      res.status(401).end();
+      res.status(HTTP.UNAUTHORIZED).end();
     }
   }
 );
