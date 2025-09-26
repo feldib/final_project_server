@@ -1,12 +1,13 @@
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import makeConnection from "../connection.js";
 import { OrderDataCollection, OrderDataItem } from "../types/db-helpers.js";
+import { InvoiceData } from "../types/api.js";
 import { getShoppingListItems } from "./shopping_list.js";
 import { completeArtwork } from "./helpers.js";
 
 export const makeOrder = async (
-  user_id: number
-  // invoice_data: InvoiceData,
+  user_id: number,
+  invoice_data: InvoiceData
 ): Promise<number> => {
   const connection = await makeConnection();
   const shoppingListItems = await getShoppingListItems(user_id);
@@ -19,6 +20,22 @@ export const makeOrder = async (
     );
 
     const order_id = insertedResults.insertId;
+
+    // Store invoice data
+    await connection.query(
+      `
+        INSERT INTO invoice_data(last_name, first_name, email, address, phone_number, order_id) 
+        VALUES(?, ?, ?, ?, ?, ?)
+      `,
+      [
+        invoice_data.last_name,
+        invoice_data.first_name,
+        invoice_data.email,
+        invoice_data.address,
+        invoice_data.phone_number,
+        order_id,
+      ]
+    );
 
     await Promise.all(
       shoppingListItems.map(async (item) => {

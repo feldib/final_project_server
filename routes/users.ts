@@ -27,7 +27,7 @@ import {
 } from "../db_api/wishlist.js";
 import { checkIfRegistered, registerUser } from "../db_api/user.js";
 import { getOrdersOfUser, makeOrder } from "../db_api/orders.js";
-import { getReviewsOfUser } from "../db_api/reviews.js";
+import { getReviewsOfUser, leaveReview } from "../db_api/reviews.js";
 
 router.post(
   "/message_to_administrator",
@@ -172,10 +172,7 @@ router.post(
 );
 
 router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
-  await makeOrder(
-    req.id!
-    // req.body.invoice_data
-  );
+  await makeOrder(req.id!, req.body.invoice_data);
   res.end();
 });
 
@@ -183,12 +180,12 @@ router.post(
   "/leave_review",
   verifyUser,
   async (req: Request, res: Response) => {
-    // await leaveReview(
-    //   req.id!,
-    //   req.body.artwork_id,
-    //   req.body.title,
-    //   req.body.review_text
-    // );
+    await leaveReview(
+      req.id!,
+      req.body.artwork_id,
+      req.body.title,
+      req.body.review_text
+    );
     res.end();
   }
 );
