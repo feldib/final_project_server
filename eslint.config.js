@@ -1,5 +1,7 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import importPlugin from "eslint-plugin-import";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 export default tseslint.config(
   {
@@ -20,6 +22,10 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     files: ["**/*.ts"],
+    plugins: {
+      import: importPlugin,
+      "simple-import-sort": simpleImportSort,
+    },
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -28,6 +34,13 @@ export default tseslint.config(
       },
     },
     rules: {
+      // Import organization rules
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
+      "import/first": "error",
+      "import/newline-after-import": "error",
+      "import/no-duplicates": "error",
+
       // TypeScript specific rules
       "@typescript-eslint/no-unused-vars": [
         "error",
