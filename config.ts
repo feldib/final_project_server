@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
+
 import { Config } from "./types/config.js";
-import { SERVER, DATABASE } from "./utils/constants.js";
+import { DATABASE,SERVER } from "./utils/constants.js";
 
 // Load environment variables from .env file
 dotenv.config();

@@ -1,8 +1,9 @@
-import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
+
 import config from "../config.js";
 import makeConnection from "../connection.js";
-import SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
 
 const client_host = config.server.clientHost;
 

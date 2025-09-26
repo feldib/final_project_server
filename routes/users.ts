@@ -1,33 +1,26 @@
-import { Router, Request, Response } from "express";
-const router = Router();
-import { HTTP } from "../utils/constants.js";
+import { Request, Response,Router } from "express";
 
-import {
-  setShoppingCartItemQuantityToZero,
-  increaseShoppingCartItemQuantity,
-  decreaseShoppingCartItemQuantity,
-  replaceSavedShoppingCart,
-} from "../db_api/shopping_list.js";
-
-import { removeFromWishlisted } from "../db_api/wishlist.js";
-import { updateUserData } from "../db_api/user.js";
-
-import { RegisterRequest, StandardResponse } from "../types/api.js";
-import { saveMessageToAdministrator } from "../db_api/messages.js";
-import { verifyUser } from "../db_api/verify.js";
-import {
-  addToShoppingList,
-  getShoppingListItems,
-} from "../db_api/shopping_list.js";
 import { checkIfArtworkInStock } from "../db_api/artwork.js";
-import {
-  addToWishlisted,
-  checkIfWishlisted,
-  getWishlisted,
-} from "../db_api/wishlist.js";
-import { checkIfRegistered, registerUser } from "../db_api/user.js";
+import { saveMessageToAdministrator } from "../db_api/messages.js";
 import { getOrdersOfUser, makeOrder } from "../db_api/orders.js";
 import { getReviewsOfUser, leaveReview } from "../db_api/reviews.js";
+import {
+  addToShoppingList,
+  decreaseShoppingCartItemQuantity,
+  getShoppingListItems,  increaseShoppingCartItemQuantity,
+  replaceSavedShoppingCart,
+  setShoppingCartItemQuantityToZero} from "../db_api/shopping_list.js";
+import { checkIfRegistered, registerUser,updateUserData  } from "../db_api/user.js";
+import { verifyUser } from "../db_api/verify.js";
+import {   addToWishlisted,
+  checkIfWishlisted,
+  getWishlisted,
+  removeFromWishlisted ,
+} from "../db_api/wishlist.js";
+import { RegisterRequest, StandardResponse } from "../types/api.js";
+import { HTTP } from "../utils/constants.js";
+
+const router = Router();
 
 router.post(
   "/message_to_administrator",

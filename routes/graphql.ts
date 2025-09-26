@@ -1,7 +1,8 @@
-import { Router, Request, Response } from "express";
+import { Request, Response,Router } from "express";
 import { graphql } from "graphql";
-import schema from "../graphql/schema.js";
+
 import rootValue from "../graphql/resolvers.js";
+import schema from "../graphql/schema.js";
 import { HTTP } from "../utils/constants.js";
 
 const router = Router();

@@ -4,9 +4,10 @@
  * Module dependencies.
  */
 
-import app from "../app.js";
 import dbg from "debug";
 import { createServer, Server } from "http";
+
+import app from "../app.js";
 import config from "../config.js";
 import { SERVER } from "../utils/constants.js";
 

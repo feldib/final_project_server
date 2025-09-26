@@ -1,4 +1,5 @@
-import { createConnection, Connection } from "mysql2/promise";
+import { Connection,createConnection } from "mysql2/promise";
+
 import config from "./config.js";
 
 const makeConnection = async (): Promise<Connection> =>

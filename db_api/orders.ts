@@ -1,9 +1,10 @@
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { ResultSetHeader,RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
-import { OrderDataCollection, OrderDataItem } from "../types/db-helpers.js";
 import { InvoiceData } from "../types/api.js";
-import { getShoppingListItems } from "./shopping_list.js";
+import { OrderDataCollection, OrderDataItem } from "../types/db-helpers.js";
 import { completeArtwork } from "./helpers.js";
+import { getShoppingListItems } from "./shopping_list.js";
 
 export const makeOrder = async (
   user_id: number,

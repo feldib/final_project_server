@@ -1,21 +1,7 @@
-import { Router, Request, Response, NextFunction } from "express";
-const router = Router();
+import { NextFunction,Request, Response, Router } from "express";
 import fs from "fs/promises";
-
-import { sendReplyToMessage } from "../db_api/email.js";
-
-const now = new Date();
-
 import multer from "multer";
-import { verifyAdmin } from "../db_api/verify.js";
-import {
-  approveReview,
-  getUnapprovedReviews,
-  removeReview,
-} from "../db_api/reviews.js";
-import { getOrders, getOrdersOfUser } from "../db_api/orders.js";
-import { getUnansweredMessages } from "../db_api/messages.js";
-import { getRegisteredUsers } from "../db_api/user.js";
+
 import {
   addToFeatured,
   checkIfFeatured,
@@ -23,6 +9,20 @@ import {
   removeFromFeatured,
   updateArtworkData,
 } from "../db_api/artwork.js";
+import { sendReplyToMessage } from "../db_api/email.js";
+import { getUnansweredMessages } from "../db_api/messages.js";
+import { getOrders, getOrdersOfUser } from "../db_api/orders.js";
+import {
+  approveReview,
+  getUnapprovedReviews,
+  removeReview,
+} from "../db_api/reviews.js";
+import { getRegisteredUsers } from "../db_api/user.js";
+import { verifyAdmin } from "../db_api/verify.js";
+
+const router = Router();
+
+const now = new Date();
 
 // Admin authentication check endpoint
 router.get("/is_admin", verifyAdmin, function (req: Request, res: Response) {

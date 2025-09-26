@@ -1,17 +1,18 @@
 import fs from "fs/promises";
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { ResultSetHeader,RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
 import { Tag } from "../types/database.js";
 import {
   ArtworkField,
-  NewArtwork,
   ArtworkWithDetails,
+  NewArtwork,
 } from "../types/db-helpers.js";
 import {
-  completeArtwork,
   addThumbnail,
-  getThumbnail,
+  completeArtwork,
   getSpecificTags,
+  getThumbnail,
 } from "./helpers.js";
 import { addArtworkTags, updateArtworkTags } from "./tags.js";
 
