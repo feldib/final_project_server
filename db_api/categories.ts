@@ -1,6 +1,7 @@
 import { RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
-import { Category } from "../types/index.js";
+import { Category } from "../types/database.js";
 
 export const getCategories = async (): Promise<Category[]> => {
   const connection = await makeConnection();

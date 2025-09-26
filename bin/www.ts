@@ -4,10 +4,12 @@
  * Module dependencies.
  */
 
-import app from "../app.js";
 import dbg from "debug";
 import { createServer, Server } from "http";
+
+import app from "../app.js";
 import config from "../config.js";
+import { SERVER } from "../utils/constants.js";
 
 const debug = dbg("final-project-server:server");
 
@@ -16,7 +18,7 @@ const debug = dbg("final-project-server:server");
  */
 
 const port: number | string | false = normalizePort(
-  config.server.port.toString() || "3000"
+  config.server.port.toString() || SERVER.DEFAULT_PORT.toString()
 );
 app.set("port", port);
 
@@ -63,16 +65,16 @@ function onError(error: NodeJS.ErrnoException): void {
     throw error;
   }
 
-  const bind = typeof port === "string" ? `Pipe ${  port}` : `Port ${  port}`;
+  const bind = typeof port === "string" ? `Pipe ${port}` : `Port ${port}`;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
   case "EACCES":
-    console.error(`${bind  } requires elevated privileges`);
+    console.error(`${bind} requires elevated privileges`);
     process.exit(1);
     break;
   case "EADDRINUSE":
-    console.error(`${bind  } is already in use`);
+    console.error(`${bind} is already in use`);
     process.exit(1);
     break;
   default:
@@ -87,6 +89,6 @@ function onError(error: NodeJS.ErrnoException): void {
 function onListening(): void {
   const addr = server.address();
   const bind =
-    typeof addr === "string" ? `pipe ${  addr}` : `port ${  addr?.port || port}`;
-  debug(`Listening on ${  bind}`);
+    typeof addr === "string" ? `pipe ${addr}` : `port ${addr?.port || port}`;
+  debug(`Listening on ${bind}`);
 }

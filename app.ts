@@ -1,27 +1,30 @@
-import createError from "http-errors";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import express, {
-  json,
-  urlencoded,
   Application,
+  json,
+  NextFunction,
   Request,
   Response,
-  NextFunction,
+  urlencoded,
 } from "express";
-import { join, dirname } from "path";
-import cookieParser from "cookie-parser";
+import createError from "http-errors";
+import { createRequire } from "module";
 import logger from "morgan";
-import cors from "cors";
+import { dirname,join } from "path";
 import { fileURLToPath } from "url";
+
 import config from "./config.js";
-import sessions from "express-session";
+import adminRouter from "./routes/admin.js";
+import graphqSearchRouter from "./routes/graphql.js";
+import indexRouter from "./routes/index.js";
+import usersRouter from "./routes/users.js";
+
+const require = createRequire(import.meta.url);
+const sessions = require("express-session");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-import indexRouter from "./routes/index.js";
-import usersRouter from "./routes/users.js";
-import adminRouter from "./routes/admin.js";
-import graphqSearchRouter from "./routes/graphql.js";
 
 const app: Application = express();
 

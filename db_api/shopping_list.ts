@@ -1,6 +1,7 @@
 import { RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
-import { ShoppingCartItem } from "../types/index.js";
+import { ShoppingCartItem } from "../types/database.js";
 import { getQuantityOfArtworkInStock } from "./artwork.js";
 import { completeArtwork } from "./helpers.js";
 
@@ -21,7 +22,7 @@ export const getShoppingListItems = async (
 
   let results = artworks;
   if (!artworks.length) {
-    console.log("No items in shopping cart");
+    // Empty cart - return empty results
   } else {
     await Promise.all(artworks.map(completeArtwork));
     results = artworks.filter((item) => {

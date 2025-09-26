@@ -1,43 +1,43 @@
-import { Router, Request, Response } from "express";
-const router = Router();
+import { Request, Response, Router } from "express";
 
-import {
-  setShoppingCartItemQuantityToZero,
-  increaseShoppingCartItemQuantity,
-  decreaseShoppingCartItemQuantity,
-  replaceSavedShoppingCart,
-} from "../db_api/shopping_list.js";
-
-import { removeFromWishlisted } from "../db_api/wishlist.js";
-import { updateUserData } from "../db_api/user.js";
-
-import { RegisterRequest, StandardResponse } from "../types/index.js";
-import { saveMessgeToAdministrator } from "../db_api/messages.js";
-import { verifyUser } from "../db_api/verify.js";
+import { checkIfArtworkInStock } from "../db_api/artwork.js";
+import { saveMessageToAdministrator } from "../db_api/messages.js";
+import { getOrdersOfUser, makeOrder } from "../db_api/orders.js";
+import { getReviewsOfUser, leaveReview } from "../db_api/reviews.js";
 import {
   addToShoppingList,
+  decreaseShoppingCartItemQuantity,
   getShoppingListItems,
+  increaseShoppingCartItemQuantity,
+  replaceSavedShoppingCart,
+  setShoppingCartItemQuantityToZero,
 } from "../db_api/shopping_list.js";
-import { checkIfArtworkInStock } from "../db_api/artwork.js";
+import {
+  checkIfRegistered,
+  registerUser,
+  updateUserData,
+} from "../db_api/user.js";
+import { verifyUser } from "../db_api/verify.js";
 import {
   addToWishlisted,
   checkIfWishlisted,
   getWishlisted,
+  removeFromWishlisted,
 } from "../db_api/wishlist.js";
-import { checkIfRegistered, registerUser } from "../db_api/user.js";
-import { getOrdersOfUser, makeOrder } from "../db_api/orders.js";
-import { getReviewsOfUser } from "../db_api/reviews.js";
+import { RegisterRequest, StandardResponse } from "../types/api.js";
+import { HTTP } from "../utils/constants.js";
+
+const router = Router();
 
 router.post(
   "/message_to_administrator",
   function (req: Request, res: Response) {
     const { email, title, message } = req.body;
     try {
-      console.log(req.body);
-      saveMessgeToAdministrator(email, title, message);
+      saveMessageToAdministrator(email, title, message);
       res.end();
     } catch {
-      res.status(401).end();
+      res.status(HTTP.UNAUTHORIZED).end();
     }
   }
 );
@@ -62,7 +62,7 @@ router.post(
     if (artworkInStock) {
       await addToShoppingList(req.id!, artwork_id);
     } else {
-      res.status(400);
+      res.status(HTTP.BAD_REQUEST);
     }
 
     res.end();
@@ -89,7 +89,7 @@ router.post(
         res.end();
       })
       .catch(() => {
-        res.status(400).end();
+        res.status(HTTP.BAD_REQUEST).end();
       });
   }
 );
@@ -158,11 +158,10 @@ router.post(
     const { last_name, first_name, email, password } = req.body;
 
     const registered = await checkIfRegistered(email);
-    console.log(registered);
     if (registered) {
       res.end("There is a user with this email already");
     } else if (!last_name || !first_name || !email || !password) {
-      res.status(400).end();
+      res.status(HTTP.BAD_REQUEST).end();
     } else {
       await registerUser(last_name, first_name, email, password);
       res.end();
@@ -171,10 +170,7 @@ router.post(
 );
 
 router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
-  await makeOrder(
-    req.id!
-    // req.body.invoice_data
-  );
+  await makeOrder(req.id!, req.body.invoice_data);
   res.end();
 });
 
@@ -182,12 +178,12 @@ router.post(
   "/leave_review",
   verifyUser,
   async (req: Request, res: Response) => {
-    // await leaveReview(
-    //   req.id!,
-    //   req.body.artwork_id,
-    //   req.body.title,
-    //   req.body.review_text
-    // );
+    await leaveReview(
+      req.id!,
+      req.body.artwork_id,
+      req.body.title,
+      req.body.review_text
+    );
     res.end();
   }
 );

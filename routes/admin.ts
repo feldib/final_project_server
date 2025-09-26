@@ -1,33 +1,35 @@
-import { Router, Request, Response, NextFunction } from "express";
-const router = Router();
+import { NextFunction,Request, Response, Router } from "express";
 import fs from "fs/promises";
-
-import { sendReplyToMessage } from "../db_api/email.js";
-
-const now = new Date();
-
 import multer from "multer";
-import { verifyAdmin } from "../db_api/verify.js";
+
+import {
+  addToFeatured,
+  checkIfFeatured,
+  removeArtwork,
+  removeFromFeatured,
+  updateArtworkData,
+} from "../db_api/artwork.js";
+import { sendReplyToMessage } from "../db_api/email.js";
+import { getUnansweredMessages } from "../db_api/messages.js";
+import { getOrders, getOrdersOfUser } from "../db_api/orders.js";
 import {
   approveReview,
   getUnapprovedReviews,
   removeReview,
 } from "../db_api/reviews.js";
-import { getOrders, getOrdersOfUser } from "../db_api/orders.js";
-import { getUnansweredMessages } from "../db_api/messages.js";
 import { getRegisteredUsers } from "../db_api/user.js";
-import {
-  checkIfFeatured,
-  removeArtwork,
-  updateArtworkData,
-} from "../db_api/artwork.js";
+import { verifyAdmin } from "../db_api/verify.js";
+
+const router = Router();
+
+const now = new Date();
 
 // Admin authentication check endpoint
 router.get("/is_admin", verifyAdmin, function (req: Request, res: Response) {
   res.json({ is_admin: true });
 });
 
-const newTumbnailStorage = multer.diskStorage({
+const newThumbnailStorage = multer.diskStorage({
   destination(
     req: Request,
     file: Express.Multer.File,
@@ -63,7 +65,7 @@ const newTumbnailStorage = multer.diskStorage({
 //   },
 // });
 
-const uploadNewThumbnail = multer({ storage: newTumbnailStorage });
+const uploadNewThumbnail = multer({ storage: newThumbnailStorage });
 
 // const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
 
@@ -202,6 +204,26 @@ router.post(
     const { artwork_id } = req.body;
     const featured = await checkIfFeatured(artwork_id);
     res.json(featured);
+  }
+);
+
+router.post(
+  "/featured",
+  verifyAdmin,
+  async function (req: Request, res: Response) {
+    const { artwork_id } = req.body;
+    await addToFeatured(artwork_id);
+    res.end();
+  }
+);
+
+router.post(
+  "/remove_from_featured",
+  verifyAdmin,
+  async function (req: Request, res: Response) {
+    const { artwork_id } = req.body;
+    await removeFromFeatured(artwork_id);
+    res.end();
   }
 );
 

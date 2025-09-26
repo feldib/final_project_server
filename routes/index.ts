@@ -1,23 +1,5 @@
-import { Router, Request, Response } from "express";
-const router = Router();
+import { Request, Response, Router } from "express";
 
-import { verifyUser, verifyPaswordToken } from "../db_api/verify.js";
-
-import {
-  LoginRequest,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
-  StandardResponse,
-  User,
-} from "../types/index.js";
-import {
-  checkEmail,
-  getUser,
-  getUserWithId,
-  resetPassword,
-} from "../db_api/user.js";
-import { sendLinkToResetPassword } from "../db_api/email.js";
-import { getCategories } from "../db_api/categories.js";
 import {
   findArtworkWithId,
   getDataOfArtwork,
@@ -25,7 +7,26 @@ import {
   getNewestArtworks,
   getWishlistedTheMost,
 } from "../db_api/artwork.js";
+import { getCategories } from "../db_api/categories.js";
+import { sendLinkToResetPassword } from "../db_api/email.js";
 import { getReviewsOfArtwork } from "../db_api/reviews.js";
+import {
+  checkEmail,
+  getUser,
+  getUserWithId,
+  resetPassword,
+} from "../db_api/user.js";
+import { verifyPaswordToken, verifyUser } from "../db_api/verify.js";
+import {
+  ForgotPasswordRequest,
+  LoginRequest,
+  ResetPasswordRequest,
+  StandardResponse,
+} from "../types/api.js";
+import { User } from "../types/database.js";
+import { HTTP } from "../utils/constants.js";
+
+const router = Router();
 
 router.post(
   "/login",
@@ -36,12 +37,11 @@ router.post(
     const { email, password } = req.body;
     const user = await getUser(email, password);
     if (user !== undefined) {
-      console.log(user);
       req.session.userid = user.id;
       req.session.isadmin = user.is_admin;
       res.json(user);
     } else {
-      res.status(401).end();
+      res.status(HTTP.UNAUTHORIZED).end();
     }
   }
 );
@@ -97,10 +97,6 @@ router.post(
 
 router.get("/categories", async function (req: Request, res: Response) {
   const categories = await getCategories();
-  console.log(JSON.stringify(categories));
-  if (!categories.length) {
-    console.log("No categories found.");
-  }
   res.json(categories);
 });
 
@@ -114,18 +110,12 @@ router.get("/find_artwork_by_id", async function (req: Request, res: Response) {
 router.get("/artwork", async function (req: Request, res: Response) {
   const { id } = req.query;
   const artwork = await getDataOfArtwork(id as string);
-  if (!artwork) {
-    console.log("Artwork was not found.");
-  }
   res.json(artwork);
 });
 
 router.get("/reviews", async function (req: Request, res: Response) {
   const { id } = req.query;
   const reviews = await getReviewsOfArtwork(id as string);
-  if (!reviews.length) {
-    console.log("No reviews found.");
-  }
   res.json(reviews);
 });
 
@@ -133,9 +123,6 @@ router.get("/featured", async function (req: Request, res: Response) {
   const n = req.query.n as string;
   const artworks = await getFeatured(n);
   const results = artworks;
-  if (!artworks.length) {
-    console.log("No featured artworks");
-  }
   res.json(results);
 });
 
@@ -143,9 +130,6 @@ router.get("/newest", async function (req: Request, res: Response) {
   const n = req.query.n as string;
   const artworks = await getNewestArtworks(n);
   const results = artworks;
-  if (!artworks.length) {
-    console.log("No artworks");
-  }
   res.json(results);
 });
 
@@ -153,9 +137,6 @@ router.get("/most_wishlisted", async function (req: Request, res: Response) {
   const n = req.query.n as string;
   const artworks = await getWishlistedTheMost(n);
   const results = artworks;
-  if (!artworks.length) {
-    console.log("No artworks");
-  }
   res.json(results);
 });
 

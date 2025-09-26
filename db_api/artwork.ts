@@ -1,15 +1,18 @@
 import fs from "fs/promises";
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
-import { ArtworkWithDetails } from "../types/index.js";
+import { Tag } from "../types/database.js";
 import {
   ArtworkField,
-  Tag as TagHelper,
+  ArtworkWithDetails,
   NewArtwork,
-  completeArtwork,
+} from "../types/db-helpers.js";
+import {
   addThumbnail,
-  getThumbnail,
+  completeArtwork,
   getSpecificTags,
+  getThumbnail,
 } from "./helpers.js";
 import { addArtworkTags, updateArtworkTags } from "./tags.js";
 
@@ -39,12 +42,16 @@ const getSearchQueryData = (
 
   sql_query += " artworks.removed=false ";
 
-  console.log(`only_featured = ${only_featured}`);
-
   const data: (string | number)[] = [];
 
   let needs_and = false;
-  if (min || max || title || artist_name || category_id) {
+  if (
+    min ||
+    max ||
+    title ||
+    artist_name ||
+    (category_id && category_id.trim() !== "")
+  ) {
     sql_query += " AND ";
 
     if (min && max) {
@@ -82,7 +89,7 @@ const getSearchQueryData = (
       data.push(`%${artist_name.toLowerCase()}%`);
     }
 
-    if (category_id) {
+    if (category_id && category_id.trim() !== "") {
       if (needs_and) {
         sql_query += " AND ";
       } else {
@@ -95,9 +102,9 @@ const getSearchQueryData = (
 
   sql_query += " ORDER BY date_added";
   if (order === "asc") {
-    sql_query += " ASC ";
+    sql_query += " ASC, id ASC ";
   } else if (order === "desc") {
-    sql_query += " DESC ";
+    sql_query += " DESC, id DESC ";
   }
 
   sql_query += " LIMIT ? ";
@@ -135,8 +142,6 @@ export const searchArtworks = async (
     offset,
     only_featured
   );
-
-  console.log(sql_query);
 
   const [artworks] = await connection.query<RowDataPacket[]>(
     `${sql_query};`,
@@ -331,8 +336,6 @@ export const getQuantityOfArtworkInStock = async (
 export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
   const connection = await makeConnection();
 
-  console.log(artwork);
-
   const [insertResults] = await connection.query<ResultSetHeader>(
     `
       INSERT INTO artworks(title, artist_name, price, quantity, descript, category_id)
@@ -368,7 +371,7 @@ export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
 export const updateArtworkData = async (
   artwork_id: number,
   field_name: ArtworkField,
-  value: string | number | TagHelper[]
+  value: string | number | Tag[]
 ): Promise<void> => {
   if (
     [
@@ -394,7 +397,7 @@ export const updateArtworkData = async (
 
     connection.end();
   } else if ("tags" === field_name) {
-    const tags = value as TagHelper[];
+    const tags = value as Tag[];
 
     await updateArtworkTags(
       artwork_id,

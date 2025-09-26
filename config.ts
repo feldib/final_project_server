@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
-import { Config } from "./types/index.js";
+
+import { Config } from "./types/config.js";
+import { DATABASE,SERVER } from "./utils/constants.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -7,7 +9,7 @@ dotenv.config();
 const config: Config = {
   // Server configuration
   server: {
-    port: parseInt(process.env.PORT || "3000"),
+    port: parseInt(process.env.PORT || SERVER.DEFAULT_PORT.toString()),
     clientHost: process.env.CLIENT_HOST || "",
   },
 
@@ -15,17 +17,19 @@ const config: Config = {
   security: {
     secretKey: process.env.SECRET_KEY || "",
     sessionSecret: process.env.SESSION_SECRET || "",
-    sessionMaxAge: parseInt(process.env.SESSION_MAX_AGE || "300000"), // 5 minutes default
+    sessionMaxAge: parseInt(
+      process.env.SESSION_MAX_AGE || SERVER.DEFAULT_SESSION_MAX_AGE.toString()
+    ),
   },
 
   // Database configuration
   database: {
     host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT || "3306"),
+    port: parseInt(process.env.DB_PORT || DATABASE.DEFAULT_DB_PORT.toString()),
     user: process.env.DB_USER || "root",
     password: process.env.DB_PASSWORD || "",
     name: process.env.DB_NAME || "ecommerce",
-    charset: process.env.DB_CHARSET || "utf8mb4",
+    charset: process.env.DB_CHARSET || DATABASE.DEFAULT_CHARSET,
   },
 
   // Email service configuration

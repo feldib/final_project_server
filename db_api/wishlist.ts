@@ -1,4 +1,5 @@
 import { RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
 import { completeArtwork } from "./helpers.js";
 
@@ -42,9 +43,7 @@ export const getWishlisted = async (
   );
 
   let results = wishlisted;
-  if (!wishlisted.length) {
-    console.log("No wishlisted items");
-  } else {
+  if (wishlisted.length) {
     await Promise.all(wishlisted.map(completeArtwork));
     results = wishlisted;
   }

@@ -1,7 +1,9 @@
-import { Router, Request, Response } from "express";
+import { Request, Response,Router } from "express";
 import { graphql } from "graphql";
-import schema from "../graphql/schema.js";
+
 import rootValue from "../graphql/resolvers.js";
+import schema from "../graphql/schema.js";
+import { HTTP } from "../utils/constants.js";
 
 const router = Router();
 
@@ -20,7 +22,9 @@ router.post("/", async (req: Request, res: Response) => {
     res.json(result);
   } catch (error) {
     console.error("GraphQL Error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res
+      .status(HTTP.INTERNAL_SERVER_ERROR)
+      .json({ error: "Internal server error" });
   }
 });
 

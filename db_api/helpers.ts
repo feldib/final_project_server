@@ -1,47 +1,9 @@
-import { RowDataPacket } from "mysql2/promise";
 import fs from "fs/promises";
+import { RowDataPacket } from "mysql2/promise";
+
 import makeConnection from "../connection.js";
-import { ArtworkWithDetails } from "../types/index.js";
-
-// Shared types and interfaces used across multiple database API files
-
-export type UserField =
-  | "first_name"
-  | "last_name"
-  | "email"
-  | "address"
-  | "phone_number";
-
-export type ArtworkField =
-  | "title"
-  | "artist_name"
-  | "price"
-  | "quantity"
-  | "description"
-  | "category_id"
-  | "tags";
-
-export interface Tag {
-  id: number;
-  tname: string;
-}
-
-export interface ShoppingCartItem {
-  artwork_id: number;
-  quantity: number;
-}
-
-export interface NewArtwork {
-  title: string;
-  artist_name: string;
-  price: number;
-  quantity: number;
-  description: string;
-  category_id: number;
-  tags: string[];
-  thumbnail: string;
-  other_pictures: string[];
-}
+import { Tag } from "../types/database.js";
+import { ArtworkWithDetails } from "../types/db-helpers.js";
 
 // Helper functions used by multiple files
 
