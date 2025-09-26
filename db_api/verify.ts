@@ -1,4 +1,4 @@
-import { NextFunction,Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
 import config from "../config.js";
@@ -18,7 +18,6 @@ export const verifyPaswordToken = (
       config.security.secretKey,
       (err: jwt.VerifyErrors | null, _: unknown) => {
         if (err) {
-          console.log(err);
           res.status(HTTP.UNAUTHORIZED).end("Tokens do not match");
         } else {
           next();
@@ -33,7 +32,6 @@ export const verifyUser = (
   res: Response,
   next: NextFunction
 ): void => {
-  console.log(req.session.userid);
   if (!req.session.userid) {
     res.status(HTTP.UNAUTHORIZED).end("You are not authenticated");
   } else {

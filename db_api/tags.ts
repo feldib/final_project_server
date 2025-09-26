@@ -1,4 +1,4 @@
-import { ResultSetHeader,RowDataPacket } from "mysql2/promise";
+import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import makeConnection from "../connection.js";
 
@@ -90,8 +90,6 @@ export const updateArtworkTags = async (
   const tagsToAdd = tags.filter(
     (tag) => !tags_of_artwork.some((tg) => tg.tname === tag)
   );
-
-  console.log("tagsToAdd: ", JSON.stringify(tagsToAdd));
 
   await addArtworkTags(artwork_id, tagsToAdd);
 

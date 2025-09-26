@@ -22,7 +22,7 @@ export const getShoppingListItems = async (
 
   let results = artworks;
   if (!artworks.length) {
-    console.log("No items in shopping cart");
+    // Empty cart - return empty results
   } else {
     await Promise.all(artworks.map(completeArtwork));
     results = artworks.filter((item) => {

@@ -1,5 +1,5 @@
 import fs from "fs/promises";
-import { ResultSetHeader,RowDataPacket } from "mysql2/promise";
+import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import makeConnection from "../connection.js";
 import { Tag } from "../types/database.js";
@@ -41,8 +41,6 @@ const getSearchQueryData = (
   }
 
   sql_query += " artworks.removed=false ";
-
-  console.log(`only_featured = ${only_featured}`);
 
   const data: (string | number)[] = [];
 
@@ -144,8 +142,6 @@ export const searchArtworks = async (
     offset,
     only_featured
   );
-
-  console.log(sql_query);
 
   const [artworks] = await connection.query<RowDataPacket[]>(
     `${sql_query};`,
@@ -339,8 +335,6 @@ export const getQuantityOfArtworkInStock = async (
 
 export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
   const connection = await makeConnection();
-
-  console.log(artwork);
 
   const [insertResults] = await connection.query<ResultSetHeader>(
     `

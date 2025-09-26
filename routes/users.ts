@@ -1,4 +1,4 @@
-import { Request, Response,Router } from "express";
+import { Request, Response, Router } from "express";
 
 import { checkIfArtworkInStock } from "../db_api/artwork.js";
 import { saveMessageToAdministrator } from "../db_api/messages.js";
@@ -7,15 +7,22 @@ import { getReviewsOfUser, leaveReview } from "../db_api/reviews.js";
 import {
   addToShoppingList,
   decreaseShoppingCartItemQuantity,
-  getShoppingListItems,  increaseShoppingCartItemQuantity,
+  getShoppingListItems,
+  increaseShoppingCartItemQuantity,
   replaceSavedShoppingCart,
-  setShoppingCartItemQuantityToZero} from "../db_api/shopping_list.js";
-import { checkIfRegistered, registerUser,updateUserData  } from "../db_api/user.js";
+  setShoppingCartItemQuantityToZero,
+} from "../db_api/shopping_list.js";
+import {
+  checkIfRegistered,
+  registerUser,
+  updateUserData,
+} from "../db_api/user.js";
 import { verifyUser } from "../db_api/verify.js";
-import {   addToWishlisted,
+import {
+  addToWishlisted,
   checkIfWishlisted,
   getWishlisted,
-  removeFromWishlisted ,
+  removeFromWishlisted,
 } from "../db_api/wishlist.js";
 import { RegisterRequest, StandardResponse } from "../types/api.js";
 import { HTTP } from "../utils/constants.js";
@@ -27,7 +34,6 @@ router.post(
   function (req: Request, res: Response) {
     const { email, title, message } = req.body;
     try {
-      console.log(req.body);
       saveMessageToAdministrator(email, title, message);
       res.end();
     } catch {
@@ -152,7 +158,6 @@ router.post(
     const { last_name, first_name, email, password } = req.body;
 
     const registered = await checkIfRegistered(email);
-    console.log(registered);
     if (registered) {
       res.end("There is a user with this email already");
     } else if (!last_name || !first_name || !email || !password) {
