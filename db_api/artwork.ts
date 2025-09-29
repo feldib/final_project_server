@@ -333,7 +333,9 @@ export const getQuantityOfArtworkInStock = async (
   return res[0].quantity;
 };
 
-export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
+export const addNewArtwork = async (
+  artwork: Partial<NewArtwork>
+): Promise<number> => {
   const connection = await makeConnection();
 
   const [insertResults] = await connection.query<ResultSetHeader>(
@@ -353,19 +355,11 @@ export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
 
   const artwork_id = insertResults.insertId;
 
-  await addArtworkTags(artwork_id, artwork.tags);
-
-  await connection.query(
-    `
-      INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail)
-      VALUES (?, ?, ?)
-    `,
-    [artwork_id, artwork.thumbnail, true]
-  );
+  await addArtworkTags(artwork_id, artwork.tags!);
 
   connection.end();
 
-  await addPictures(artwork_id, artwork.other_pictures);
+  return artwork_id;
 };
 
 export const updateArtworkData = async (

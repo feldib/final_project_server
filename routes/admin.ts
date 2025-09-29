@@ -1,8 +1,11 @@
-import { NextFunction,Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 import fs from "fs/promises";
 import multer from "multer";
 
+import makeConnection from "../connection.js";
 import {
+  addNewArtwork,
+  addPictures,
   addToFeatured,
   checkIfFeatured,
   removeArtwork,
@@ -23,6 +26,19 @@ import { verifyAdmin } from "../db_api/verify.js";
 const router = Router();
 
 const now = new Date();
+
+// Helper function to add thumbnail to database
+async function addThumbnailToDatabase(
+  artwork_id: number,
+  thumbnailPath: string
+): Promise<void> {
+  const connection = await makeConnection();
+  await connection.query(
+    "INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail) VALUES (?, ?, ?)",
+    [artwork_id, thumbnailPath, true]
+  );
+  connection.end();
+}
 
 // Admin authentication check endpoint
 router.get("/is_admin", verifyAdmin, function (req: Request, res: Response) {
@@ -47,27 +63,30 @@ const newThumbnailStorage = multer.diskStorage({
   },
 });
 
-// const newOtherImagesStorage = multer.diskStorage({
-//   destination(
-//     req: Request,
-//     file: Express.Multer.File,
-//     cb: (error: Error | null, destination: string) => void
-//   ) {
-//     cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
-//   },
+const newOtherImagesStorage = multer.diskStorage({
+  destination(
+    req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, destination: string) => void
+  ) {
+    cb(null, `public/images/${req.query.artwork_id}/other_pictures`);
+  },
 
-//   filename(
-//     req: Request,
-//     file: Express.Multer.File,
-//     cb: (error: Error | null, filename: string) => void
-//   ) {
-//     cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
-//   },
-// });
+  filename(
+    req: Request,
+    file: Express.Multer.File,
+    cb: (error: Error | null, filename: string) => void
+  ) {
+    cb(null, `${req.query.artwork_id}_${now.getTime()}_${file.originalname}`);
+  },
+});
 
 const uploadNewThumbnail = multer({ storage: newThumbnailStorage });
 
-// const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
+const uploadNewOtherImages = multer({ storage: newOtherImagesStorage });
+
+// Multer configuration for adding new artwork - uses memory storage first
+const addNewArtworkUpload = multer({ storage: multer.memoryStorage() });
 
 async function checkThumbnailPath(
   req: Request,
@@ -85,21 +104,21 @@ async function checkThumbnailPath(
   next();
 }
 
-// async function checkOtherPicturesPath(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   const imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
+async function checkOtherPicturesPath(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const imagePath = `public/images/${req.query.artwork_id}/other_pictures`;
 
-//   await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
-//     if (err) {
-//       await fs.mkdir(imagePath, { recursive: true });
-//     }
-//   });
+  await fs.access(imagePath, fs.constants.F_OK).catch(async (err) => {
+    if (err) {
+      await fs.mkdir(imagePath, { recursive: true });
+    }
+  });
 
-//   next();
-// }
+  next();
+}
 
 router.post(
   "/thumbnail",
@@ -111,23 +130,70 @@ router.post(
   }
 );
 
-// async function removePreviousThumbnail(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   const path = `public/images/${req.query.artwork_id}/thumbnail`;
+// Add new picture to artwork
+router.post(
+  "/picture",
+  verifyAdmin,
+  checkOtherPicturesPath,
+  uploadNewOtherImages.single("picture"),
+  function (req: Request, res: Response) {
+    res.end();
+  }
+);
 
-//   const files = await fs.readdir(path);
+// Replace thumbnail
+router.post(
+  "/replace_thumbnail",
+  verifyAdmin,
+  removePreviousThumbnail,
+  checkThumbnailPath,
+  uploadNewThumbnail.single("thumbnail"),
+  function (req: Request, res: Response) {
+    res.end();
+  }
+);
 
-//   await Promise.all(
-//     files.map((file) => {
-//       fs.unlink(`${path}/${file}`);
-//     })
-//   );
+// Remove picture
+router.post(
+  "/remove_picture",
+  verifyAdmin,
+  async function (req: Request, res: Response) {
+    const { artwork_id, file_name } = req.body;
 
-//   next();
-// }
+    try {
+      // Try thumbnail folder first
+      const thumbnailPath = `public/images/${artwork_id}/thumbnail/${file_name}`;
+      await fs.unlink(thumbnailPath).catch(() => {
+        // If not in thumbnail folder, try other_pictures folder
+        const otherPicturePath = `public/images/${artwork_id}/other_pictures/${file_name}`;
+        return fs.unlink(otherPicturePath);
+      });
+
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error("Error removing picture:", error);
+      res.status(500).json({ error: "Failed to remove picture" });
+    }
+  }
+);
+
+async function removePreviousThumbnail(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const path = `public/images/${req.query.artwork_id}/thumbnail`;
+
+  const files = await fs.readdir(path).catch(() => []);
+
+  await Promise.all(
+    files.map((file) => {
+      return fs.unlink(`${path}/${file}`);
+    })
+  );
+
+  next();
+}
 
 router.get(
   "/unapproved_reviews",
@@ -234,6 +300,84 @@ router.post(
     const { artwork_id } = req.body;
     await removeArtwork(artwork_id);
     res.end();
+  }
+);
+
+router.post(
+  "/add_new_artwork",
+  verifyAdmin,
+  addNewArtworkUpload.fields([
+    { name: "thumbnail", maxCount: 1 },
+    { name: "other_pictures", maxCount: 10 },
+  ]),
+  async function (req: Request, res: Response) {
+    try {
+      // Parse the artwork data from form fields
+      const artworkData = {
+        title: req.body.title,
+        artist_name: req.body.artist_name,
+        price: parseFloat(req.body.price),
+        quantity: parseInt(req.body.quantity),
+        description: req.body.description,
+        category_id: parseInt(req.body.category_id),
+        tags: JSON.parse(req.body.tags || "[]"),
+      };
+
+      // Create the artwork first to get artwork_id
+      const artwork_id = await addNewArtwork(artworkData);
+
+      // Create directories for images
+      await fs.mkdir(`public/images/${artwork_id}/thumbnail`, {
+        recursive: true,
+      });
+      await fs.mkdir(`public/images/${artwork_id}/other_pictures`, {
+        recursive: true,
+      });
+
+      const files = req.files as {
+        thumbnail?: Express.Multer.File[];
+        other_pictures?: Express.Multer.File[];
+      };
+
+      // Thumbnail is required - frontend validation ensures it's always provided
+      if (!files.thumbnail || !files.thumbnail[0]) {
+        return res.status(400).json({ error: "Thumbnail is required" });
+      }
+
+      const thumbnailFile = files.thumbnail[0];
+      const thumbnailPath = `images/${artwork_id}/thumbnail/${artwork_id}_${now.getTime()}_${
+        thumbnailFile.originalname
+      }`;
+      const fullThumbnailPath = `public/${thumbnailPath}`;
+
+      await fs.writeFile(fullThumbnailPath, thumbnailFile.buffer);
+
+      // Save thumbnail path to database
+      await addThumbnailToDatabase(artwork_id, thumbnailPath);
+
+      // Save other pictures if provided
+      if (files.other_pictures && files.other_pictures.length > 0) {
+        const otherPicturePaths: string[] = [];
+
+        for (const file of files.other_pictures) {
+          const picturePath = `images/${artwork_id}/other_pictures/${artwork_id}_${now.getTime()}_${
+            file.originalname
+          }`;
+          const fullPicturePath = `public/${picturePath}`;
+
+          await fs.writeFile(fullPicturePath, file.buffer);
+          otherPicturePaths.push(picturePath);
+        }
+
+        // Save other picture paths to database
+        await addPictures(artwork_id, otherPicturePaths);
+      }
+
+      res.json(artwork_id);
+    } catch (error) {
+      console.error("Error adding new artwork:", error);
+      res.status(500).json({ error: "Failed to add new artwork" });
+    }
   }
 );
 
