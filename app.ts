@@ -11,7 +11,7 @@ import express, {
 import createError from "http-errors";
 import { createRequire } from "module";
 import logger from "morgan";
-import { dirname,join } from "path";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 import config from "./config.js";
@@ -40,7 +40,7 @@ app.use(
 app.use(
   cors({
     origin: [config.server.clientHost],
-    methods: ["POST", "GET"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true,
   })
 );

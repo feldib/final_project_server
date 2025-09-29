@@ -174,19 +174,15 @@ router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
   res.end();
 });
 
-router.post(
-  "/leave_review",
-  verifyUser,
-  async (req: Request, res: Response) => {
-    await leaveReview(
-      req.id!,
-      req.body.artwork_id,
-      req.body.title,
-      req.body.review_text
-    );
-    res.end();
-  }
-);
+router.post("/review", verifyUser, async (req: Request, res: Response) => {
+  await leaveReview(
+    req.id!,
+    req.body.artwork_id,
+    req.body.title,
+    req.body.review_text
+  );
+  res.end();
+});
 
 router.get(
   "/get_orders_of_user",

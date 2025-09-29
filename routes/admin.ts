@@ -204,8 +204,8 @@ router.get(
   }
 );
 
-router.post(
-  "/approve_review",
+router.put(
+  "/review",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { id } = req.body;
@@ -214,11 +214,11 @@ router.post(
   }
 );
 
-router.post(
-  "/remove_review",
+router.delete(
+  "/review",
   verifyAdmin,
   async function (req: Request, res: Response) {
-    const { id } = req.body;
+    const id = parseInt(req.query.id as string);
     await removeReview(id);
     res.end();
   }
@@ -263,11 +263,11 @@ router.get(
   }
 );
 
-router.post(
-  "/is_featured",
+router.get(
+  "/featured/:id",
   verifyAdmin,
   async function (req: Request, res: Response) {
-    const { artwork_id } = req.body;
+    const artwork_id = parseInt(req.params.id);
     const featured = await checkIfFeatured(artwork_id);
     res.json(featured);
   }
@@ -283,28 +283,28 @@ router.post(
   }
 );
 
-router.post(
-  "/remove_from_featured",
+router.delete(
+  "/featured/:id",
   verifyAdmin,
   async function (req: Request, res: Response) {
-    const { artwork_id } = req.body;
+    const artwork_id = parseInt(req.params.id);
     await removeFromFeatured(artwork_id);
     res.end();
   }
 );
 
-router.post(
-  "/remove_artwork",
+router.delete(
+  "/artworks/:id",
   verifyAdmin,
   async function (req: Request, res: Response) {
-    const { artwork_id } = req.body;
+    const artwork_id = parseInt(req.params.id);
     await removeArtwork(artwork_id);
     res.end();
   }
 );
 
 router.post(
-  "/add_new_artwork",
+  "/artwork",
   verifyAdmin,
   addNewArtworkUpload.fields([
     { name: "thumbnail", maxCount: 1 },
@@ -381,8 +381,8 @@ router.post(
   }
 );
 
-router.post(
-  "/update_artwork_data",
+router.put(
+  "/artwork",
   verifyAdmin,
   async function (req: Request, res: Response) {
     const { artwork_id, field_name, value } = req.body;

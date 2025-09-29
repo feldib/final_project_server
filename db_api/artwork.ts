@@ -447,7 +447,7 @@ export const addToFeatured = async (artwork_id: number): Promise<void> => {
 
   const [prev] = await connection.query<RowDataPacket[]>(
     `
-      SELECT id FROM featured WHERE artwork_id = ?
+      SELECT id, removed FROM featured WHERE artwork_id = ?
     `,
     [artwork_id]
   );
@@ -455,9 +455,9 @@ export const addToFeatured = async (artwork_id: number): Promise<void> => {
   if (prev.length) {
     await connection.query(
       `
-        UPDATE featured SET removed = false, date_featured = now() WHERE id = ?
+        UPDATE featured SET removed = false, date_featured = now() WHERE artwork_id = ?
       `,
-      [prev[0].id]
+      [artwork_id]
     );
   } else {
     await connection.query(
@@ -473,8 +473,15 @@ export const addToFeatured = async (artwork_id: number): Promise<void> => {
 
 export const removeFromFeatured = async (artwork_id: number): Promise<void> => {
   const connection = await makeConnection();
-  const featured = await checkIfFeatured(artwork_id);
-  if (featured) {
+
+  const [prev] = await connection.query<RowDataPacket[]>(
+    `
+      SELECT removed FROM featured WHERE artwork_id = ?
+    `,
+    [artwork_id]
+  );
+
+  if (prev.length && !prev[0].removed) {
     await connection.query(
       `
         UPDATE featured SET removed = true WHERE artwork_id = ?
@@ -491,13 +498,14 @@ export const checkIfFeatured = async (artwork_id: number): Promise<boolean> => {
 
   const [prev] = await connection.query<RowDataPacket[]>(
     `
-      SELECT removed FROM featured WHERE artwork_id = ?
-  `,
+      SELECT removed FROM featured WHERE artwork_id = ? ORDER BY date_featured DESC LIMIT 1
+    `,
     [artwork_id]
   );
   connection.end();
-  if (prev.length) {
-    return prev[0].removed ? false : true;
+
+  if (prev.length && prev[0].removed !== null) {
+    return !prev[0].removed;
   } else {
     return false;
   }
