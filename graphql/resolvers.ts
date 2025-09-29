@@ -15,6 +15,7 @@ const rootValue = {
       n?: number;
       offset?: number;
       only_featured?: boolean;
+      admin?: boolean;
     };
   }): Promise<unknown[]> => {
     const {
@@ -27,6 +28,7 @@ const rootValue = {
       n = 10,
       offset = 0,
       only_featured,
+      admin = false,
     } = input || {};
 
     const artworks = await searchArtworks(
@@ -38,7 +40,8 @@ const rootValue = {
       order,
       n.toString(),
       offset.toString(),
-      only_featured?.toString()
+      only_featured?.toString(),
+      admin.toString()
     );
 
     // Add featured status to each artwork

@@ -37,6 +37,7 @@ const schema = buildSchema(`
     n: Int
     offset: Int
     only_featured: Boolean
+    admin: Boolean
   }
 
   type Query {

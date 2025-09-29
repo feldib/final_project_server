@@ -25,7 +25,8 @@ const getSearchQueryData = (
   order?: string,
   n?: string,
   offset?: string,
-  only_featured?: string
+  only_featured?: string,
+  admin?: string
 ): { sql_query: string; data: (string | number)[] } => {
   let sql_query = `
     SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
@@ -100,6 +101,10 @@ const getSearchQueryData = (
     }
   }
 
+  if (admin !== "true") {
+    sql_query += " AND artworks.quantity > 0 ";
+  }
+
   sql_query += " ORDER BY date_added";
   if (order === "asc") {
     sql_query += " ASC, id ASC ";
@@ -127,7 +132,8 @@ export const searchArtworks = async (
   order?: string,
   n?: string,
   offset?: string,
-  only_featured?: string
+  only_featured?: string,
+  admin?: string
 ): Promise<ArtworkWithDetails[]> => {
   const connection = await makeConnection();
 
@@ -140,7 +146,8 @@ export const searchArtworks = async (
     order,
     n,
     offset,
-    only_featured
+    only_featured,
+    admin
   );
 
   const [artworks] = await connection.query<RowDataPacket[]>(
