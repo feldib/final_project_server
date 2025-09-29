@@ -77,17 +77,17 @@ router.put(
 
     try {
       switch (action) {
-        case "increase":
-          await increaseShoppingCartItemQuantity(req.id!, artwork_id);
-          break;
-        case "decrease":
-          await decreaseShoppingCartItemQuantity(req.id!, artwork_id);
-          break;
-        case "replace":
-          await replaceSavedShoppingCart(req.id!, req.body.shopping_cart);
-          break;
-        default:
-          return res.status(HTTP.BAD_REQUEST).json({ error: "Invalid action" });
+      case "increase":
+        await increaseShoppingCartItemQuantity(req.id!, artwork_id);
+        break;
+      case "decrease":
+        await decreaseShoppingCartItemQuantity(req.id!, artwork_id);
+        break;
+      case "replace":
+        await replaceSavedShoppingCart(req.id!, req.body.shopping_cart);
+        break;
+      default:
+        return res.status(HTTP.BAD_REQUEST).json({ error: "Invalid action" });
       }
       res.end();
     } catch {
