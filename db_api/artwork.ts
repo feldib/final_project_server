@@ -277,7 +277,7 @@ export const getDataOfArtwork = async (id: string): Promise<RowDataPacket> => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query<RowDataPacket[]>(
-    `SELECT categories.cname, 
+    `SELECT categories.cname_en, categories.cname_he, categories.cname_hu, 
     artworks.title, artworks.artist_name, artworks.price, 
     artworks.quantity, artworks.category_id, artworks.date_added, 
     artworks.descript 

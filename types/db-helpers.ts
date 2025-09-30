@@ -31,7 +31,7 @@ export interface NewArtwork {
 
 export interface ArtworkWithDetails extends Artwork {
   thumbnail?: string;
-  cname?: string;
+  category?: { cname_en: string; cname_he: string; cname_hu: string } | null;
   tags?: Tag[];
   other_pictures?: string[];
 }
@@ -47,7 +47,7 @@ export interface OrderDataItem {
   user_name: string;
   user_id: number;
   thumbnail?: string;
-  cname?: string;
+  category?: { cname_en: string; cname_he: string; cname_hu: string } | null;
   tags?: Tag[];
 }
 

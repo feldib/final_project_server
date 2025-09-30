@@ -7,7 +7,7 @@ import {
   getNewestArtworks,
   getWishlistedTheMost,
 } from "../db_api/artwork.js";
-import { getCategories } from "../db_api/categories.js";
+import { getAllCategories } from "../db_api/categories.js";
 import { sendLinkToResetPassword } from "../db_api/email.js";
 import { getReviewsOfArtwork } from "../db_api/reviews.js";
 import {
@@ -96,7 +96,7 @@ router.post(
 );
 
 router.get("/categories", async function (req: Request, res: Response) {
-  const categories = await getCategories();
+  const categories = await getAllCategories();
   res.json(categories);
 });
 

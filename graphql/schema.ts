@@ -9,7 +9,9 @@ const schema = buildSchema(`
 
   type Category {
     id: Int!
-    cname: String!
+    cname_en: String!
+    cname_he: String!
+    cname_hu: String!
   }
 
   type Artwork {
@@ -21,7 +23,6 @@ const schema = buildSchema(`
     featured: Boolean
     created_at: String!
     thumbnail: String
-    cname: String
     tags: [Tag!]
     other_pictures: [String!]
     quantity: Int

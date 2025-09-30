@@ -21,14 +21,20 @@ export const getThumbnail = async (artwork_id: number): Promise<string> => {
 
 export const getSpecificCategory = async (
   category_id: number
-): Promise<string> => {
+): Promise<{ cname_en: string; cname_he: string; cname_hu: string } | null> => {
   const connection = await makeConnection();
   const [categories] = await connection.query<RowDataPacket[]>(
-    "SELECT cname FROM categories WHERE id = ?",
+    "SELECT cname_en, cname_he, cname_hu FROM categories WHERE id = ?",
     [category_id]
   );
   connection.end();
-  return categories[0]?.cname || "";
+  return (
+    (categories[0] as {
+      cname_en: string;
+      cname_he: string;
+      cname_hu: string;
+    }) || null
+  );
 };
 
 export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
@@ -45,15 +51,15 @@ export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
   return tags as Tag[];
 };
 
-// Helper function to enhance artwork with thumbnail, category name, and tags
+// Helper function to enhance artwork with thumbnail, category, and tags
 export const completeArtwork = async (
   artwork: RowDataPacket | ArtworkWithDetails
 ): Promise<void> => {
   const thumbnail = await getThumbnail(artwork.id);
-  const cname = await getSpecificCategory(artwork.category_id);
+  const category = await getSpecificCategory(artwork.category_id);
   const tags = await getSpecificTags(artwork.id);
   artwork.thumbnail = thumbnail;
-  artwork.cname = cname;
+  artwork.category = category;
   artwork.tags = tags;
 };
 

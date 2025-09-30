@@ -1,13 +1,12 @@
 import { RowDataPacket } from "mysql2/promise";
 
 import makeConnection from "../connection.js";
-import { Category } from "../types/database.js";
 
-export const getCategories = async (): Promise<Category[]> => {
+export const getAllCategories = async (): Promise<RowDataPacket[]> => {
   const connection = await makeConnection();
-  const [results] = await connection.execute<RowDataPacket[]>(
-    "SELECT id, cname FROM categories WHERE removed = false;"
+  const [categories] = await connection.query<RowDataPacket[]>(
+    "SELECT id, cname_en, cname_he, cname_hu FROM categories WHERE removed = false;"
   );
   connection.end();
-  return results as Category[];
+  return categories;
 };

@@ -1,4 +1,12 @@
 // Database types
+export interface Category {
+  id: number;
+  cname_en: string;
+  cname_he: string;
+  cname_hu: string;
+  removed?: boolean;
+}
+
 export interface User {
   id: number;
   last_name: string;
@@ -27,8 +35,10 @@ export interface Artwork {
 
 export interface Category {
   id: number;
-  cname: string;
-  removed: boolean;
+  cname_en: string;
+  cname_he: string;
+  cname_hu: string;
+  removed?: boolean;
 }
 
 export interface Review {
