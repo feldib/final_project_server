@@ -6,10 +6,20 @@ The server features include:
 
 - **REST API Endpoints:** Structured routes for handling products, users, admins, orders, and more.
 - **GraphQL API:** Flexible and efficient data retrieval for various client needs.
+- **Redis Caching:** High-performance caching layer for improved response times and reduced database load.
+- **DeepL Translation API:** Automatic text translation service supporting multiple languages.
 - **Express Routing:** Clean and modular routing approach for easy scalability and maintenance.
 - **Database Integration:** Robust connection management for reliable data storage and retrieval.
 - **Docker Support:** Containerized setup for streamlined deployment and scalability.
 - **Full-Stack Integration:** A crucial part of the complete full-stack project.
+
+## Main API Routes
+
+- **Core (`/`)**: Authentication, artworks, categories, reviews with Redis caching
+- **Users (`/users`)**: Registration, profiles, wishlist, shopping cart, orders
+- **Admin (`/admin`)**: Artwork management, user administration, analytics
+- **Translation (`/api`)**: DeepL text translation and language support
+- **GraphQL (`/graphql-search`)**: Advanced search with flexible data retrieval
 
 ## Getting Started
 
