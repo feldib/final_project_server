@@ -30,6 +30,15 @@ export const cacheMiddleware = (options: CacheOptions = {}) => {
         return res.status(parsed.statusCode).json(parsed.data);
       }
 
+      // Check if Redis is enabled
+      if (!redisCache.isRedisEnabled()) {
+        console.log(
+          `Cache DISABLED - proceeding without cache for: ${cacheKey}`
+        );
+        next();
+        return;
+      }
+
       console.log(`Cache MISS for key: ${cacheKey}`);
 
       // Override res.json to cache the response

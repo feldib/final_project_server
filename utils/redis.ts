@@ -1,10 +1,19 @@
 import { createClient, RedisClientType } from "redis";
 
 class RedisCache {
-  private client: RedisClientType;
+  private client: RedisClientType | null = null;
   private isConnected: boolean = false;
+  private isEnabled: boolean = false;
 
   constructor() {
+    // Check if Redis is enabled via environment variable
+    this.isEnabled = process.env.ENABLE_REDIS?.toLowerCase() === "true";
+
+    if (!this.isEnabled) {
+      console.log("Redis is disabled via ENABLE_REDIS environment variable");
+      return;
+    }
+
     this.client = createClient({
       url: process.env.REDIS_URL,
       socket: {
@@ -29,6 +38,10 @@ class RedisCache {
   }
 
   async connect(): Promise<void> {
+    if (!this.isEnabled || !this.client) {
+      return;
+    }
+
     try {
       if (!this.isConnected) {
         await this.client.connect();
@@ -39,6 +52,10 @@ class RedisCache {
   }
 
   async disconnect(): Promise<void> {
+    if (!this.isEnabled || !this.client) {
+      return;
+    }
+
     try {
       if (this.isConnected) {
         await this.client.quit();
@@ -49,6 +66,10 @@ class RedisCache {
   }
 
   async get(key: string): Promise<string | null> {
+    if (!this.isEnabled || !this.client) {
+      return null;
+    }
+
     try {
       if (!this.isConnected) {
         return null;
@@ -61,6 +82,10 @@ class RedisCache {
   }
 
   async set(key: string, value: string, ttlSeconds?: number): Promise<boolean> {
+    if (!this.isEnabled || !this.client) {
+      return false;
+    }
+
     try {
       if (!this.isConnected) {
         return false;
@@ -79,6 +104,10 @@ class RedisCache {
   }
 
   async del(key: string): Promise<boolean> {
+    if (!this.isEnabled || !this.client) {
+      return false;
+    }
+
     try {
       if (!this.isConnected) {
         return false;
@@ -92,6 +121,10 @@ class RedisCache {
   }
 
   async exists(key: string): Promise<boolean> {
+    if (!this.isEnabled || !this.client) {
+      return false;
+    }
+
     try {
       if (!this.isConnected) {
         return false;
@@ -105,6 +138,10 @@ class RedisCache {
   }
 
   async keys(pattern: string): Promise<string[]> {
+    if (!this.isEnabled || !this.client) {
+      return [];
+    }
+
     try {
       if (!this.isConnected) {
         return [];
@@ -117,6 +154,10 @@ class RedisCache {
   }
 
   async flushAll(): Promise<boolean> {
+    if (!this.isEnabled || !this.client) {
+      return false;
+    }
+
     try {
       if (!this.isConnected) {
         return false;
@@ -130,7 +171,11 @@ class RedisCache {
   }
 
   isHealthy(): boolean {
-    return this.isConnected;
+    return this.isEnabled && this.isConnected;
+  }
+
+  isRedisEnabled(): boolean {
+    return this.isEnabled;
   }
 }
 
