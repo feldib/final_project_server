@@ -19,6 +19,7 @@ import adminRouter from "./routes/admin.js";
 import graphqSearchRouter from "./routes/graphql.js";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
+import redisCache from "./utils/redis.js";
 
 const require = createRequire(import.meta.url);
 const sessions = require("express-session");
@@ -27,6 +28,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app: Application = express();
+
+redisCache.connect().catch((err) => {
+  console.error("Failed to connect to Redis:", err);
+});
 
 app.use(
   sessions({
