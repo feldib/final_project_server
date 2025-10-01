@@ -18,6 +18,7 @@ import config from "./config.js";
 import adminRouter from "./routes/admin.js";
 import graphqSearchRouter from "./routes/graphql.js";
 import indexRouter from "./routes/index.js";
+import translateRouter from "./routes/translate.js";
 import usersRouter from "./routes/users.js";
 import redisCache from "./utils/redis.js";
 
@@ -59,6 +60,7 @@ app.use(express.static(join(__dirname, "../public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
+app.use("/deepl", translateRouter);
 app.use("/graphql-search", graphqSearchRouter);
 
 // catch 404 and forward to error handler

@@ -42,6 +42,18 @@ export interface ResetPasswordRequest {
   email: string;
 }
 
+// DeepL API related types
+export interface TranslateRequest {
+  text: string;
+  targetLanguage: string;
+}
+
+export interface TranslateResponse {
+  translatedText: string;
+  sourceLanguage?: string;
+}
+// DeepL API related types END
+
 export interface StandardResponse {
   message: string;
 }
