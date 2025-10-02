@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 import { ShoppingCartItem } from "../types/database.js";
 import { getQuantityOfArtworkInStock } from "./artwork.js";
 import { completeArtwork } from "./helpers.js";

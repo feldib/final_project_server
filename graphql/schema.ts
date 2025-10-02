@@ -7,11 +7,14 @@ const schema = buildSchema(`
     tname: String!
   }
 
+  type CategoryTranslation {
+    languageCode: String!
+    name: String!
+  }
+
   type Category {
     id: Int!
-    cname_en: String!
-    cname_he: String!
-    cname_hu: String!
+    translations: [CategoryTranslation!]!
   }
 
   type Artwork {

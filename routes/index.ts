@@ -7,7 +7,7 @@ import {
   getNewestArtworks,
   getWishlistedTheMost,
 } from "../db_api/artwork.js";
-import { getAllCategories } from "../db_api/categories.js";
+import { getAllCategoriesWithTranslations } from "../db_api/categories.js";
 import { sendLinkToResetPassword } from "../db_api/email.js";
 import { getReviewsOfArtwork } from "../db_api/reviews.js";
 import {
@@ -100,7 +100,7 @@ router.get(
   "/categories",
   cacheMiddleware({ ttlSeconds: 600 }),
   async function (req: Request, res: Response) {
-    const categories = await getAllCategories();
+    const categories = await getAllCategoriesWithTranslations();
     res.json(categories);
   }
 );

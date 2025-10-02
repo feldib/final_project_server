@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 
 import { Config } from "./types/config.js";
-import { DATABASE,SERVER } from "./utils/constants.js";
+import { DATABASE, SERVER } from "./utils/constants.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -30,6 +30,11 @@ const config: Config = {
     password: process.env.DB_PASSWORD || "",
     name: process.env.DB_NAME || "ecommerce",
     charset: process.env.DB_CHARSET || DATABASE.DEFAULT_CHARSET,
+  },
+
+  // MongoDB configuration
+  mongodb: {
+    url: process.env.MONGODB_URL || "",
   },
 
   // Email service configuration

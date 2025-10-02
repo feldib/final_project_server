@@ -1,6 +1,6 @@
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 
 export const addTag = async (tag_name: string): Promise<number> => {
   const connection = await makeConnection();

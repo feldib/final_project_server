@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 import { Tag } from "../types/database.js";
 import { ArtworkWithDetails } from "../types/db-helpers.js";
 

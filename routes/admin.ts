@@ -2,7 +2,6 @@ import { Request, Response, Router } from "express";
 import fs from "fs/promises";
 import multer from "multer";
 
-import makeConnection from "../connection.js";
 import {
   addNewArtwork,
   addPictures,
@@ -22,6 +21,7 @@ import {
 } from "../db_api/reviews.js";
 import { getRegisteredUsers } from "../db_api/user.js";
 import { verifyAdmin } from "../db_api/verify.js";
+import makeConnection from "../mysqlConnection.js";
 
 const router = Router();
 

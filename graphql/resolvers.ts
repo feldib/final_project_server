@@ -1,4 +1,5 @@
 import { checkIfFeatured, searchArtworks } from "../db_api/artwork.js";
+import { getAllCategoriesWithTranslations } from "../db_api/categories.js";
 
 // GraphQL resolvers
 const rootValue = {
@@ -58,6 +59,21 @@ const rootValue = {
     );
 
     return artworksWithFeatured;
+  },
+
+  categories: async (): Promise<unknown[]> => {
+    const categories = await getAllCategoriesWithTranslations();
+
+    // Transform to match GraphQL schema
+    return categories.map((category) => ({
+      id: category.id,
+      translations: Object.entries(category.translations).map(
+        ([languageCode, name]) => ({
+          languageCode,
+          name,
+        })
+      ),
+    }));
   },
 };
 
