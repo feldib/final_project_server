@@ -1,6 +1,10 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 
+import {
+  CategoryTranslation,
+  LanguageCode,
+} from "../mongodb/CategoryTranslationModel.js";
 import makeConnection from "../mysqlConnection.js";
 import { Tag } from "../types/database.js";
 import { ArtworkWithDetails } from "../types/db-helpers.js";
@@ -21,20 +25,35 @@ export const getThumbnail = async (artwork_id: number): Promise<string> => {
 
 export const getSpecificCategory = async (
   category_id: number
-): Promise<{ cname_en: string; cname_he: string; cname_hu: string } | null> => {
+): Promise<{ [key in LanguageCode]?: string } | null> => {
+  // First check if the category exists in the SQL database
   const connection = await makeConnection();
   const [categories] = await connection.query<RowDataPacket[]>(
-    "SELECT cname_en, cname_he, cname_hu FROM categories WHERE id = ?",
+    "SELECT id FROM categories WHERE id = ? AND removed = false",
     [category_id]
   );
   connection.end();
-  return (
-    (categories[0] as {
-      cname_en: string;
-      cname_he: string;
-      cname_hu: string;
-    }) || null
-  );
+
+  if (categories.length === 0) {
+    return null;
+  }
+
+  // Get translations from MongoDB
+  const translations = await CategoryTranslation.find({
+    categoryId: category_id,
+  });
+
+  if (translations.length === 0) {
+    return {};
+  }
+
+  // Convert to the expected format
+  const result: { [key in LanguageCode]?: string } = {};
+  translations.forEach((translation) => {
+    result[translation.languageCode] = translation.name;
+  });
+
+  return result;
 };
 
 export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
