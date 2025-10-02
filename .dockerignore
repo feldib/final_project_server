@@ -1,13 +1,30 @@
+# Dependencies
 node_modules
-npm-debug.log
-Dockerfile
-.dockerignore
-.env
-.env.*
-.git
-.gitignore
-.vscode
-coverage
-*.md
+
+# Build outputs
 dist
 build
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Environment and secrets
+.env
+.env.*
+
+# Version control
+.git
+.gitignore
+
+# Logs
+npm-debug.log
+
+# Development tools
+.vscode
+
+# Testing
+coverage
+
+# Documentation
+*.md
