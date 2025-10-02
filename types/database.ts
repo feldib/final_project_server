@@ -1,9 +1,6 @@
 // Database types
 export interface Category {
   id: number;
-  cname_en: string;
-  cname_he: string;
-  cname_hu: string;
   removed?: boolean;
 }
 
@@ -31,14 +28,6 @@ export interface Artwork {
   updated_at: Date;
   thumbnail_path?: string;
   other_pictures?: string[];
-}
-
-export interface Category {
-  id: number;
-  cname_en: string;
-  cname_he: string;
-  cname_hu: string;
-  removed?: boolean;
 }
 
 export interface Review {

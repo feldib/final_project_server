@@ -75,10 +75,10 @@ export const completeArtwork = async (
   artwork: RowDataPacket | ArtworkWithDetails
 ): Promise<void> => {
   const thumbnail = await getThumbnail(artwork.id);
-  const category = await getSpecificCategory(artwork.category_id);
+  const categoryTranslations = await getSpecificCategory(artwork.category_id);
   const tags = await getSpecificTags(artwork.id);
   artwork.thumbnail = thumbnail;
-  artwork.category = category;
+  artwork.category = { translations: categoryTranslations || {} };
   artwork.tags = tags;
 };
 

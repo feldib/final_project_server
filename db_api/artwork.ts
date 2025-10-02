@@ -11,6 +11,7 @@ import {
 import {
   addThumbnail,
   completeArtwork,
+  getSpecificCategory,
   getSpecificTags,
   getThumbnail,
 } from "./helpers.js";
@@ -277,19 +278,21 @@ export const getDataOfArtwork = async (id: string): Promise<RowDataPacket> => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query<RowDataPacket[]>(
-    `SELECT categories.cname_en, categories.cname_he, categories.cname_hu, 
+    `SELECT 
     artworks.title, artworks.artist_name, artworks.price, 
     artworks.quantity, artworks.category_id, artworks.date_added, 
     artworks.descript 
     FROM artworks 
-    LEFT JOIN categories ON artworks.category_id = categories.id
     WHERE artworks.id=? 
-    AND categories.removed = false`,
+    AND artworks.removed = false`,
     [id]
   );
 
   const artwork = artworks[0];
   if (artwork) {
+    const categoryTranslations = await getSpecificCategory(artwork.category_id);
+    artwork.category = { translations: categoryTranslations || {} };
+
     const tags = await getSpecificTags(parseInt(id));
     artwork.thumbnail = await getThumbnail(parseInt(id));
     artwork.tags = tags;
