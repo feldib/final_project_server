@@ -1,8 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-// Supported languages
-export const SUPPORTED_LANGUAGES = ["en", "he", "hu"] as const;
-export type LanguageCode = (typeof SUPPORTED_LANGUAGES)[number];
+import { LanguageCode, SUPPORTED_LANGUAGES } from "../utils/constants.js";
 
 // Category Translation Interface
 export interface CategoryTranslationInterface extends Document {

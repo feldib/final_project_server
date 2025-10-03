@@ -20,3 +20,7 @@ export const DATABASE = {
   DEFAULT_DB_PORT: 3306,
   DEFAULT_CHARSET: "utf8mb4",
 } as const;
+
+// Supported languages
+export const SUPPORTED_LANGUAGES = ["en", "he", "hu"] as const;
+export type LanguageCode = (typeof SUPPORTED_LANGUAGES)[number];
