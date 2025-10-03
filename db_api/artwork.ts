@@ -29,97 +29,85 @@ const getSearchQueryData = (
   only_featured?: string,
   admin?: string
 ): { sql_query: string; data: (string | number)[] } => {
-  let sql_query = `
+  const selectClause = `
     SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
   `;
-  if (only_featured === "true") {
-    sql_query += `
-     RIGHT JOIN featured
-     ON featured.artwork_id = artworks.id
-     WHERE featured.removed=false
-     AND `;
-  } else {
-    sql_query += " WHERE ";
-  }
 
-  sql_query += " artworks.removed=false ";
-
+  const whereClauses: string[] = [];
   const data: (string | number)[] = [];
 
-  let needs_and = false;
-  if (
-    min ||
-    max ||
-    title ||
-    artist_name ||
-    (category_id && category_id.trim() !== "")
-  ) {
-    sql_query += " AND ";
-
-    if (min && max) {
-      sql_query += " price BETWEEN ? AND ? ";
-      data.push(min, max);
-      needs_and = true;
-    } else if (min) {
-      sql_query += " price > ? ";
-      data.push(parseInt(min));
-      needs_and = true;
-    } else if (max) {
-      sql_query += " price < ? ";
-      data.push(parseInt(max));
-      needs_and = true;
-    }
-
-    if (title) {
-      if (needs_and) {
-        sql_query += " AND ";
-      } else {
-        needs_and = true;
-      }
-      sql_query += " LOWER(title) LIKE ? ";
-      data.push(`%${title.toLowerCase()}%`);
-      needs_and = true;
-    }
-
-    if (artist_name) {
-      if (needs_and) {
-        sql_query += " AND ";
-      } else {
-        needs_and = true;
-      }
-      sql_query += " LOWER(artist_name) LIKE ? ";
-      data.push(`%${artist_name.toLowerCase()}%`);
-    }
-
-    if (category_id && category_id.trim() !== "") {
-      if (needs_and) {
-        sql_query += " AND ";
-      } else {
-        needs_and = true;
-      }
-      sql_query += " category_id = ? ";
-      data.push(parseInt(category_id));
-    }
+  let joinClause = "";
+  if (only_featured === "true") {
+    joinClause = `
+     RIGHT JOIN featured ON featured.artwork_id = artworks.id
+    `;
+    whereClauses.push("featured.removed = false");
   }
 
+  // Always include the base condition
+  whereClauses.push("artworks.removed = false");
+
+  // Add price range filters
+  if (min && max) {
+    whereClauses.push("price BETWEEN ? AND ?");
+    data.push(min, max);
+  } else if (min) {
+    whereClauses.push("price > ?");
+    data.push(parseInt(min));
+  } else if (max) {
+    whereClauses.push("price < ?");
+    data.push(parseInt(max));
+  }
+
+  // Add title filter
+  if (title) {
+    whereClauses.push("LOWER(title) LIKE ?");
+    data.push(`%${title.toLowerCase()}%`);
+  }
+
+  // Add artist name filter
+  if (artist_name) {
+    whereClauses.push("LOWER(artist_name) LIKE ?");
+    data.push(`%${artist_name.toLowerCase()}%`);
+  }
+
+  // Add category filter
+  if (category_id && category_id.trim() !== "") {
+    whereClauses.push("category_id = ?");
+    data.push(parseInt(category_id));
+  }
+
+  // Only show items with quantity > 0 for non-admin users
   if (admin !== "true") {
-    sql_query += " AND artworks.quantity > 0 ";
+    whereClauses.push("artworks.quantity > 0");
   }
 
-  sql_query += " ORDER BY date_added";
+  // Build the order by clause
+  let orderClause = " ORDER BY date_added";
   if (order === "asc") {
-    sql_query += " ASC, id ASC ";
+    orderClause += " ASC, id ASC";
   } else if (order === "desc") {
-    sql_query += " DESC, id DESC ";
+    orderClause += " DESC, id DESC";
   }
 
-  sql_query += " LIMIT ? ";
+  // Add pagination
+  let limitOffsetClause = " LIMIT ?";
   data.push(parseInt(n || "10"));
 
   if (offset) {
-    sql_query += " OFFSET ? ";
+    limitOffsetClause += " OFFSET ?";
     data.push(parseInt(offset));
   }
+
+  // Combine all parts to form the final query
+  const sql_query = [
+    selectClause,
+    joinClause,
+    "WHERE",
+    whereClauses.join(" AND "),
+    orderClause,
+    limitOffsetClause,
+  ].join(" ");
 
   return { sql_query, data };
 };
