@@ -3,9 +3,9 @@ import { RowDataPacket } from "mysql2/promise";
 import {
   CategoryTranslation,
   CategoryTranslationInterface,
-  LanguageCode,
 } from "../mongodb/CategoryTranslationModel.js";
 import makeConnection from "../mysqlConnection.js";
+import { LanguageCode } from "../utils/constants.js";
 
 // Interface for category with translations
 export interface CategoryWithTranslations {

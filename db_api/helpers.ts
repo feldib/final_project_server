@@ -1,13 +1,11 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 
-import {
-  CategoryTranslation,
-  LanguageCode,
-} from "../mongodb/CategoryTranslationModel.js";
+import { CategoryTranslation } from "../mongodb/CategoryTranslationModel.js";
 import makeConnection from "../mysqlConnection.js";
 import { Tag } from "../types/database.js";
 import { ArtworkWithDetails } from "../types/db-helpers.js";
+import { LanguageCode } from "../utils/constants.js";
 
 // Helper functions used by multiple files
 
