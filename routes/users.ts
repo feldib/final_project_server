@@ -69,43 +69,45 @@ router.post(
   }
 );
 
-router.post(
-  "/remove_item_from_shopping_cart",
+router.put(
+  "/shopping_cart",
   verifyUser,
   async function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
+    const { action, artwork_id } = req.body;
+
+    try {
+      switch (action) {
+      case "increase":
+        await increaseShoppingCartItemQuantity(req.id!, artwork_id);
+        break;
+      case "decrease":
+        await decreaseShoppingCartItemQuantity(req.id!, artwork_id);
+        break;
+      case "replace":
+        await replaceSavedShoppingCart(req.id!, req.body.shopping_cart);
+        break;
+      default:
+        return res.status(HTTP.BAD_REQUEST).json({ error: "Invalid action" });
+      }
+      res.end();
+    } catch {
+      res.status(HTTP.BAD_REQUEST).end();
+    }
+  }
+);
+
+router.delete(
+  "/shopping_cart/:artwork_id",
+  verifyUser,
+  async function (req: Request, res: Response) {
+    const artwork_id = parseInt(req.params.artwork_id);
     await setShoppingCartItemQuantityToZero(req.id!, artwork_id);
     res.end();
   }
 );
 
-router.post(
-  "/increase_shopping_cart_item_quantity",
-  verifyUser,
-  function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
-    increaseShoppingCartItemQuantity(req.id!, artwork_id)
-      .then(() => {
-        res.end();
-      })
-      .catch(() => {
-        res.status(HTTP.BAD_REQUEST).end();
-      });
-  }
-);
-
-router.post(
-  "/decrease_shopping_cart_item_quantity",
-  verifyUser,
-  async function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
-    await decreaseShoppingCartItemQuantity(req.id!, artwork_id);
-    res.end();
-  }
-);
-
 router.get(
-  "/wishlisted",
+  "/wishlist",
   verifyUser,
   async function (req: Request, res: Response) {
     const n = req.query.n as string;
@@ -114,8 +116,18 @@ router.get(
   }
 );
 
+router.get(
+  "/wishlist/:artwork_id",
+  verifyUser,
+  async function (req: Request, res: Response) {
+    const artwork_id = parseInt(req.params.artwork_id);
+    const is_wishlisted = await checkIfWishlisted(req.id!, artwork_id);
+    res.json(is_wishlisted);
+  }
+);
+
 router.post(
-  "/wishlisted",
+  "/wishlist",
   verifyUser,
   async function (req: Request, res: Response) {
     const artwork_id = req.body.artwork_id;
@@ -124,23 +136,13 @@ router.post(
   }
 );
 
-router.post(
-  "/remove_from_wishlisted",
+router.delete(
+  "/wishlist/:artwork_id",
   verifyUser,
   async function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
+    const artwork_id = parseInt(req.params.artwork_id);
     await removeFromWishlisted(req.id!, artwork_id);
     res.end();
-  }
-);
-
-router.post(
-  "/is_wishlisted",
-  verifyUser,
-  async function (req: Request, res: Response) {
-    const artwork_id = req.body.artwork_id;
-    const is_wishlisted = await checkIfWishlisted(req.id!, artwork_id);
-    res.json(is_wishlisted);
   }
 );
 
@@ -174,19 +176,15 @@ router.post("/make_order", verifyUser, async (req: Request, res: Response) => {
   res.end();
 });
 
-router.post(
-  "/leave_review",
-  verifyUser,
-  async (req: Request, res: Response) => {
-    await leaveReview(
-      req.id!,
-      req.body.artwork_id,
-      req.body.title,
-      req.body.review_text
-    );
-    res.end();
-  }
-);
+router.post("/review", verifyUser, async (req: Request, res: Response) => {
+  await leaveReview(
+    req.id!,
+    req.body.artwork_id,
+    req.body.title,
+    req.body.review_text
+  );
+  res.end();
+});
 
 router.get(
   "/get_orders_of_user",
@@ -203,15 +201,6 @@ router.get(
   async function (req: Request, res: Response) {
     const reviewData = await getReviewsOfUser(req.id!);
     res.json(reviewData);
-  }
-);
-
-router.post(
-  "/replace_saved_shopping_cart",
-  verifyUser,
-  async (req: Request, res: Response) => {
-    await replaceSavedShoppingCart(req.id!, req.body.shopping_cart);
-    res.end();
   }
 );
 

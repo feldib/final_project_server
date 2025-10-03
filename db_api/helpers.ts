@@ -1,9 +1,11 @@
 import fs from "fs/promises";
 import { RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import { CategoryTranslation } from "../mongodb/CategoryTranslationModel.js";
+import makeConnection from "../mysqlConnection.js";
 import { Tag } from "../types/database.js";
 import { ArtworkWithDetails } from "../types/db-helpers.js";
+import { LanguageCode } from "../utils/constants.js";
 
 // Helper functions used by multiple files
 
@@ -21,14 +23,35 @@ export const getThumbnail = async (artwork_id: number): Promise<string> => {
 
 export const getSpecificCategory = async (
   category_id: number
-): Promise<string> => {
+): Promise<{ [key in LanguageCode]?: string } | null> => {
+  // First check if the category exists in the SQL database
   const connection = await makeConnection();
   const [categories] = await connection.query<RowDataPacket[]>(
-    "SELECT cname FROM categories WHERE id = ?",
+    "SELECT id FROM categories WHERE id = ? AND removed = false",
     [category_id]
   );
   connection.end();
-  return categories[0]?.cname || "";
+
+  if (categories.length === 0) {
+    return null;
+  }
+
+  // Get translations from MongoDB
+  const translations = await CategoryTranslation.find({
+    categoryId: category_id,
+  });
+
+  if (translations.length === 0) {
+    return {};
+  }
+
+  // Convert to the expected format
+  const result: { [key in LanguageCode]?: string } = {};
+  translations.forEach((translation) => {
+    result[translation.languageCode] = translation.name;
+  });
+
+  return result;
 };
 
 export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
@@ -45,15 +68,15 @@ export const getSpecificTags = async (artwork_id: number): Promise<Tag[]> => {
   return tags as Tag[];
 };
 
-// Helper function to enhance artwork with thumbnail, category name, and tags
+// Helper function to enhance artwork with thumbnail, category, and tags
 export const completeArtwork = async (
   artwork: RowDataPacket | ArtworkWithDetails
 ): Promise<void> => {
   const thumbnail = await getThumbnail(artwork.id);
-  const cname = await getSpecificCategory(artwork.category_id);
+  const categoryTranslations = await getSpecificCategory(artwork.category_id);
   const tags = await getSpecificTags(artwork.id);
   artwork.thumbnail = thumbnail;
-  artwork.cname = cname;
+  artwork.category = { translations: categoryTranslations || {} };
   artwork.tags = tags;
 };
 

@@ -7,9 +7,14 @@ const schema = buildSchema(`
     tname: String!
   }
 
+  type CategoryTranslation {
+    languageCode: String!
+    name: String!
+  }
+
   type Category {
     id: Int!
-    cname: String!
+    translations: [CategoryTranslation!]!
   }
 
   type Artwork {
@@ -21,7 +26,6 @@ const schema = buildSchema(`
     featured: Boolean
     created_at: String!
     thumbnail: String
-    cname: String
     tags: [Tag!]
     other_pictures: [String!]
     quantity: Int
@@ -37,6 +41,7 @@ const schema = buildSchema(`
     n: Int
     offset: Int
     only_featured: Boolean
+    admin: Boolean
   }
 
   type Query {

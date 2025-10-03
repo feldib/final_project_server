@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 import { Tag } from "../types/database.js";
 import {
   ArtworkField,
@@ -11,6 +11,7 @@ import {
 import {
   addThumbnail,
   completeArtwork,
+  getSpecificCategory,
   getSpecificTags,
   getThumbnail,
 } from "./helpers.js";
@@ -25,95 +26,88 @@ const getSearchQueryData = (
   order?: string,
   n?: string,
   offset?: string,
-  only_featured?: string
+  only_featured?: string,
+  admin?: string
 ): { sql_query: string; data: (string | number)[] } => {
-  let sql_query = `
+  const selectClause = `
     SELECT artworks.id as 'id', title, artist_name, price, quantity, category_id, date_added FROM artworks
   `;
-  if (only_featured === "true") {
-    sql_query += `
-     RIGHT JOIN featured
-     ON featured.artwork_id = artworks.id
-     WHERE featured.removed=false
-     AND `;
-  } else {
-    sql_query += " WHERE ";
-  }
 
-  sql_query += " artworks.removed=false ";
-
+  const whereClauses: string[] = [];
   const data: (string | number)[] = [];
 
-  let needs_and = false;
-  if (
-    min ||
-    max ||
-    title ||
-    artist_name ||
-    (category_id && category_id.trim() !== "")
-  ) {
-    sql_query += " AND ";
-
-    if (min && max) {
-      sql_query += " price BETWEEN ? AND ? ";
-      data.push(min, max);
-      needs_and = true;
-    } else if (min) {
-      sql_query += " price > ? ";
-      data.push(parseInt(min));
-      needs_and = true;
-    } else if (max) {
-      sql_query += " price < ? ";
-      data.push(parseInt(max));
-      needs_and = true;
-    }
-
-    if (title) {
-      if (needs_and) {
-        sql_query += " AND ";
-      } else {
-        needs_and = true;
-      }
-      sql_query += " LOWER(title) LIKE ? ";
-      data.push(`%${title.toLowerCase()}%`);
-      needs_and = true;
-    }
-
-    if (artist_name) {
-      if (needs_and) {
-        sql_query += " AND ";
-      } else {
-        needs_and = true;
-      }
-      sql_query += " LOWER(artist_name) LIKE ? ";
-      data.push(`%${artist_name.toLowerCase()}%`);
-    }
-
-    if (category_id && category_id.trim() !== "") {
-      if (needs_and) {
-        sql_query += " AND ";
-      } else {
-        needs_and = true;
-      }
-      sql_query += " category_id = ? ";
-      data.push(parseInt(category_id));
-    }
+  let joinClause = "";
+  if (only_featured === "true") {
+    joinClause = `
+     RIGHT JOIN featured ON featured.artwork_id = artworks.id
+    `;
+    whereClauses.push("featured.removed = false");
   }
 
-  sql_query += " ORDER BY date_added";
+  // Always include the base condition
+  whereClauses.push("artworks.removed = false");
+
+  // Add price range filters
+  if (min && max) {
+    whereClauses.push("price BETWEEN ? AND ?");
+    data.push(min, max);
+  } else if (min) {
+    whereClauses.push("price > ?");
+    data.push(parseInt(min));
+  } else if (max) {
+    whereClauses.push("price < ?");
+    data.push(parseInt(max));
+  }
+
+  // Add title filter
+  if (title) {
+    whereClauses.push("LOWER(title) LIKE ?");
+    data.push(`%${title.toLowerCase()}%`);
+  }
+
+  // Add artist name filter
+  if (artist_name) {
+    whereClauses.push("LOWER(artist_name) LIKE ?");
+    data.push(`%${artist_name.toLowerCase()}%`);
+  }
+
+  // Add category filter
+  if (category_id && category_id.trim() !== "") {
+    whereClauses.push("category_id = ?");
+    data.push(parseInt(category_id));
+  }
+
+  // Only show items with quantity > 0 for non-admin users
+  if (admin !== "true") {
+    whereClauses.push("artworks.quantity > 0");
+  }
+
+  // Build the order by clause
+  let orderClause = " ORDER BY date_added";
   if (order === "asc") {
-    sql_query += " ASC, id ASC ";
+    orderClause += " ASC, id ASC";
   } else if (order === "desc") {
-    sql_query += " DESC, id DESC ";
+    orderClause += " DESC, id DESC";
   }
 
-  sql_query += " LIMIT ? ";
+  // Add pagination
+  let limitOffsetClause = " LIMIT ?";
   data.push(parseInt(n || "10"));
 
   if (offset) {
-    sql_query += " OFFSET ? ";
+    limitOffsetClause += " OFFSET ?";
     data.push(parseInt(offset));
   }
+
+  // Combine all parts to form the final query
+  const sql_query = [
+    selectClause,
+    joinClause,
+    "WHERE",
+    whereClauses.join(" AND "),
+    orderClause,
+    limitOffsetClause,
+  ].join(" ");
 
   return { sql_query, data };
 };
@@ -127,7 +121,8 @@ export const searchArtworks = async (
   order?: string,
   n?: string,
   offset?: string,
-  only_featured?: string
+  only_featured?: string,
+  admin?: string
 ): Promise<ArtworkWithDetails[]> => {
   const connection = await makeConnection();
 
@@ -140,7 +135,8 @@ export const searchArtworks = async (
     order,
     n,
     offset,
-    only_featured
+    only_featured,
+    admin
   );
 
   const [artworks] = await connection.query<RowDataPacket[]>(
@@ -270,19 +266,21 @@ export const getDataOfArtwork = async (id: string): Promise<RowDataPacket> => {
   const connection = await makeConnection();
 
   const [artworks] = await connection.query<RowDataPacket[]>(
-    `SELECT categories.cname, 
+    `SELECT 
     artworks.title, artworks.artist_name, artworks.price, 
     artworks.quantity, artworks.category_id, artworks.date_added, 
     artworks.descript 
     FROM artworks 
-    LEFT JOIN categories ON artworks.category_id = categories.id
     WHERE artworks.id=? 
-    AND categories.removed = false`,
+    AND artworks.removed = false`,
     [id]
   );
 
   const artwork = artworks[0];
   if (artwork) {
+    const categoryTranslations = await getSpecificCategory(artwork.category_id);
+    artwork.category = { translations: categoryTranslations || {} };
+
     const tags = await getSpecificTags(parseInt(id));
     artwork.thumbnail = await getThumbnail(parseInt(id));
     artwork.tags = tags;
@@ -333,7 +331,9 @@ export const getQuantityOfArtworkInStock = async (
   return res[0].quantity;
 };
 
-export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
+export const addNewArtwork = async (
+  artwork: Partial<NewArtwork>
+): Promise<number> => {
   const connection = await makeConnection();
 
   const [insertResults] = await connection.query<ResultSetHeader>(
@@ -353,19 +353,11 @@ export const addNewArtwork = async (artwork: NewArtwork): Promise<void> => {
 
   const artwork_id = insertResults.insertId;
 
-  await addArtworkTags(artwork_id, artwork.tags);
-
-  await connection.query(
-    `
-      INSERT INTO artwork_pictures(artwork_id, picture_path, is_thumbnail)
-      VALUES (?, ?, ?)
-    `,
-    [artwork_id, artwork.thumbnail, true]
-  );
+  await addArtworkTags(artwork_id, artwork.tags!);
 
   connection.end();
 
-  await addPictures(artwork_id, artwork.other_pictures);
+  return artwork_id;
 };
 
 export const updateArtworkData = async (
@@ -453,7 +445,7 @@ export const addToFeatured = async (artwork_id: number): Promise<void> => {
 
   const [prev] = await connection.query<RowDataPacket[]>(
     `
-      SELECT id FROM featured WHERE artwork_id = ?
+      SELECT id, removed FROM featured WHERE artwork_id = ?
     `,
     [artwork_id]
   );
@@ -461,9 +453,9 @@ export const addToFeatured = async (artwork_id: number): Promise<void> => {
   if (prev.length) {
     await connection.query(
       `
-        UPDATE featured SET removed = false, date_featured = now() WHERE id = ?
+        UPDATE featured SET removed = false, date_featured = now() WHERE artwork_id = ?
       `,
-      [prev[0].id]
+      [artwork_id]
     );
   } else {
     await connection.query(
@@ -479,8 +471,15 @@ export const addToFeatured = async (artwork_id: number): Promise<void> => {
 
 export const removeFromFeatured = async (artwork_id: number): Promise<void> => {
   const connection = await makeConnection();
-  const featured = await checkIfFeatured(artwork_id);
-  if (featured) {
+
+  const [prev] = await connection.query<RowDataPacket[]>(
+    `
+      SELECT removed FROM featured WHERE artwork_id = ?
+    `,
+    [artwork_id]
+  );
+
+  if (prev.length && !prev[0].removed) {
     await connection.query(
       `
         UPDATE featured SET removed = true WHERE artwork_id = ?
@@ -497,13 +496,14 @@ export const checkIfFeatured = async (artwork_id: number): Promise<boolean> => {
 
   const [prev] = await connection.query<RowDataPacket[]>(
     `
-      SELECT removed FROM featured WHERE artwork_id = ?
-  `,
+      SELECT removed FROM featured WHERE artwork_id = ? ORDER BY date_featured DESC LIMIT 1
+    `,
     [artwork_id]
   );
   connection.end();
-  if (prev.length) {
-    return prev[0].removed ? false : true;
+
+  if (prev.length && prev[0].removed !== null) {
+    return !prev[0].removed;
   } else {
     return false;
   }

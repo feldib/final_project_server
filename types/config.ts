@@ -27,9 +27,14 @@ export interface EmailConfig {
   };
 }
 
+export interface MongoDBConfig {
+  url: string;
+}
+
 export interface Config {
   server: ServerConfig;
   security: SecurityConfig;
   database: DatabaseConfig;
+  mongodb: MongoDBConfig;
   email: EmailConfig;
 }

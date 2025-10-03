@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 
 export const getReviewsOfArtwork = async (
   artwork_id: string

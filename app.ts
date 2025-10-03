@@ -11,14 +11,20 @@ import express, {
 import createError from "http-errors";
 import { createRequire } from "module";
 import logger from "morgan";
-import { dirname,join } from "path";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 import config from "./config.js";
+import {
+  connectToMongoDB,
+  disconnectFromMongoDB,
+} from "./mongodbConnection.js";
 import adminRouter from "./routes/admin.js";
 import graphqSearchRouter from "./routes/graphql.js";
 import indexRouter from "./routes/index.js";
+import translateRouter from "./routes/translate.js";
 import usersRouter from "./routes/users.js";
+import redisCache from "./utils/redis.js";
 
 const require = createRequire(import.meta.url);
 const sessions = require("express-session");
@@ -27,6 +33,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app: Application = express();
+
+redisCache.connect().catch((err) => {
+  console.error("Failed to connect to Redis:", err);
+});
+
+connectToMongoDB().catch((err) => {
+  console.error("Failed to connect to MongoDB:", err);
+});
 
 app.use(
   sessions({
@@ -40,7 +54,7 @@ app.use(
 app.use(
   cors({
     origin: [config.server.clientHost],
-    methods: ["POST", "GET"],
+    methods: ["POST", "GET", "PUT", "DELETE"],
     credentials: true,
   })
 );
@@ -54,6 +68,7 @@ app.use(express.static(join(__dirname, "../public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
+app.use("/deepl", translateRouter);
 app.use("/graphql-search", graphqSearchRouter);
 
 // catch 404 and forward to error handler
@@ -79,5 +94,31 @@ app.use(function (
     error: req.app.get("env") === "development" ? err : {},
   });
 });
+
+// Graceful shutdown handlers
+const gracefulShutdown = async (): Promise<never> => {
+  console.log("Shutting down gracefully...");
+
+  try {
+    await redisCache.disconnect();
+    console.log("Redis disconnected");
+
+    await disconnectFromMongoDB();
+    console.log("MongoDB disconnected");
+
+    console.log("All connections closed successfully");
+    // Exit process gracefully
+    process.exitCode = 0;
+    throw new Error("Server shutdown complete");
+  } catch (error) {
+    console.error("Error during graceful shutdown:", error);
+    process.exitCode = 1;
+    throw error;
+  }
+};
+
+// Listen for termination signals
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
 
 export default app;

@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
 
 import config from "../config.js";
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 
 const client_host = config.server.clientHost;
 

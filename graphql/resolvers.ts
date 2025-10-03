@@ -1,4 +1,5 @@
 import { checkIfFeatured, searchArtworks } from "../db_api/artwork.js";
+import { getAllCategoriesWithTranslations } from "../db_api/categories.js";
 
 // GraphQL resolvers
 const rootValue = {
@@ -15,6 +16,7 @@ const rootValue = {
       n?: number;
       offset?: number;
       only_featured?: boolean;
+      admin?: boolean;
     };
   }): Promise<unknown[]> => {
     const {
@@ -27,6 +29,7 @@ const rootValue = {
       n = 10,
       offset = 0,
       only_featured,
+      admin = false,
     } = input || {};
 
     const artworks = await searchArtworks(
@@ -38,7 +41,8 @@ const rootValue = {
       order,
       n.toString(),
       offset.toString(),
-      only_featured?.toString()
+      only_featured?.toString(),
+      admin.toString()
     );
 
     // Add featured status to each artwork
@@ -55,6 +59,21 @@ const rootValue = {
     );
 
     return artworksWithFeatured;
+  },
+
+  categories: async (): Promise<unknown[]> => {
+    const categories = await getAllCategoriesWithTranslations();
+
+    // Transform to match GraphQL schema
+    return categories.map((category) => ({
+      id: category.id,
+      translations: Object.entries(category.translations).map(
+        ([languageCode, name]) => ({
+          languageCode,
+          name,
+        })
+      ),
+    }));
   },
 };
 

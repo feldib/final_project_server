@@ -1,4 +1,9 @@
 // Database types
+export interface Category {
+  id: number;
+  removed?: boolean;
+}
+
 export interface User {
   id: number;
   last_name: string;
@@ -23,12 +28,6 @@ export interface Artwork {
   updated_at: Date;
   thumbnail_path?: string;
   other_pictures?: string[];
-}
-
-export interface Category {
-  id: number;
-  cname: string;
-  removed: boolean;
 }
 
 export interface Review {

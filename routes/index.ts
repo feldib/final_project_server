@@ -7,7 +7,7 @@ import {
   getNewestArtworks,
   getWishlistedTheMost,
 } from "../db_api/artwork.js";
-import { getCategories } from "../db_api/categories.js";
+import { getAllCategoriesWithTranslations } from "../db_api/categories.js";
 import { sendLinkToResetPassword } from "../db_api/email.js";
 import { getReviewsOfArtwork } from "../db_api/reviews.js";
 import {
@@ -24,6 +24,7 @@ import {
   StandardResponse,
 } from "../types/api.js";
 import { User } from "../types/database.js";
+import { cacheMiddleware } from "../utils/cacheMiddleware.js";
 import { HTTP } from "../utils/constants.js";
 
 const router = Router();
@@ -95,10 +96,14 @@ router.post(
   }
 );
 
-router.get("/categories", async function (req: Request, res: Response) {
-  const categories = await getCategories();
-  res.json(categories);
-});
+router.get(
+  "/categories",
+  cacheMiddleware({ ttlSeconds: 600 }),
+  async function (req: Request, res: Response) {
+    const categories = await getAllCategoriesWithTranslations();
+    res.json(categories);
+  }
+);
 
 router.get("/find_artwork_by_id", async function (req: Request, res: Response) {
   const { artwork_id } = req.query;
@@ -119,25 +124,37 @@ router.get("/reviews", async function (req: Request, res: Response) {
   res.json(reviews);
 });
 
-router.get("/featured", async function (req: Request, res: Response) {
-  const n = req.query.n as string;
-  const artworks = await getFeatured(n);
-  const results = artworks;
-  res.json(results);
-});
+router.get(
+  "/featured",
+  cacheMiddleware({ ttlSeconds: 300 }),
+  async function (req: Request, res: Response) {
+    const n = req.query.n as string;
+    const artworks = await getFeatured(n);
+    const results = artworks;
+    res.json(results);
+  }
+);
 
-router.get("/newest", async function (req: Request, res: Response) {
-  const n = req.query.n as string;
-  const artworks = await getNewestArtworks(n);
-  const results = artworks;
-  res.json(results);
-});
+router.get(
+  "/newest",
+  cacheMiddleware({ ttlSeconds: 300 }),
+  async function (req: Request, res: Response) {
+    const n = req.query.n as string;
+    const artworks = await getNewestArtworks(n);
+    const results = artworks;
+    res.json(results);
+  }
+);
 
-router.get("/most_wishlisted", async function (req: Request, res: Response) {
-  const n = req.query.n as string;
-  const artworks = await getWishlistedTheMost(n);
-  const results = artworks;
-  res.json(results);
-});
+router.get(
+  "/most_wishlisted",
+  cacheMiddleware({ ttlSeconds: 300 }),
+  async function (req: Request, res: Response) {
+    const n = req.query.n as string;
+    const artworks = await getWishlistedTheMost(n);
+    const results = artworks;
+    res.json(results);
+  }
+);
 
 export default router;

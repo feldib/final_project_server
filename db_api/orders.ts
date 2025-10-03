@@ -1,6 +1,6 @@
-import { ResultSetHeader,RowDataPacket } from "mysql2/promise";
+import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 import { InvoiceData } from "../types/api.js";
 import { OrderDataCollection, OrderDataItem } from "../types/db-helpers.js";
 import { completeArtwork } from "./helpers.js";

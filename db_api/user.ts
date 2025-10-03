@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2/promise";
 
-import makeConnection from "../connection.js";
+import makeConnection from "../mysqlConnection.js";
 import { User } from "../types/database.js";
 import { UserField } from "../types/db-helpers.js";
 
