@@ -11,8 +11,8 @@ export const saveMessageToAdministrator = async (
 
   await connection.query(
     `
-        INSERT INTO messages_to_administrator(email, message_title, message_txt)
-        VALUES(?, ?, ?)
+      INSERT INTO messages_to_administrator(email, message_title, message_txt)
+      VALUES(?, ?, ?)
     `,
     [email, title, message]
   );
