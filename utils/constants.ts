@@ -21,6 +21,12 @@ export const DATABASE = {
   DEFAULT_CHARSET: "utf8mb4",
 } as const;
 
+// Cache Configuration
+export const CACHE = {
+  CATEGORIES_TTL: 600, // 10 minutes in seconds
+  ARTWORKS_TTL: 300, // 5 minutes in seconds
+} as const;
+
 // Supported languages
 export const SUPPORTED_LANGUAGES = ["en", "he", "hu"] as const;
 export type LanguageCode = (typeof SUPPORTED_LANGUAGES)[number];

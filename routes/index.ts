@@ -25,7 +25,7 @@ import {
 } from "../types/api.js";
 import { User } from "../types/database.js";
 import { cacheMiddleware } from "../utils/cacheMiddleware.js";
-import { HTTP } from "../utils/constants.js";
+import { CACHE, HTTP } from "../utils/constants.js";
 
 const router = Router();
 
@@ -98,7 +98,7 @@ router.post(
 
 router.get(
   "/categories",
-  cacheMiddleware({ ttlSeconds: 600 }),
+  cacheMiddleware({ ttlSeconds: CACHE.CATEGORIES_TTL }),
   async function (req: Request, res: Response) {
     const categories = await getAllCategoriesWithTranslations();
     res.json(categories);
@@ -126,7 +126,7 @@ router.get("/reviews", async function (req: Request, res: Response) {
 
 router.get(
   "/featured",
-  cacheMiddleware({ ttlSeconds: 300 }),
+  cacheMiddleware({ ttlSeconds: CACHE.ARTWORKS_TTL }),
   async function (req: Request, res: Response) {
     const n = req.query.n as string;
     const artworks = await getFeatured(n);
@@ -137,7 +137,7 @@ router.get(
 
 router.get(
   "/newest",
-  cacheMiddleware({ ttlSeconds: 300 }),
+  cacheMiddleware({ ttlSeconds: CACHE.ARTWORKS_TTL }),
   async function (req: Request, res: Response) {
     const n = req.query.n as string;
     const artworks = await getNewestArtworks(n);
@@ -148,7 +148,7 @@ router.get(
 
 router.get(
   "/most_wishlisted",
-  cacheMiddleware({ ttlSeconds: 300 }),
+  cacheMiddleware({ ttlSeconds: CACHE.ARTWORKS_TTL }),
   async function (req: Request, res: Response) {
     const n = req.query.n as string;
     const artworks = await getWishlistedTheMost(n);

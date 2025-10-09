@@ -6,6 +6,40 @@ import { OrderDataCollection, OrderDataItem } from "../types/db-helpers.js";
 import { completeArtwork } from "./helpers.js";
 import { getShoppingListItems } from "./shopping_list.js";
 
+// Helper function to process order data and calculate totals
+const processOrderData = async (
+  orderRecord: RowDataPacket,
+  includeUserInfo: boolean = false
+): Promise<OrderDataCollection> => {
+  const orderData: OrderDataCollection = {
+    time_ordered: orderRecord.time_ordered,
+    totalCost: 0,
+    items: [],
+  };
+
+  const orderItems = await getOrderData(orderRecord.id);
+  orderData.totalCost = orderItems
+    .map((item) => item.cost)
+    .reduce((prev: number, item: number) => prev + item, 0);
+  orderData.items = orderItems as OrderDataItem[];
+
+  if (includeUserInfo && orderItems.length > 0) {
+    orderData.user = {
+      user_name: orderItems[0].user_name,
+      user_id: orderItems[0].user_id,
+    };
+  }
+
+  return orderData;
+};
+
+// Helper function to sort orders by time (newest first)
+const sortOrdersByTime = (
+  orders: OrderDataCollection[]
+): OrderDataCollection[] => {
+  return orders.sort((a, b) => b.time_ordered - a.time_ordered);
+};
+
 export const makeOrder = async (
   user_id: number,
   invoice_data: InvoiceData
@@ -109,22 +143,10 @@ export const getOrdersOfUser = async (
   let orderDataCollection: OrderDataCollection[] = [];
   if (results.length) {
     orderDataCollection = await Promise.all(
-      results.map(async (ord) => {
-        const orderData: OrderDataCollection = {
-          time_ordered: ord.time_ordered,
-          totalCost: 0,
-          items: [],
-        };
-        const res = await getOrderData(ord.id);
-        orderData.totalCost = res
-          .map((item) => item.cost)
-          .reduce((prev: number, item: number) => prev + item);
-        orderData.items = res as OrderDataItem[];
-        return orderData;
-      })
+      results.map((order) => processOrderData(order, false))
     );
 
-    orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered);
+    orderDataCollection = sortOrdersByTime(orderDataCollection);
   }
 
   connection.end();
@@ -142,27 +164,10 @@ export const getOrders = async (): Promise<OrderDataCollection[]> => {
   let orderDataCollection: OrderDataCollection[] = [];
   if (results.length) {
     orderDataCollection = await Promise.all(
-      results.map(async (ord) => {
-        const orderData: OrderDataCollection = {
-          time_ordered: ord.time_ordered,
-          totalCost: 0,
-          items: [],
-        };
-        const res = await getOrderData(ord.id);
-        orderData.totalCost = res
-          .map((item) => item.cost)
-          .reduce((prev: number, item: number) => prev + item);
-        orderData.items = res as OrderDataItem[];
-        orderData.user = {
-          user_name: res[0].user_name,
-          user_id: res[0].user_id,
-        };
-
-        return orderData;
-      })
+      results.map((order) => processOrderData(order, true))
     );
 
-    orderDataCollection.sort((a, b) => b.time_ordered - a.time_ordered);
+    orderDataCollection = sortOrdersByTime(orderDataCollection);
   }
 
   connection.end();
