@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { graphqlController } from "../controllers/graphql.js";
+import { graphqlController } from "../../controllers/graphql.js";
 
 const router = Router();
 

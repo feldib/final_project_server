@@ -19,11 +19,11 @@ import {
   connectToMongoDB,
   disconnectFromMongoDB,
 } from "./mongodbConnection.js";
-import adminRouter from "./routes/admin.js";
-import graphqSearchRouter from "./routes/graphql.js";
-import indexRouter from "./routes/index.js";
-import translateRouter from "./routes/translate.js";
-import usersRouter from "./routes/users.js";
+import adminRouter from "./routes/admin/index.js";
+import graphqSearchRouter from "./routes/graphql/index.js";
+import publicRouter from "./routes/public/index.js";
+import translateRouter from "./routes/translate/index.js";
+import usersRouter from "./routes/users/index.js";
 import redisCache from "./utils/redis.js";
 
 const require = createRequire(import.meta.url);
@@ -65,7 +65,7 @@ app.use(urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(join(__dirname, "../public")));
 
-app.use("/", indexRouter);
+app.use("/", publicRouter);
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
 app.use("/deepl", translateRouter);
