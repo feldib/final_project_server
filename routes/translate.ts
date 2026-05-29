@@ -1,7 +1,6 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
 
-import { TranslateRequest, TranslateResponse } from "../types/api.js";
-import deepLService from "../utils/deepl.js";
+import { translateController } from "../controllers/translate.js";
 
 const router = Router();
 
@@ -11,38 +10,7 @@ const router = Router();
  */
 router.post(
   "/translate",
-  async function (
-    req: Request<object, TranslateResponse, TranslateRequest>,
-    res: Response<TranslateResponse>
-  ) {
-    try {
-      const { text, targetLanguage } = req.body;
-
-      if (!text || !targetLanguage) {
-        return res.status(400).json({
-          translatedText: "",
-          // @ts-expect-error - Error response format
-          error: "Text and target language are required",
-        });
-      }
-
-      const translatedText = await deepLService.translateText(
-        text,
-        targetLanguage
-      );
-
-      res.json({
-        translatedText,
-      });
-    } catch (error) {
-      console.error("Translation error:", error);
-      res.status(500).json({
-        translatedText: "",
-        // @ts-expect-error - Error response format
-        error: "Translation failed",
-      });
-    }
-  }
+  translateController
 );
 
 export default router;
