@@ -20,6 +20,7 @@ import {
   removeReview,
 } from "../db_api/reviews.js";
 import { getRegisteredUsers } from "../db_api/user.js";
+import redisCache from "../utils/redis.js";
 import makeConnection from "../mysqlConnection.js";
 
 const now = new Date();
@@ -213,6 +214,14 @@ export async function deleteFeaturedController(req: Request, res: Response) {
 export async function deleteArtworkController(req: Request, res: Response) {
   const artwork_id = parseInt(req.params.id);
   await removeArtwork(artwork_id);
+  
+  // Invalidate artwork cache after deletion
+  await redisCache.del(`cache:GET:/artwork?id=${artwork_id}`);
+  await redisCache.del(`cache:GET:/find_artwork_by_id?artwork_id=${artwork_id}`);
+  await redisCache.del(`cache:GET:/newest*`);
+    await redisCache.del(`cache:GET:/featured*`);
+    await redisCache.del(`cache:GET:/most_wishlisted*`);
+  
   res.end();
 }
 
@@ -279,6 +288,11 @@ export async function postArtworkController(req: Request, res: Response) {
       await addPictures(artwork_id, otherPicturePaths);
     }
 
+    // Invalidate list/feed caches - new artwork may appear in these
+    await redisCache.del(`cache:GET:/newest*`);
+    await redisCache.del(`cache:GET:/featured*`);
+    await redisCache.del(`cache:GET:/most_wishlisted*`);
+
     res.json(artwork_id);
   } catch (error) {
     console.error("Error adding new artwork:", error);
@@ -289,5 +303,14 @@ export async function postArtworkController(req: Request, res: Response) {
 export async function putArtworkController(req: Request, res: Response) {
   const { artwork_id, field_name, value } = req.body;
   await updateArtworkData(artwork_id, field_name, value);
+  
+  // Invalidate artwork cache after update
+  await redisCache.del(`cache:GET:/artwork?id=${artwork_id}`);
+  await redisCache.del(`cache:GET:/find_artwork_by_id?artwork_id=${artwork_id}`);
+  await redisCache.del(`cache:GET:/newest*`);
+  await redisCache.del(`cache:GET:/featured*`);
+  await redisCache.del(`cache:GET:/most_wishlisted*`);
+
+  
   res.end();
 }
