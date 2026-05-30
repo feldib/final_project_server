@@ -25,6 +25,7 @@ export const DATABASE = {
 export const CACHE = {
   CATEGORIES_TTL: 600, // 10 minutes in seconds
   ARTWORKS_TTL: 300, // 5 minutes in seconds
+  REVIEWS_TTL: 300, // 5 minutes in seconds
 } as const;
 
 // Supported languages
