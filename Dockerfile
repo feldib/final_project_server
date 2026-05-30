@@ -3,6 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Set Node.js heap size for TypeScript compilation
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
 # Copy package files
 COPY package*.json ./
 COPY tsconfig.json ./
@@ -38,7 +41,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # Switch to non-root user
 USER nextjs
 
-EXPOSE 5000
+EXPOSE 5001
 
 # Run the compiled JavaScript
 ENTRYPOINT ["sh", "-c", "echo 'Server container is ready!'; npm start"]
